@@ -1,4 +1,4 @@
-![Zero Two](https://telegra.ph/file/f7ccdcb4c882353ff09c1.jpg)
+<img alt="Zero Two" src="https://telegra.ph/file/3a09ae55283b69f3da197.jpg" width=50%>
 
 # Zero Two Bot
 A modular telegram Python bot running on python3 with an sqlalchemy database.
