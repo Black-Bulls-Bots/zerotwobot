@@ -41,11 +41,6 @@
             "value" : "None"
         },
 
-        "LOAD" : {
-            "description" : "Load certain modules only, leave it empty to load all modules",
-            "required" : false
-        },
-
         "NO_LOAD" : {
             "description" : "unload certain modules, leave it as default",
             "value" : "'rss', 'sed'",
