@@ -59,7 +59,7 @@
             "required" : true
         },
 
-        "SUPPOR_USERS" : {
+        "SUPPORT_USERS" : {
             "description" : "List of id's (not usernames) for users which are allowed to gban, but can also be banned.",
             "required" : true
         },
@@ -94,12 +94,12 @@
         },
 
         "ALLOW_EXCL" : {
-            "description" : "Aloow working of ! command like  / commands",
+            "description" : "Alow working of ! command like  / commands",
             "required" : true,
             "value" : "False"
         },
 
-        "WOKERS" : {
+        "WORKERS" : {
             "value" : 8,
             "required" : false
         },
