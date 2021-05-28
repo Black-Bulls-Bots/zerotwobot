@@ -1,0 +1,8 @@
+zerotwobot/config.py
+*.pyc
+.idea/
+.project
+.pydevproject
+.directory
+.vscode
+*pycache*

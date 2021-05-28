@@ -1,0 +1,133 @@
+{
+    "name" : "Harley Quinzel",
+    "description" : "A modular telegram Group management bot made in pure Python3",
+    "logo" : "https://telegra.ph/file/86d0a847df2e4e5c6d8ea.jpg",
+    "keywords" : [
+        "Telegram",
+        "Group",
+        "Python",
+        "Joker"
+    ],
+    
+    "repository" : "https://github.com/jokerhacker22/zerotwobot",
+
+    "website" : "https://t.me/joker_hacker_6521",
+    "stack" : "container",
+    "env" : {
+        "ENV" : {
+            "description" : "setting this to anthing will enable env variables",
+            "required" : true,
+            "value" : "ENV"
+        },
+
+        "API_KEY" : {
+            "description" : "Bot Token from bot father",
+            "required" : true
+        },
+
+        "OWNER_ID" : {
+            "description" : "ID of the owner of the bot, it is integer so do not userame or string",
+            "required" : true
+        },
+
+        "OWNER_USERNAME" : {
+            "description" : "OWNER's username without @ tag",
+            "required" : true
+        },
+
+        "MESSAGE_DUMP" : {
+            "description" : "needed to make sure 'save from' messages persist",
+            "required" : false,
+            "value" : "None"
+        },
+
+        "LOAD" : {
+            "description" : "Load certain modules only, leave it empty to load all modules",
+            "required" : false
+        },
+
+        "NO_LOAD" : {
+            "description" : "unload certain modules, leave it as default",
+            "value" : "'rss', 'sed'",
+            "required" : false 
+        },
+
+        "WEBHOOK" : {
+            "description" : "leave it as default ",
+            "value" : "False",
+            "required" : false
+
+        },
+
+        "SUDO_USERS" : {
+            "description" : "List of id's (not usernames) for users which have sudo access to the bot.",
+            "required" : true
+        },
+
+        "SUPPOR_USERS" : {
+            "description" : "List of id's (not usernames) for users which are allowed to gban, but can also be banned.",
+            "required" : true
+        },
+
+        "WHITELIST_USERS" : {
+            "description" : "List of id's (not usernames) for users which WONT be banned/kicked by the bot.",
+            "required" : false
+        },
+
+        "STRICT_BAN" : {
+            "description" : "strick ban users",
+            "required" : false,
+            "value" : "False"
+        },
+
+        "DEL_CMDS" : {
+            "description" : " Whether or not you should delete blue text must click",
+            "required": false,
+            "value": "False" 
+        },
+
+        "PORT" : {
+            "description" : "Port to use for listening",
+            "required" : true,
+            "value" : 5000
+        },
+
+        "BAN_STICKER" : {
+            "description" : "Sticker to use when banning a user",
+            "value" : "CAADAgADOwADPPEcAXkko5EB3YGYAg",
+            "required" : false
+        },
+
+        "ALLOW_EXCL" : {
+            "description" : "Aloow working of ! command like  / commands",
+            "required" : true,
+            "value" : "False"
+        },
+
+        "WOKERS" : {
+            "value" : 8,
+            "required" : false
+        },
+
+        "DONATION_LINK" : {
+            "description" : "a donation link to you",
+            "required" : false
+        },
+
+        "CER_PATH" : {
+            "value" : "None",
+            "required" : false
+        }
+
+
+    },
+
+    "addons": [
+        {
+          "plan": "heroku-postgresql",
+          "options": {
+            "version": "13"
+            }
+        }   
+    ]
+}
