@@ -68,7 +68,7 @@ RUN git clone -b main https://github.com/jokerhacker22/zerotwobot /root/zerotwob
 WORKDIR /root/zerotwobot
 
 #Copy config file to /root/Mizuhararobot/Mizuhararobot
-COPY ./Mizuhararobot/sample_config.py ./Mizuhararobot/config.py* /root/zerotwobot/zerotwobot/
+#COPY ./Mizuhararobot/sample_config.py ./Mizuhararobot/config.py* /root/zerotwobot/zerotwobot/
 
 ENV PATH="/home/bot/bin:$PATH"
 
