@@ -52,7 +52,7 @@ if ENV:
 
     #this is needed to fix sqlalchemy 1.4 postgres error in heroku
     if DB_URI.startswith("postgres://"):
-        DB_URI.replace("postgres://", "postgresql://", 1)
+        DB_URI.replace("postgres://", "postgresql://")
 
     DONATION_LINK = os.environ.get('DONATION_LINK')
     LOAD = os.environ.get("LOAD", "").split()
