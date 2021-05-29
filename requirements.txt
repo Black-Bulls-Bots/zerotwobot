@@ -4,4 +4,4 @@ requests
 sqlalchemy
 python-telegram-bot==11.1.0
 feedparser
-pysycopg2-binary
+psycopg2-binary
