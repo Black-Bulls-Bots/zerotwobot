@@ -64,7 +64,7 @@ RUN apt update && apt upgrade -y && \
 RUN pip3 install --upgrade pip setuptools
 
 # Copy Python Requirements to /root/Mizuhararobot
-RUN git clone -b shiken https://github.com/jokerhacker22/zerotwobot /root/zerotwobot
+RUN git clone -b main https://github.com/jokerhacker22/zerotwobot /root/zerotwobot
 WORKDIR /root/zerotwobot
 
 #Copy config file to /root/Mizuhararobot/Mizuhararobot
