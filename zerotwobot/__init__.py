@@ -50,7 +50,7 @@ if ENV:
 
     #this is needed to fix sqlalchemy 1.4 postgres error in heroku
     DB_URI1 = os.environ.get('DATABASE_URL')
-    DB_URL = DB_URI1.replace("postgres://", "postgresql://")
+    DB_URI = DB_URI1.replace("postgres://", "postgresql://")
     
         
 
