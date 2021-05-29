@@ -63,11 +63,10 @@ RUN apt update && apt upgrade -y && \
 # Pypi package Repo upgrade
 RUN pip3 install --upgrade pip setuptools
 
-# Copy Python Requirements to /root/Mizuhararobot
+# Copy Python Requirements to /root/zerotwobot
 RUN git clone -b main https://github.com/jokerhacker22/zerotwobot /root/zerotwobot
 WORKDIR /root/zerotwobot
 
-#Copy config file to /root/Mizuhararobot/Mizuhararobot
 #COPY ./Mizuhararobot/sample_config.py ./Mizuhararobot/config.py* /root/zerotwobot/zerotwobot/
 
 ENV PATH="/home/bot/bin:$PATH"
