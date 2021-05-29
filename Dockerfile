@@ -1,33 +1,79 @@
-FROM alpine:edge
+FROM python:3.8.5-slim-buster
 
-LABEL maintainer="jokerhacker.6521@pm.me"
-LABEL version="0.1"
-LABEL description="This is custom Docker Image for the User Bot"
+ENV PIP_NO_CACHE_DIR 1
 
-RUN sed -e 's;^#http\(.*\)/edge/community;http\1/edge/community;g' -i /etc/apk/repositories
-RUN echo 'http://dl-cdn.alpinelinux.org/alpine/edge/testing' >> /etc/apk/repositori
+RUN sed -i.bak 's/us-west-2\.ec2\.//' /etc/apt/sources.list
 
-RUN apk add --no-cache=true --update \
+# Installing Required Packages
+RUN apt update && apt upgrade -y && \
+    apt install --no-install-recommends -y \
+    debian-keyring \
+    debian-archive-keyring \
+    bash \
+    bzip2 \
+    curl \
+    figlet \
     git \
+    util-linux \
+    libffi-dev \
+    libjpeg-dev \
+    libjpeg62-turbo-dev \
+    libwebp-dev \
+    linux-headers-amd64 \
+    musl-dev \
+    musl \
+    neofetch \
+    php-pgsql \
+    python3-lxml \
+    postgresql \
+    postgresql-client \
+    python3-psycopg2 \
+    libpq-dev \
+    libcurl4-openssl-dev \
+    libxml2-dev \
+    libxslt1-dev \
+    python3-pip \
+    python3-requests \
+    python3-sqlalchemy \
+    python3-tz \
+    python3-aiohttp \
+    openssl \
+    pv \
+    jq \
+    wget \
+    python3 \
     python3-dev \
-    python3
+    libreadline-dev \
+    libyaml-dev \
+    gcc \
+    sqlite3 \
+    libsqlite3-dev \
+    sudo \
+    zlib1g \
+    ffmpeg \
+    libssl-dev \
+    libgconf-2-4 \
+    libxi6 \
+    xvfb \
+    unzip \
+    libopus0 \
+    libopus-dev \
+    && rm -rf /var/lib/apt/lists /var/cache/apt/archives /tmp
 
-RUN python3 -m ensurepip \
-    && pip3 install --upgrade pip setuptools \
-    && pip3 install wheel \
-    && rm -r /usr/lib/python*/ensurepip && \
-    if [ ! -e /usr/bin/pip ]; then ln -s pip3 /usr/bin/pip ; fi && \
-    if [[ ! -e /usr/bin/python ]]; then ln -sf /usr/bin/python3 /usr/bin/python; fi && \
-    rm -r /root/.cache
+# Pypi package Repo upgrade
+RUN pip3 install --upgrade pip setuptools
 
-RUN git clone https://github.com/jokerhacker22/zerotwobot/ /root/zerotwobot
-RUN mkdir /root/zerotwobot/bin/
-WORKDIR /root/zerotwobot/
+# Copy Python Requirements to /root/Mizuhararobot
+RUN git clone -b shiken https://github.com/jokerhacker22/zerotwobot /root/zerotwobot
+WORKDIR /root/zerotwobot
 
+#Copy config file to /root/Mizuhararobot/Mizuhararobot
+COPY ./Mizuhararobot/sample_config.py ./Mizuhararobot/config.py* /root/zerotwobot/zerotwobot/
 
-#
+ENV PATH="/home/bot/bin:$PATH"
+
 # Install requirements
-#
-RUN pip3 install -r requirements.txt
-RUN rm /bin/sh && ln -s /bin/bash /bin/sh
+RUN pip3 install -U -r requirements.txt
+
+# Starting Worker
 CMD ["python3","-m","zerotwobot"]
