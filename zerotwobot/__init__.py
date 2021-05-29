@@ -49,6 +49,8 @@ if ENV:
     CERT_PATH = os.environ.get("CERT_PATH",)
 
     DB_URI = os.environ.get('DATABASE_URL')
+
+    #this is needed to fix sqlalchemy 1.4 postgres error in heroku
     if DB_URI.startswith("postgres://"):
         DB_URI.replace("postgres://", "postgresql://", 1)
 
