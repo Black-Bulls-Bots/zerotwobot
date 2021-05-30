@@ -1,21 +1,22 @@
 # Config files, logs and stuff
-SaitamaRobot/modules/helper_funcs/temp.txt
-SaitamaRobot/elevated_users.json
-SaitamaRobot/config.py
-SaitamaRobot/config.ini
+zerotwobot/modules/helper_funcs/temp.txt
+zerotwobot/elevated_users.json
+*config.env*
+zerotwobot/config.ini
+zerotwobot/.env.test
 log.txt
 kangsticker.png
 updates.txt
 start_service.bat
 
 # Session files
-SaitamaRobot/*.session
-SaitamaRobot/*.session-journal
-saitama.session-journal
+zerotwobot/*.session
+zerotwobot/*.session-journal
+zerotwobot.session-journal
 *.session
 
 # Byte-compiled / optimized / DLL files
-__pycache__/
+__pycache__*
 *.py[cod]
 *$py.class
 
@@ -125,6 +126,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+02env/
 
 # Spyder project settings
 .spyderproject
