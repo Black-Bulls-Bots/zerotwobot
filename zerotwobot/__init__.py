@@ -48,7 +48,6 @@ except ValueError:
 
 JOIN_LOGGER = os.environ.get("JOIN_LOGGER") or None
 OWNER_USERNAME = os.environ.get("OWNER_USERNAME") or None
-PASSWORD = os.environ.get("PASSWORD")
 
 INFOPIC = bool(os.environ.get("INFOPIC") or False) 
 EVENT_LOGS = os.environ.get("EVENT_LOGS") or None
