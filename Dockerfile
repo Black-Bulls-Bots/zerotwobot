@@ -65,11 +65,10 @@ RUN apt update && apt upgrade -y && \
 RUN pip3 install --upgrade pip setuptools
 
 # Copy Python Requirements to /root/Zerotwobot
-RUN git clone -b shiken https://github.com/jokerhacker22/Zerotwobot /root/zerotwobot
+RUN git clone -b main https://github.com/jokerhacker22/Zerotwobot /root/zerotwobot
 WORKDIR /root/zerotwobot
 
 #Copy config file to /root/Zerotwobot/Zerotwobot
-COPY ./zerotwobot/sample_config.py ./zerotwobot/config.py* /root/Zerotwobot/zerotwobot/
 
 ENV PATH="/home/bot/bin:$PATH"
 
