@@ -43,7 +43,7 @@ for handler_list in dispatcher.handlers:
 
 
 @run_async
-def clean_blue_text_must_click(update, context):
+def clean_blue_text_must_click(update: Update, context: CallbackContext):
     bot = context.bot
     chat = update.effective_chat
     message = update.effective_message
@@ -69,7 +69,7 @@ def clean_blue_text_must_click(update, context):
 @connection_status
 @bot_can_delete
 @user_admin
-def set_blue_text_must_click(update, context):
+def set_blue_text_must_click(update: Update, context: CallbackContext):
     chat = update.effective_chat
     message = update.effective_message
     bot, args = context.bot, context.args
@@ -103,7 +103,7 @@ def set_blue_text_must_click(update, context):
 
 @run_async
 @user_admin
-def add_bluetext_ignore(update, context):
+def add_bluetext_ignore(update: Update, context: CallbackContext):
     message = update.effective_message
     chat = update.effective_chat
     args = context.args
@@ -125,7 +125,7 @@ def add_bluetext_ignore(update, context):
 
 @run_async
 @user_admin
-def remove_bluetext_ignore(update, context):
+def remove_bluetext_ignore(update: Update, context: CallbackContext):
     message = update.effective_message
     chat = update.effective_chat
     args = context.args
@@ -149,7 +149,7 @@ def remove_bluetext_ignore(update, context):
 
 @run_async
 @user_admin
-def add_bluetext_ignore_global(update, context):
+def add_bluetext_ignore_global(update: Update, context: CallbackContext):
     message = update.effective_message
     args = context.args
     if len(args) >= 1:
@@ -170,7 +170,7 @@ def add_bluetext_ignore_global(update, context):
 
 @run_async
 @dev_plus
-def remove_bluetext_ignore_global(update, context):
+def remove_bluetext_ignore_global(update: Update, context: CallbackContext):
     message = update.effective_message
     args = context.args
     if len(args) >= 1:
@@ -191,7 +191,7 @@ def remove_bluetext_ignore_global(update, context):
 
 @run_async
 @dev_plus
-def bluetext_ignore_list(update, context):
+def bluetext_ignore_list(update: Update, context: CallbackContext):
 
     message = update.effective_message
     chat = update.effective_chat
@@ -228,7 +228,7 @@ Blue text cleaner removed any made up commands that people send in your chat.
  • `/listblue`*:* list currently whitelisted commands
 
  *Following are Disasters only commands, admins cannot use these:*
- • `/gignoreblue <word>`*:* globally ignorea bluetext cleaning of saved word across Saitama.
+ • `/gignoreblue <word>`*:* globally ignorea bluetext cleaning of saved word across Zero Two.
  • `/ungignoreblue <word>`*:* remove said command from global cleaning list
 """
 

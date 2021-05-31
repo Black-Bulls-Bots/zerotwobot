@@ -6,7 +6,7 @@ from telegram.ext import CallbackContext, run_async
 
 
 @run_async
-def paste(update, context):
+def paste(update: Update, context: CallbackContext):
     args = context.args
     message = update.effective_message
 

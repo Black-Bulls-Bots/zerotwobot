@@ -11,7 +11,7 @@ from telegram.ext.dispatcher import run_async
 
 
 @run_async
-def get_user_common_chats(update, context):
+def get_user_common_chats(update: Update, context: CallbackContext):
     bot, args = context.bot, context.args
     msg = update.effective_message
     user = extract_user(msg, args)

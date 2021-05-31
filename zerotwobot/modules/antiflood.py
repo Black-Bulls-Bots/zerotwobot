@@ -116,7 +116,7 @@ def check_flood(update, context) -> str:
 @run_async
 @user_admin_no_reply
 @bot_admin
-def flood_button(update, context):
+def flood_button(update: Update, context: CallbackContext):
     bot = context.bot
     query = update.callback_query
     user = update.effective_user

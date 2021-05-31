@@ -10,7 +10,7 @@ from telegram.ext import CallbackContext, run_async
 
 
 @run_async
-def wall(update, context):
+def wall(update: Update, context: CallbackContext):
     chat_id = update.effective_chat.id
     msg = update.effective_message
     args = context.args

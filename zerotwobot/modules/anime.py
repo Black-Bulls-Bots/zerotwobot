@@ -169,7 +169,7 @@ def extract_arg(message: Message):
     return None
 
 @run_async
-def airing(update, context):
+def airing(update: Update, context: CallbackContext):
     message = update.effective_message
     search_str = extract_arg(message)
     if not search_str:
@@ -192,7 +192,7 @@ def airing(update, context):
 
 
 @run_async
-def anime(update, context):
+def anime(update: Update, context: CallbackContext):
     message = update.effective_message
     search = extract_arg(message)
     if not search:
@@ -264,7 +264,7 @@ def anime(update, context):
 
 
 @run_async
-def character(update, context):
+def character(update: Update, context: CallbackContext):
     message = update.effective_message
     search = extract_arg(message)
     if not search:
@@ -298,7 +298,7 @@ def character(update, context):
 
 
 @run_async
-def manga(update, context):
+def manga(update: Update, context: CallbackContext):
     message = update.effective_message
     search = extract_arg(message)
     if not search:
@@ -364,7 +364,7 @@ def manga(update, context):
 
 
 @run_async
-def user(update, context):
+def user(update: Update, context: CallbackContext):
     message = update.effective_message
     search_query = extract_arg(message)
 
@@ -448,7 +448,7 @@ def user(update, context):
 
 
 @run_async
-def upcoming(update, context):
+def upcoming(update: Update, context: CallbackContext):
     jikan = jikanpy.jikan.Jikan()
     upcomin = jikan.top("anime", page=1, subtype="upcoming")
 
@@ -463,7 +463,7 @@ def upcoming(update, context):
     update.effective_message.reply_text(upcoming_message)
 
 
-def site_search(update, context, site: str):
+def site_search(update: Update, context: CallbackContext, site: str):
     message = update.effective_message
     search_query = extract_arg(message)
     more_results = True
@@ -522,12 +522,12 @@ def site_search(update, context, site: str):
 
 
 @run_async
-def kaizoku(update, context):
+def kaizoku(update: Update, context: CallbackContext):
     site_search(update, context, "kaizoku")
 
 
 @run_async
-def kayo(update, context):
+def kayo(update: Update, context: CallbackContext):
     site_search(update, context, "kayo")
 
 

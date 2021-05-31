@@ -20,7 +20,7 @@ from telegram.utils.helpers import mention_html, mention_markdown
 
 
 @run_async
-def blackliststicker(update, context):
+def blackliststicker(update: Update, context: CallbackContext):
     msg = update.effective_message  # type: Optional[Message]
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
@@ -66,7 +66,7 @@ def blackliststicker(update, context):
 
 @run_async
 @user_admin
-def add_blackliststicker(update, context):
+def add_blackliststicker(update: Update, context: CallbackContext):
     bot = context.bot
     msg = update.effective_message  # type: Optional[Message]
     chat = update.effective_chat  # type: Optional[Chat]
@@ -158,7 +158,7 @@ def add_blackliststicker(update, context):
 
 @run_async
 @user_admin
-def unblackliststicker(update, context):
+def unblackliststicker(update: Update, context: CallbackContext):
     bot = context.bot
     msg = update.effective_message  # type: Optional[Message]
     chat = update.effective_chat  # type: Optional[Chat]
@@ -256,7 +256,7 @@ def unblackliststicker(update, context):
 @run_async
 @loggable
 @user_admin
-def blacklist_mode(update, context):
+def blacklist_mode(update: Update, context: CallbackContext):
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     msg = update.effective_message  # type: Optional[Message]
@@ -367,7 +367,7 @@ def blacklist_mode(update, context):
 
 @run_async
 @user_not_admin
-def del_blackliststicker(update, context):
+def del_blackliststicker(update: Update, context: CallbackContext):
     bot = context.bot
     chat = update.effective_chat  # type: Optional[Chat]
     message = update.effective_message  # type: Optional[Message]

@@ -15,7 +15,7 @@ GIF_ID = "CgACAgQAAx0CSVUvGgAC7KpfWxMrgGyQs-GUUJgt-TSO8cOIDgACaAgAAlZD0VHT3Zynpr
 
 
 @run_async
-def runs(update, context):
+def runs(update: Update, context: CallbackContext):
     temp = random.choice(fun_strings.RUN_STRINGS)
     if update.effective_user.id == 1170714920:
         temp = "Run everyone, they just dropped a bomb 💣💣"
@@ -23,7 +23,7 @@ def runs(update, context):
 
 
 @run_async
-def sanitize(update, context):
+def sanitize(update: Update, context: CallbackContext):
     message = update.effective_message
     name = (
         message.reply_to_message.from_user.first_name
@@ -39,7 +39,7 @@ def sanitize(update, context):
 
 
 @run_async
-def sanitize(update, context):
+def sanitize(update: Update, context: CallbackContext):
     message = update.effective_message
     name = (
         message.reply_to_message.from_user.first_name
@@ -55,7 +55,7 @@ def sanitize(update, context):
 
 
 @run_async
-def slap(update, context):
+def slap(update: Update, context: CallbackContext):
     bot, args = context.bot, context.args
     message = update.effective_message
     chat = update.effective_chat
@@ -70,7 +70,7 @@ def slap(update, context):
     user_id = extract_user(message, args)
 
     if user_id == bot.id:
-        temp = random.choice(fun_strings.SLAP_SAITAMA_TEMPLATES)
+        temp = random.choice(fun_strings.SLAP_ZEROTWO_TEMPLATES)
 
         if isinstance(temp, list):
             if temp[2] == "tmute":
@@ -114,7 +114,7 @@ def slap(update, context):
 
 
 @run_async
-def pat(update, context):
+def pat(update: Update, context: CallbackContext):
     bot = context.bot
     args = context.args
     message = update.effective_message
@@ -155,12 +155,12 @@ def pat(update, context):
 
 
 @run_async
-def roll(update, context):
+def roll(update: Update, context: CallbackContext):
     update.message.reply_text(random.choice(range(1, 7)))
 
 
 @run_async
-def shout(update, context):
+def shout(update: Update, context: CallbackContext):
     args = context.args
     text = " ".join(args)
     result = []
@@ -175,12 +175,12 @@ def shout(update, context):
 
 
 @run_async
-def toss(update, context):
+def toss(update: Update, context: CallbackContext):
     update.message.reply_text(random.choice(fun_strings.TOSS))
 
 
 @run_async
-def shrug(update, context):
+def shrug(update: Update, context: CallbackContext):
     msg = update.effective_message
     reply_text = (
         msg.reply_to_message.reply_text if msg.reply_to_message else msg.reply_text
@@ -189,7 +189,7 @@ def shrug(update, context):
 
 
 @run_async
-def bluetext(update, context):
+def bluetext(update: Update, context: CallbackContext):
     msg = update.effective_message
     reply_text = (
         msg.reply_to_message.reply_text if msg.reply_to_message else msg.reply_text
@@ -200,7 +200,7 @@ def bluetext(update, context):
 
 
 @run_async
-def rlg(update, context):
+def rlg(update: Update, context: CallbackContext):
     eyes = random.choice(fun_strings.EYES)
     mouth = random.choice(fun_strings.MOUTHS)
     ears = random.choice(fun_strings.EARS)
@@ -213,7 +213,7 @@ def rlg(update, context):
 
 
 @run_async
-def decide(update, context):
+def decide(update: Update, context: CallbackContext):
     reply_text = (
         update.effective_message.reply_to_message.reply_text
         if update.effective_message.reply_to_message
@@ -223,7 +223,7 @@ def decide(update, context):
 
 
 @run_async
-def eightball(update, context):
+def eightball(update: Update, context: CallbackContext):
     reply_text = (
         update.effective_message.reply_to_message.reply_text
         if update.effective_message.reply_to_message
@@ -233,7 +233,7 @@ def eightball(update, context):
 
 
 @run_async
-def table(update, context):
+def table(update: Update, context: CallbackContext):
     reply_text = (
         update.effective_message.reply_to_message.reply_text
         if update.effective_message.reply_to_message
@@ -301,7 +301,7 @@ weebyfont = [
 
 
 @run_async
-def weebify(update, context):
+def weebify(update: Update, context: CallbackContext):
     args = context.args
     message = update.effective_message
     string = ""

@@ -30,7 +30,7 @@ from zerotwobot.modules.helper_funcs.alternate import send_message
 @can_promote
 @user_admin
 @loggable
-def promote(update, context) -> str:
+def promote(update: Update, context: CallbackContext) -> str:
     bot = context.bot
     args = context.args
 
@@ -113,7 +113,7 @@ def promote(update, context) -> str:
 @can_promote
 @user_admin
 @loggable
-def demote(update, context) -> str:
+def demote(update: Update, context: CallbackContext) -> str:
     bot = context.bot
     args = context.args
 
@@ -197,7 +197,7 @@ def refresh_admin(update, _):
 @bot_admin
 @can_promote
 @user_admin
-def set_title(update, context):
+def set_title(update: Update, context: CallbackContext):
     bot = context.bot
     args = context.args
 
@@ -218,7 +218,7 @@ def set_title(update, context):
 
     if user_member.status == "creator":
         message.reply_text(
-            "This person CREATED the chat, how can i set custom title for him?",
+            "This person CREATED the chat, how can I set custom title for him?",
         )
         return
 
@@ -262,7 +262,7 @@ def set_title(update, context):
 @can_pin
 @user_admin
 @loggable
-def pin(update, context) -> str:
+def pin(update: Update, context: CallbackContext) -> str:
     bot = context.bot
     args = context.args
 
@@ -304,7 +304,7 @@ def pin(update, context) -> str:
 @can_pin
 @user_admin
 @loggable
-def unpin(update, context) -> str:
+def unpin(update: Update, context: CallbackContext) -> str:
     bot = context.bot
     chat = update.effective_chat
     user = update.effective_user
@@ -330,7 +330,7 @@ def unpin(update, context) -> str:
 @bot_admin
 @user_admin
 @connection_status
-def invite(update, context):
+def invite(update: Update, context: CallbackContext):
     bot = context.bot
     chat = update.effective_chat
 

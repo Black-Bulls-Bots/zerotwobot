@@ -15,7 +15,7 @@ from telegram.ext import CallbackContext, CommandHandler, run_async
 
 @run_async
 @dev_plus
-def allow_groups(update, context):
+def allow_groups(update: Update, context: CallbackContext):
     args = context.args
     if not args:
         state = "Lockdown is " + "on" if not zerotwobot.ALLOW_CHATS else "off"
@@ -32,7 +32,7 @@ def allow_groups(update, context):
 
 @run_async
 @dev_plus
-def leave(update, context):
+def leave(update: Update, context: CallbackContext):
     bot = context.bot
     args = context.args
     if args:
@@ -52,7 +52,7 @@ def leave(update, context):
 
 @run_async
 @dev_plus
-def gitpull(update, context):
+def gitpull(update: Update, context: CallbackContext):
     sent_msg = update.effective_message.reply_text(
         "Pulling all changes from remote and then attempting to restart.",
     )
@@ -72,7 +72,7 @@ def gitpull(update, context):
 
 @run_async
 @dev_plus
-def restart(update, context):
+def restart(update: Update, context: CallbackContext):
     update.effective_message.reply_text(
         "Starting a new instance and shutting down this one",
     )

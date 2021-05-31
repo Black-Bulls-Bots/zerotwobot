@@ -55,7 +55,7 @@ def get_user_id(username):
 
 @run_async
 @dev_plus
-def broadcast(update, context):
+def broadcast(update: Update, context: CallbackContext):
     to_send = update.effective_message.text.split(None, 1)
 
     if len(to_send) >= 2:
@@ -101,7 +101,7 @@ def broadcast(update, context):
 
 
 @run_async
-def log_user(update, context):
+def log_user(update: Update, context: CallbackContext):
     chat = update.effective_chat
     msg = update.effective_message
 
@@ -121,7 +121,7 @@ def log_user(update, context):
 
 @run_async
 @sudo_plus
-def chats(update, context):
+def chats(update: Update, context: CallbackContext):
     all_chats = sql.get_all_chats() or []
     chatfile = "List of chats.\n0. Chat name | Chat ID | Members count\n"
     P = 1
@@ -147,7 +147,7 @@ def chats(update, context):
 
 
 @run_async
-def chat_checker(update, context):
+def chat_checker(update: Update, context: CallbackContext):
     bot = context.bot
     try:
         if update.effective_message.chat.get_member(bot.id).can_send_messages is False:

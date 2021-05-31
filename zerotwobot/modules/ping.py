@@ -70,7 +70,7 @@ def ping_func(to_ping: List[str]) -> List[str]:
 
 @run_async
 @sudo_plus
-def ping(update, context):
+def ping(update: Update, context: CallbackContext):
     msg = update.effective_message
 
     start_time = time.time()
@@ -89,7 +89,7 @@ def ping(update, context):
 
 @run_async
 @sudo_plus
-def pingall(update, context):
+def pingall(update: Update, context: CallbackContext):
     to_ping = ["Kaizoku", "Kayo", "Telegram", "Jikan"]
     pinged_list = ping_func(to_ping)
     pinged_list.insert(2, "")

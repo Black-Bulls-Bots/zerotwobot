@@ -99,7 +99,7 @@ def is_user_in_chat(chat: Chat, user_id: int) -> bool:
 
 def dev_plus(func):
     @wraps(func)
-    def is_dev_plus_func(update, context, *args, **kwargs):
+    def is_dev_plus_func(update: Update, context: CallbackContext, *args, **kwargs):
         bot = context.bot
         user = update.effective_user
 
@@ -123,7 +123,7 @@ def dev_plus(func):
 
 def sudo_plus(func):
     @wraps(func)
-    def is_sudo_plus_func(update, context, *args, **kwargs):
+    def is_sudo_plus_func(update: Update, context: CallbackContext, *args, **kwargs):
         bot = context.bot
         user = update.effective_user
         chat = update.effective_chat
@@ -139,7 +139,7 @@ def sudo_plus(func):
                 pass
         else:
             update.effective_message.reply_text(
-                "Who dis non-admin telling me what to do? You want a punch?",
+                "Who the hell are you to say me what to do?",
             )
 
     return is_sudo_plus_func
@@ -147,7 +147,7 @@ def sudo_plus(func):
 
 def support_plus(func):
     @wraps(func)
-    def is_support_plus_func(update, context, *args, **kwargs):
+    def is_support_plus_func(update: Update, context: CallbackContext, *args, **kwargs):
         bot = context.bot
         user = update.effective_user
         chat = update.effective_chat
@@ -166,7 +166,7 @@ def support_plus(func):
 def whitelist_plus(func):
     @wraps(func)
     def is_whitelist_plus_func(
-        update, context, *args, **kwargs,
+        update: Update, context: CallbackContext, *args, **kwargs,
     ):
         bot = context.bot
         user = update.effective_user
@@ -184,7 +184,7 @@ def whitelist_plus(func):
 
 def user_admin(func):
     @wraps(func)
-    def is_admin(update, context, *args, **kwargs):
+    def is_admin(update: Update, context: CallbackContext, *args, **kwargs):
         bot = context.bot
         user = update.effective_user
         chat = update.effective_chat
@@ -200,7 +200,7 @@ def user_admin(func):
                 pass
         else:
             update.effective_message.reply_text(
-                "Who dis non-admin telling me what to do? You want a punch?",
+                "Who the hell are you to say me what to do?",
             )
 
     return is_admin
@@ -209,7 +209,7 @@ def user_admin(func):
 def user_admin_no_reply(func):
     @wraps(func)
     def is_not_admin_no_reply(
-        update, context, *args, **kwargs,
+        update: Update, context: CallbackContext, *args, **kwargs,
     ):
         bot = context.bot
         user = update.effective_user
@@ -230,7 +230,7 @@ def user_admin_no_reply(func):
 
 def user_not_admin(func):
     @wraps(func)
-    def is_not_admin(update, context, *args, **kwargs):
+    def is_not_admin(update: Update, context: CallbackContext, *args, **kwargs):
         bot = context.bot
         user = update.effective_user
         chat = update.effective_chat
@@ -245,16 +245,16 @@ def user_not_admin(func):
 
 def bot_admin(func):
     @wraps(func)
-    def is_admin(update, context, *args, **kwargs):
+    def is_admin(update: Update, context: CallbackContext, *args, **kwargs):
         bot = context.bot
         chat = update.effective_chat
         update_chat_title = chat.title
         message_chat_title = update.effective_message.chat.title
 
         if update_chat_title == message_chat_title:
-            not_admin = "I'm not admin! - REEEEEE"
+            not_admin = "I'm not admin!"
         else:
-            not_admin = f"I'm not admin in <b>{update_chat_title}</b>! - REEEEEE"
+            not_admin = f"I'm not admin in <b>{update_chat_title}</b>!"
 
         if is_bot_admin(chat, bot.id):
             return func(update, context, *args, **kwargs)
@@ -266,7 +266,7 @@ def bot_admin(func):
 
 def bot_can_delete(func):
     @wraps(func)
-    def delete_rights(update, context, *args, **kwargs):
+    def delete_rights(update: Update, context: CallbackContext, *args, **kwargs):
         bot = context.bot
         chat = update.effective_chat
         update_chat_title = chat.title
@@ -287,7 +287,7 @@ def bot_can_delete(func):
 
 def can_pin(func):
     @wraps(func)
-    def pin_rights(update, context, *args, **kwargs):
+    def pin_rights(update: Update, context: CallbackContext, *args, **kwargs):
         bot = context.bot
         chat = update.effective_chat
         update_chat_title = chat.title
@@ -310,7 +310,7 @@ def can_pin(func):
 
 def can_promote(func):
     @wraps(func)
-    def promote_rights(update, context, *args, **kwargs):
+    def promote_rights(update: Update, context: CallbackContext, *args, **kwargs):
         bot = context.bot
         chat = update.effective_chat
         update_chat_title = chat.title
@@ -334,7 +334,7 @@ def can_promote(func):
 
 def can_restrict(func):
     @wraps(func)
-    def restrict_rights(update, context, *args, **kwargs):
+    def restrict_rights(update: Update, context: CallbackContext, *args, **kwargs):
         bot = context.bot
         chat = update.effective_chat
         update_chat_title = chat.title
@@ -357,14 +357,13 @@ def can_restrict(func):
 
 def user_can_ban(func):
     @wraps(func)
-    def user_is_banhammer(update, context, *args, **kwargs):
+    def user_is_banhammer(update: Update, context: CallbackContext, *args, **kwargs):
         bot = context.bot
         user = update.effective_user.id
         member = update.effective_chat.get_member(user)
         if (
             not (member.can_restrict_members or member.status == "creator")
             and user not in DRAGONS
-            and user not in [777000, 1087968824]
         ):
             update.effective_message.reply_text(
                 "Sorry son, but you're not worthy to wield the banhammer.",
@@ -377,7 +376,7 @@ def user_can_ban(func):
 
 def connection_status(func):
     @wraps(func)
-    def connected_status(update, context, *args, **kwargs):
+    def connected_status(update: Update, context: CallbackContext, *args, **kwargs):
         conn = connected(
             context.bot,
             update,

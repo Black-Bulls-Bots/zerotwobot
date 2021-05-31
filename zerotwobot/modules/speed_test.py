@@ -12,7 +12,7 @@ def convert(speed):
 
 @dev_plus
 @run_async
-def speedtestxyz(update, context):
+def speedtestxyz(update: Update, context: CallbackContext):
     buttons = [
         [
             InlineKeyboardButton("Image", callback_data="speedtest_image"),
@@ -25,7 +25,7 @@ def speedtestxyz(update, context):
 
 
 @run_async
-def speedtestxyz_callback(update, context):
+def speedtestxyz_callback(update: Update, context: CallbackContext):
     query = update.callback_query
 
     if query.from_user.id in DEV_USERS:
@@ -48,7 +48,7 @@ def speedtestxyz_callback(update, context):
             replymsg += f"\nDownload: `{convert(result['download'])}Mb/s`\nUpload: `{convert(result['upload'])}Mb/s`\nPing: `{result['ping']}`"
             update.effective_message.edit_text(replymsg, parse_mode=ParseMode.MARKDOWN)
     else:
-        query.answer("You are required to join Heroes Association to use this command.")
+        query.answer("You are required to join Zero Two Association to use this command.")
 
 
 SPEED_TEST_HANDLER = DisableAbleCommandHandler("speedtest", speedtestxyz)

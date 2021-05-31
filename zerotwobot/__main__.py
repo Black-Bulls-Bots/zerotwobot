@@ -1,5 +1,4 @@
 import importlib
-from pickle import TRUE
 import time
 import re
 from sys import argv
@@ -19,7 +18,6 @@ from zerotwobot import (
     dispatcher,
     StartTime,
     telethn,
-    pbot,
     updater)
 
 # needed to dynamically load modules
@@ -73,20 +71,19 @@ def get_readable_time(seconds: int) -> str:
 
 
 PM_START_TEXT = """
-Hey hi {}, I'm {}!
-I am an Anime themed group management bot.
-Built by weebs for weebs, I specialize in managing anime eccentric communities!
+Hey {} Darling, I'm {}!
+I am 002 specially made to manage your group better than anyone around the telegram.
+Type /help to get available commands.
 """
 
 HELP_STRINGS = """
-Hey there! My name is *{}*.
-I'm a Star in the Space! Have a look at the following for an idea of some of \
-the things I can help you with.
+Hey there!.
+My Name is {}, from Darling in The FranXX. Take me as your group's darling to have fun with me. \
+I can help you with the following commands.
 
 *Main* commands available:
  • /help: PM's you this message.
  • /help <module name>: PM's you info about that module.
- • /donate: information on how to donate!
  • /settings:
    • in PM: will send you your settings for all supported modules.
    • in a group: will redirect you to pm, with all that chat's settings.
@@ -102,7 +99,7 @@ And the following:
 ZEROTWO_IMG = "https://telegra.ph/file/3a09ae55283b69f3da197.jpg"
 
 DONATE_STRING = """Heya, glad to hear you want to donate!
- You can support the project via not available yet \
+ You can support the project by contacting @joker_hacker_6521 \
  Supporting isnt always financial! \
  Those who cannot provide monetary support are welcome to help us develop the bot at @jokers_botsupport."""
 
@@ -166,7 +163,7 @@ def send_help(chat_id, text, keyboard=None):
 
 
 @run_async
-def test(update, context):
+def test(update: Update, context: CallbackContext):
     # pprint(eval(str(update)))
     # update.effective_message.reply_text("Hola tester! _I_ *have* `markdown`", parse_mode=ParseMode.MARKDOWN)
     update.effective_message.reply_text("This person edited a message")
@@ -174,14 +171,13 @@ def test(update, context):
 
 
 @run_async
-def start(update, context):
+def start(update: Update, context: CallbackContext):
     args = context.args
     uptime = get_readable_time((time.time() - StartTime))
     if update.effective_chat.type == "private":
         if len(args) >= 1:
             if args[0].lower() == "help":
                 send_help(update.effective_chat.id, HELP_STRINGS)
-                
             elif args[0].lower().startswith("ghelp_"):
                 mod = args[0].lower().split("_", 1)[1]
                 if not HELPABLE.get(mod, False):
@@ -247,7 +243,13 @@ def start(update, context):
                                 text="🗄 Source code",
                                 url="https://github.com/jokershacker22/zerotwobot",
                             ),
-                        ],   
+                        ],
+                        [
+                            InlineKeyboardButton(
+                                text="☠️ Kaizoku Network",
+                                url="https://t.me/Kaizoku/4",
+                            ),
+                        ],
                     ],
                 ),
             )
@@ -261,7 +263,7 @@ def start(update, context):
 
 
 # for test purposes
-def error_callback(update, context):
+def error_callback(update: Update, context: CallbackContext):
     error = context.error
     try:
         raise error
@@ -356,7 +358,7 @@ def help_button(update, context):
 
 
 @run_async
-def get_help(update, context):
+def get_help(update: Update, context: CallbackContext):
     chat = update.effective_chat  # type: Optional[Chat]
     args = update.effective_message.text.split(None, 1)
 
@@ -440,7 +442,7 @@ def send_settings(chat_id, user_id, user=False):
             chat_name = dispatcher.bot.getChat(chat_id).title
             dispatcher.bot.send_message(
                 user_id,
-                text="Which module would you like to check {}'s settings for?".format(
+                text="Which module would you like to check {}'s settings for Darling?".format(
                     chat_name,
                 ),
                 reply_markup=InlineKeyboardMarkup(
@@ -457,7 +459,7 @@ def send_settings(chat_id, user_id, user=False):
 
 
 @run_async
-def settings_button(update, context):
+def settings_button(update: Update, context: CallbackContext):
     query = update.callback_query
     user = update.effective_user
     bot = context.bot
@@ -541,7 +543,7 @@ def settings_button(update, context):
 
 
 @run_async
-def get_settings(update, context):
+def get_settings(update: Update, context: CallbackContext):
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     msg = update.effective_message  # type: Optional[Message]
@@ -573,7 +575,7 @@ def get_settings(update, context):
 
 
 @run_async
-def donate(update, context):
+def donate(update: Update, context: CallbackContext):
     user = update.effective_message.from_user
     chat = update.effective_chat  # type: Optional[Chat]
     bot = context.bot
@@ -607,7 +609,7 @@ def donate(update, context):
             )
 
 
-def migrate_chats(update, context):
+def migrate_chats(update: Update, context: CallbackContext):
     msg = update.effective_message  # type: Optional[Message]
     if msg.migrate_to_chat_id:
         old_chat = update.effective_chat.id
@@ -630,7 +632,7 @@ def main():
 
     if SUPPORT_CHAT is not None and isinstance(SUPPORT_CHAT, str):
         try:
-            dispatcher.bot.sendMessage(f"@{SUPPORT_CHAT}", "I am now online!")
+            dispatcher.bot.sendMessage(f"@{SUPPORT_CHAT}", "Hey developer's I'm Now online")
         except Unauthorized:
             LOGGER.warning(
                 "Bot isnt able to send message to support_chat, go and check!",
@@ -638,10 +640,11 @@ def main():
         except BadRequest as e:
             LOGGER.warning(e.message)
 
-    start_handler = CommandHandler("start", start, pass_args=True)
+    test_handler = CommandHandler("test", test)
+    start_handler = CommandHandler("start", start)
 
     help_handler = CommandHandler("help", get_help)
-    help_callback_handler = CallbackQueryHandler(help_button, pattern=r"help_*")
+    help_callback_handler = CallbackQueryHandler(help_button, pattern=r"help_.*")
 
     settings_handler = CommandHandler("settings", get_settings)
     settings_callback_handler = CallbackQueryHandler(settings_button, pattern=r"stngs_")
@@ -671,7 +674,7 @@ def main():
 
     else:
         LOGGER.info("Using long polling.")
-        updater.start_polling(timeout=15, read_latency=4)
+        updater.start_polling(timeout=15, read_latency=4, clean=True)
 
     if len(argv) not in (1, 3, 4):
         telethn.disconnect()
@@ -684,5 +687,4 @@ def main():
 if __name__ == "__main__":
     LOGGER.info("Successfully loaded modules: " + str(ALL_MODULES))
     telethn.start(bot_token=TOKEN)
-    pbot.start()
     main()

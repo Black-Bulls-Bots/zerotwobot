@@ -13,7 +13,7 @@ DEBUG_MODE = False
 
 @run_async
 @dev_plus
-def debug(update, context):
+def debug(update: Update, context: CallbackContext):
     global DEBUG_MODE
     args = update.effective_message.text.split(None, 1)
     message = update.effective_message
@@ -54,7 +54,7 @@ support_chat = os.getenv("SUPPORT_CHAT")
 
 @run_async
 @dev_plus
-def logs(update, context):
+def logs(update: Update, context: CallbackContext):
     user = update.effective_user
     with open("log.txt", "rb") as f:
         context.bot.send_document(document=f, filename=f.name, chat_id=user.id)

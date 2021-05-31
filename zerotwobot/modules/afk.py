@@ -19,15 +19,13 @@ AFK_REPLY_GROUP = 8
 
 
 @run_async
-def afk(update, context):
+def afk(update: Update, context: CallbackContext):
     args = update.effective_message.text.split(None, 1)
     user = update.effective_user
 
     if not user:  # ignore channels
         return
 
-    if user.id in [777000, 1087968824]:
-        return
 
     notice = ""
     if len(args) >= 2:
@@ -49,7 +47,7 @@ def afk(update, context):
 
 
 @run_async
-def no_longer_afk(update, context):
+def no_longer_afk(update: Update, context: CallbackContext):
     user = update.effective_user
     message = update.effective_message
 
@@ -81,7 +79,7 @@ def no_longer_afk(update, context):
 
 
 @run_async
-def reply_afk(update, context):
+def reply_afk(update: Update, context: CallbackContext):
     bot = context.bot
     message = update.effective_message
     userc = update.effective_user
@@ -132,7 +130,7 @@ def reply_afk(update, context):
         check_afk(update, context, user_id, fst_name, userc_id)
 
 
-def check_afk(update, context, user_id: int, fst_name: str, userc_id: int):
+def check_afk(update: Update, context: CallbackContext, user_id: int, fst_name: str, userc_id: int):
     if sql.is_afk(user_id):
         user = sql.check_afk_status(user_id)
 

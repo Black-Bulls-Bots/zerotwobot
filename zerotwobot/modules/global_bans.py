@@ -74,7 +74,7 @@ UNGBAN_ERRORS = {
 
 @run_async
 @support_plus
-def gban(update, context):
+def gban(update: Update, context: CallbackContext):
     bot, args = context.bot, context.args
     message = update.effective_message
     user = update.effective_user
@@ -116,7 +116,7 @@ def gban(update, context):
         return
 
     if user_id == bot.id:
-        message.reply_text("You uhh...want me to punch myself?")
+        message.reply_text("You uhh...want me to kick myself?")
         return
 
     if user_id in [777000, 1087968824]:
@@ -276,7 +276,7 @@ def gban(update, context):
 
 @run_async
 @support_plus
-def ungban(update, context):
+def ungban(update: Update, context: CallbackContext):
     bot, args = context.bot, context.args
     message = update.effective_message
     user = update.effective_user
@@ -389,7 +389,7 @@ def ungban(update, context):
 
 @run_async
 @support_plus
-def gbanlist(update, context):
+def gbanlist(update: Update, context: CallbackContext):
     banned_users = sql.get_gban_list()
 
     if not banned_users:
@@ -452,7 +452,7 @@ def check_and_ban(update, user_id, should_message=True):
 
 
 @run_async
-def enforce_gban(update, context):
+def enforce_gban(update: Update, context: CallbackContext):
     # Not using @restrict handler to avoid spamming - just ignore if cant gban.
     bot = context.bot
     try:
@@ -483,7 +483,7 @@ def enforce_gban(update, context):
 
 @run_async
 @user_admin
-def gbanstat(update, context):
+def gbanstat(update: Update, context: CallbackContext):
     args = context.args
     if len(args) > 0:
         if args[0].lower() in ["on", "yes"]:

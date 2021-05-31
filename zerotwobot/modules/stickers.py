@@ -18,7 +18,7 @@ combot_stickers_url = "https://combot.org/telegram/stickers?q="
 
 
 @run_async
-def stickerid(update, context):
+def stickerid(update: Update, context: CallbackContext):
     msg = update.effective_message
     if msg.reply_to_message and msg.reply_to_message.sticker:
         update.effective_message.reply_text(
@@ -39,7 +39,7 @@ def stickerid(update, context):
 
 
 @run_async
-def cb_sticker(update, context):
+def cb_sticker(update: Update, context: CallbackContext):
     msg = update.effective_message
     split = msg.text.split(" ", 1)
     if len(split) == 1:
@@ -59,7 +59,7 @@ def cb_sticker(update, context):
     msg.reply_text(reply, parse_mode=ParseMode.MARKDOWN)
 
 
-def getsticker(update, context):
+def getsticker(update: Update, context: CallbackContext):
     bot = context.bot
     msg = update.effective_message
     chat_id = update.effective_chat.id
@@ -76,7 +76,7 @@ def getsticker(update, context):
 
 
 @run_async
-def kang(update, context):
+def kang(update: Update, context: CallbackContext):
     msg = update.effective_message
     user = update.effective_user
     args = context.args

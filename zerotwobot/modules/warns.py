@@ -86,7 +86,7 @@ def warn(
         if soft_warn:  # punch
             chat.unban_member(user.id)
             reply = (
-                f"<code>❕</code><b>Punch Event</b>\n"
+                f"<code>❕</code><b>Kick Event</b>\n"
                 f"<code> </code><b>•  User:</b> {mention_html(user.id, user.first_name)}\n"
                 f"<code> </code><b>•  Count:</b> {limit}"
             )
@@ -158,7 +158,7 @@ def warn(
 @user_admin_no_reply
 @bot_admin
 @loggable
-def button(update, context) -> str:
+def button(update: Update, context: CallbackContext) -> str:
     query: Optional[CallbackQuery] = update.callback_query
     user: Optional[User] = update.effective_user
     match = re.match(r"rm_warn\((.+?)\)", query.data)
@@ -190,7 +190,7 @@ def button(update, context) -> str:
 @user_admin
 @can_restrict
 @loggable
-def warn_user(update, context) -> str:
+def warn_user(update: Update, context: CallbackContext) -> str:
     args = context.args
     message: Optional[Message] = update.effective_message
     chat: Optional[Chat] = update.effective_chat
@@ -222,7 +222,7 @@ def warn_user(update, context) -> str:
 @user_admin
 @bot_admin
 @loggable
-def reset_warns(update, context) -> str:
+def reset_warns(update: Update, context: CallbackContext) -> str:
     args = context.args
     message: Optional[Message] = update.effective_message
     chat: Optional[Chat] = update.effective_chat
@@ -246,7 +246,7 @@ def reset_warns(update, context) -> str:
 
 
 @run_async
-def warns(update, context):
+def warns(update: Update, context: CallbackContext):
     args = context.args
     message: Optional[Message] = update.effective_message
     chat: Optional[Chat] = update.effective_chat
@@ -277,7 +277,7 @@ def warns(update, context):
 
 # Dispatcher handler stop - do not async
 @user_admin
-def add_warn_filter(update, context):
+def add_warn_filter(update: Update, context: CallbackContext):
     chat: Optional[Chat] = update.effective_chat
     msg: Optional[Message] = update.effective_message
 
@@ -310,7 +310,7 @@ def add_warn_filter(update, context):
 
 
 @user_admin
-def remove_warn_filter(update, context):
+def remove_warn_filter(update: Update, context: CallbackContext):
     chat: Optional[Chat] = update.effective_chat
     msg: Optional[Message] = update.effective_message
 
@@ -346,7 +346,7 @@ def remove_warn_filter(update, context):
 
 
 @run_async
-def list_warn_filters(update, context):
+def list_warn_filters(update: Update, context: CallbackContext):
     chat: Optional[Chat] = update.effective_chat
     all_handlers = sql.get_chat_warn_triggers(chat.id)
 
@@ -369,7 +369,7 @@ def list_warn_filters(update, context):
 
 @run_async
 @loggable
-def reply_filter(update, context) -> str:
+def reply_filter(update: Update, context: CallbackContext) -> str:
     chat: Optional[Chat] = update.effective_chat
     message: Optional[Message] = update.effective_message
     user: Optional[User] = update.effective_user
@@ -398,7 +398,7 @@ def reply_filter(update, context) -> str:
 @run_async
 @user_admin
 @loggable
-def set_warn_limit(update, context) -> str:
+def set_warn_limit(update: Update, context: CallbackContext) -> str:
     args = context.args
     chat: Optional[Chat] = update.effective_chat
     user: Optional[User] = update.effective_user
@@ -428,7 +428,7 @@ def set_warn_limit(update, context) -> str:
 
 @run_async
 @user_admin
-def set_warn_strength(update, context):
+def set_warn_strength(update: Update, context: CallbackContext):
     args = context.args
     chat: Optional[Chat] = update.effective_chat
     user: Optional[User] = update.effective_user
@@ -441,18 +441,18 @@ def set_warn_strength(update, context):
             return (
                 f"<b>{html.escape(chat.title)}:</b>\n"
                 f"<b>Admin:</b> {mention_html(user.id, user.first_name)}\n"
-                f"Has enabled strong warns. Users will be seriously punched.(banned)"
+                f"Has enabled strong warns. Users will be seriously Kicked.(banned)"
             )
 
         elif args[0].lower() in ("off", "no"):
             sql.set_warn_strength(chat.id, True)
             msg.reply_text(
-                "Too many warns will now result in a normal punch! Users will be able to join again after.",
+                "Too many warns will now result in a normal Kick! Users will be able to join again after.",
             )
             return (
                 f"<b>{html.escape(chat.title)}:</b>\n"
                 f"<b>Admin:</b> {mention_html(user.id, user.first_name)}\n"
-                f"Has disabled strong punches. I will use normal punch on users."
+                f"Has disabled strong Kicks. I will use normal kick on users."
             )
 
         else:
@@ -461,7 +461,7 @@ def set_warn_strength(update, context):
         limit, soft_warn = sql.get_warn_setting(chat.id)
         if soft_warn:
             msg.reply_text(
-                "Warns are currently set to *punch* users when they exceed the limits.",
+                "Warns are currently set to *kick* users when they exceed the limits.",
                 parse_mode=ParseMode.MARKDOWN,
             )
         else:
@@ -510,7 +510,7 @@ __help__ = """
 be a sentence, encompass it with quotes, as such: `/addwarn "very angry" This is an angry user`.
  • `/nowarn <keyword>`*:* stop a warning filter
  • `/warnlimit <num>`*:* set the warning limit
- • `/strongwarn <on/yes/off/no>`*:* If set to on, exceeding the warn limit will result in a ban. Else, will just punch.
+ • `/strongwarn <on/yes/off/no>`*:* If set to on, exceeding the warn limit will result in a ban. Else, will just kick.
 """
 
 __mod_name__ = "Warnings"

@@ -9,7 +9,7 @@ from telegram.ext.dispatcher import run_async
 
 @dev_plus
 @run_async
-def shell(update, context):
+def shell(update: Update, context: CallbackContext):
     message = update.effective_message
     cmd = message.text.split(" ", 1)
     if len(cmd) == 1:

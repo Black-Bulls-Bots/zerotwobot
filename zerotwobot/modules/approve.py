@@ -137,7 +137,7 @@ def approval(update, context):
 
 
 @run_async
-def unapproveall(update, context):
+def unapproveall(update: Update, context: CallbackContext):
     chat = update.effective_chat
     user = update.effective_user
     member = chat.get_member(user.id)
@@ -168,7 +168,7 @@ def unapproveall(update, context):
 
 
 @run_async
-def unapproveall_btn(update, context):
+def unapproveall_btn(update: Update, context: CallbackContext):
     query = update.callback_query
     chat = update.effective_chat
     message = update.effective_message

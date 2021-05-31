@@ -34,7 +34,7 @@ Keep in mind that your message <b>MUST</b> contain some text other than just a b
 
 @run_async
 @user_admin
-def echo(update, context):
+def echo(update: Update, context: CallbackContext):
     args = update.effective_message.text.split(None, 1)
     message = update.effective_message
 
@@ -62,7 +62,7 @@ def markdown_help_sender(update: Update):
 
 
 @run_async
-def markdown_help(update, context):
+def markdown_help(update: Update, context: CallbackContext):
     if update.effective_chat.type != "private":
         update.effective_message.reply_text(
             "Contact me in pm",

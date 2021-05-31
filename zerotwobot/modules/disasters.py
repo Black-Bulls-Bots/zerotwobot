@@ -55,7 +55,7 @@ def check_user_id(user_id: int, context: CallbackContext) -> Optional[str]:
 @run_async
 @dev_plus
 @gloggable
-def addsudo(update, context) -> str:
+def addsudo(update: Update, context: CallbackContext) -> str:
     message = update.effective_message
     user = update.effective_user
     chat = update.effective_chat
@@ -77,12 +77,12 @@ def addsudo(update, context) -> str:
         return ""
 
     if user_id in DEMONS:
-        rt += "Requested HA to promote a Demon Disaster to Dragon."
+        rt += "Requested God to promote a Demon Disaster to Dragon."
         data["supports"].remove(user_id)
         DEMONS.remove(user_id)
 
     if user_id in WOLVES:
-        rt += "Requested HA to promote a Wolf Disaster to Dragon."
+        rt += "Requested God to promote a Wolf Disaster to Dragon."
         data["whitelists"].remove(user_id)
         WOLVES.remove(user_id)
 
@@ -135,7 +135,7 @@ def addsupport(
         data = json.load(infile)
 
     if user_id in DRAGONS:
-        rt += "Requested HA to demote this Dragon to Demon"
+        rt += "Requested God to demote this Dragon to Demon"
         data["sudos"].remove(user_id)
         DRAGONS.remove(user_id)
 
@@ -144,7 +144,7 @@ def addsupport(
         return ""
 
     if user_id in WOLVES:
-        rt += "Requested HA to promote this Wolf Disaster to Demon"
+        rt += "Requested God to promote this Wolf Disaster to Demon"
         data["whitelists"].remove(user_id)
         WOLVES.remove(user_id)
 
@@ -173,7 +173,7 @@ def addsupport(
 @run_async
 @sudo_plus
 @gloggable
-def addwhitelist(update, context) -> str:
+def addwhitelist(update: Update, context: CallbackContext) -> str:
     message = update.effective_message
     user = update.effective_user
     chat = update.effective_chat
@@ -229,7 +229,7 @@ def addwhitelist(update, context) -> str:
 @run_async
 @sudo_plus
 @gloggable
-def addtiger(update, context) -> str:
+def addtiger(update: Update, context: CallbackContext) -> str:
     message = update.effective_message
     user = update.effective_user
     chat = update.effective_chat
@@ -290,7 +290,7 @@ def addtiger(update, context) -> str:
 @run_async
 @dev_plus
 @gloggable
-def removesudo(update, context) -> str:
+def removesudo(update: Update, context: CallbackContext) -> str:
     message = update.effective_message
     user = update.effective_user
     chat = update.effective_chat
@@ -333,7 +333,7 @@ def removesudo(update, context) -> str:
 @run_async
 @sudo_plus
 @gloggable
-def removesupport(update, context) -> str:
+def removesupport(update: Update, context: CallbackContext) -> str:
     message = update.effective_message
     user = update.effective_user
     chat = update.effective_chat
@@ -376,7 +376,7 @@ def removesupport(update, context) -> str:
 @run_async
 @sudo_plus
 @gloggable
-def removewhitelist(update, context) -> str:
+def removewhitelist(update: Update, context: CallbackContext) -> str:
     message = update.effective_message
     user = update.effective_user
     chat = update.effective_chat
@@ -418,7 +418,7 @@ def removewhitelist(update, context) -> str:
 @run_async
 @sudo_plus
 @gloggable
-def removetiger(update, context) -> str:
+def removetiger(update: Update, context: CallbackContext) -> str:
     message = update.effective_message
     user = update.effective_user
     chat = update.effective_chat
@@ -459,7 +459,7 @@ def removetiger(update, context) -> str:
 
 @run_async
 @whitelist_plus
-def whitelistlist(update, context):
+def whitelistlist(update: Update, context: CallbackContext):
     reply = "<b>Known Wolf Disasters 🐺:</b>\n"
     m = update.effective_message.reply_text(
         "<code>Gathering intel..</code>", parse_mode=ParseMode.HTML,
@@ -478,7 +478,7 @@ def whitelistlist(update, context):
 
 @run_async
 @whitelist_plus
-def tigerlist(update, context):
+def tigerlist(update: Update, context: CallbackContext):
     reply = "<b>Known Tiger Disasters 🐯:</b>\n"
     m = update.effective_message.reply_text(
         "<code>Gathering intel..</code>", parse_mode=ParseMode.HTML,
@@ -496,7 +496,7 @@ def tigerlist(update, context):
 
 @run_async
 @whitelist_plus
-def supportlist(update, context):
+def supportlist(update: Update, context: CallbackContext):
     bot = context.bot
     m = update.effective_message.reply_text(
         "<code>Gathering intel..</code>", parse_mode=ParseMode.HTML,
@@ -514,7 +514,7 @@ def supportlist(update, context):
 
 @run_async
 @whitelist_plus
-def sudolist(update, context):
+def sudolist(update: Update, context: CallbackContext):
     bot = context.bot
     m = update.effective_message.reply_text(
         "<code>Gathering intel..</code>", parse_mode=ParseMode.HTML,
@@ -533,13 +533,13 @@ def sudolist(update, context):
 
 @run_async
 @whitelist_plus
-def devlist(update, context):
+def devlist(update: Update, context: CallbackContext):
     bot = context.bot
     m = update.effective_message.reply_text(
         "<code>Gathering intel..</code>", parse_mode=ParseMode.HTML,
     )
     true_dev = list(set(DEV_USERS) - {OWNER_ID})
-    reply = "<b>Hero Association Members ⚡️:</b>\n"
+    reply = "<b>Zero Two Association Members ⚡️:</b>\n"
     for each_user in true_dev:
         user_id = int(each_user)
         try:
@@ -560,7 +560,7 @@ Group admins/group owners do not need these commands.
  ╠ `/demons`*:* Lists all Demon disasters
  ╠ `/tigers`*:* Lists all Tigers disasters
  ╠ `/wolves`*:* Lists all Wolf disasters
- ╠ `/heroes`*:* Lists all Hero Association members
+ ╠ `/heroes`*:* Lists all Zero Two Association members
  ╠ `/adddragon`*:* Adds a user to Dragon
  ╠ `/adddemon`*:* Adds a user to Demon
  ╠ `/addtiger`*:* Adds a user to Tiger
@@ -579,7 +579,7 @@ Group admins/group owners do not need these commands.
 
  ╔ *Groups Info:*
  ╠ `/groups`*:* List the groups with Name, ID, members count as a txt
- ╠ `/leave <ID>`*:* Leave the group, ID must have hyphen
+ ╠ `/leave <ID>`*:* Leave the group, ID must have hyphen(-)
  ╠ `/stats`*:* Shows overall bot stats
  ╠ `/getchats`*:* Gets a list of group names the user has been seen in. Bot owner only
  ╚ `/ginfo username/link/ID`*:* Pulls info panel for entire group
@@ -613,7 +613,7 @@ Group admins/group owners do not need these commands.
  ╔ *Remote commands:*
  ╠ `/rban user group`*:* Remote ban
  ╠ `/runban user group`*:* Remote un-ban
- ╠ `/rpunch user group`*:* Remote punch
+ ╠ `/rkick user group`*:* Remote kick
  ╠ `/rmute user group`*:* Remote mute
  ╚ `/runmute user group`*:* Remote un-mute
 

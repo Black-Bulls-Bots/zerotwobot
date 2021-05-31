@@ -37,7 +37,7 @@ class ErrorsDict(dict):
 errors = ErrorsDict()
 
 
-def error_callback(update, context):
+def error_callback(update: Update, context: CallbackContext):
     if not update:
         return
     if context.error in errors:
@@ -101,7 +101,7 @@ def error_callback(update, context):
     )
 
 
-def list_errors(update, context):
+def list_errors(update: Update, context: CallbackContext):
     if update.effective_user.id not in DEV_USERS:
         return
     e = {

@@ -50,7 +50,7 @@ if is_module_loaded(FILENAME):
 
     def gloggable(func):
         @wraps(func)
-        def glog_action(update, context, *args, **kwargs):
+        def glog_action(update: Update, context: CallbackContext, *args, **kwargs):
             result = func(update, context, *args, **kwargs)
             chat = update.effective_chat
             message = update.effective_message
@@ -101,7 +101,7 @@ if is_module_loaded(FILENAME):
 
     @run_async
     @user_admin
-    def logging(update, context):
+    def logging(update: Update, context: CallbackContext):
         bot = context.bot
         message = update.effective_message
         chat = update.effective_chat
@@ -120,7 +120,7 @@ if is_module_loaded(FILENAME):
 
     @run_async
     @user_admin
-    def setlog(update, context):
+    def setlog(update: Update, context: CallbackContext):
         bot = context.bot
         message = update.effective_message
         chat = update.effective_chat
@@ -164,7 +164,7 @@ if is_module_loaded(FILENAME):
 
     @run_async
     @user_admin
-    def unsetlog(update, context):
+    def unsetlog(update: Update, context: CallbackContext):
         bot = context.bot
         message = update.effective_message
         chat = update.effective_chat

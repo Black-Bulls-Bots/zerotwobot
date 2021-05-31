@@ -8,7 +8,7 @@ from zerotwobot.modules.disable import DisableAbleCommandHandler
 
 
 @run_async
-def totranslate(update, context):
+def totranslate(update: Update, context: CallbackContext):
     message = update.effective_message
     problem_lang_code = []
     for key in LANGUAGES:

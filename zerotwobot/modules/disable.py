@@ -133,7 +133,7 @@ if is_module_loaded(FILENAME):
     @run_async
     @connection_status
     @user_admin
-    def disable(update, context):
+    def disable(update: Update, context: CallbackContext):
         args = context.args
         chat = update.effective_chat
         if len(args) >= 1:
@@ -156,7 +156,7 @@ if is_module_loaded(FILENAME):
     @run_async
     @connection_status
     @user_admin
-    def disable_module(update, context):
+    def disable_module(update: Update, context: CallbackContext):
         args = context.args
         chat = update.effective_chat
         if len(args) >= 1:
@@ -209,7 +209,7 @@ if is_module_loaded(FILENAME):
     @run_async
     @connection_status
     @user_admin
-    def enable(update, context):
+    def enable(update: Update, context: CallbackContext):
         args = context.args
         chat = update.effective_chat
         if len(args) >= 1:
@@ -230,7 +230,7 @@ if is_module_loaded(FILENAME):
     @run_async
     @connection_status
     @user_admin
-    def enable_module(update, context):
+    def enable_module(update: Update, context: CallbackContext):
         args = context.args
         chat = update.effective_chat
 
@@ -283,7 +283,7 @@ if is_module_loaded(FILENAME):
     @run_async
     @connection_status
     @user_admin
-    def list_cmds(update, context):
+    def list_cmds(update: Update, context: CallbackContext):
         if DISABLE_CMDS + DISABLE_OTHER:
             result = ""
             for cmd in set(DISABLE_CMDS + DISABLE_OTHER):
@@ -308,7 +308,7 @@ if is_module_loaded(FILENAME):
 
     @run_async
     @connection_status
-    def commands(update, context):
+    def commands(update: Update, context: CallbackContext):
         chat = update.effective_chat
         update.effective_message.reply_text(
             build_curr_disabled(chat.id), parse_mode=ParseMode.MARKDOWN,

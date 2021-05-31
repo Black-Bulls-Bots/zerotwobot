@@ -6,7 +6,7 @@ from telegram.ext import CallbackContext, run_async
 
 
 @run_async
-def ud(update, context):
+def ud(update: Update, context: CallbackContext):
     message = update.effective_message
     text = message.text[len("/ud ") :]
     results = requests.get(

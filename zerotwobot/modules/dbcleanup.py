@@ -14,7 +14,7 @@ from telegram.ext import (
 )
 
 
-def get_invalid_chats(update, context, remove: bool = False):
+def get_invalid_chats(update: Update, context: CallbackContext, remove: bool = False):
     bot = context.bot
     chat_id = update.effective_chat.id
     chats = user_sql.get_all_chats()
@@ -61,7 +61,7 @@ def get_invalid_chats(update, context, remove: bool = False):
         return kicked_chats
 
 
-def get_invalid_gban(update, context, remove: bool = False):
+def get_invalid_gban(update: Update, context: CallbackContext, remove: bool = False):
     bot = context.bot
     banned = gban_sql.get_gban_list()
     ungbanned_users = 0
@@ -89,7 +89,7 @@ def get_invalid_gban(update, context, remove: bool = False):
 
 @run_async
 @dev_plus
-def dbcleanup(update, context):
+def dbcleanup(update: Update, context: CallbackContext):
     msg = update.effective_message
 
     msg.reply_text("Getting invalid chat count ...")
@@ -109,7 +109,7 @@ def dbcleanup(update, context):
 
 
 @run_async
-def callback_button(update, context):
+def callback_button(update: Update, context: CallbackContext):
     bot = context.bot
     query = update.callback_query
     message = query.message

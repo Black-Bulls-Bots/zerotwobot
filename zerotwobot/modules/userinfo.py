@@ -32,7 +32,7 @@ from zerotwobot.modules.sql.afk_sql import is_afk, check_afk_status
 from zerotwobot.modules.sql.users_sql import get_user_num_chats
 from zerotwobot.modules.helper_funcs.chat_status import sudo_plus
 from zerotwobot.modules.helper_funcs.extraction import extract_user
-from zerotwobot import telethn as SaitamaTelethonClient
+from zerotwobot import telethn as ZerotwoTelethonClient
 
 
 def no_by_per(totalhp, percentage):
@@ -118,7 +118,7 @@ def make_bar(per):
 
 
 @run_async
-def get_id(update, context):
+def get_id(update: Update, context: CallbackContext):
     bot, args = context.bot, context.args
     message = update.effective_message
     chat = update.effective_chat
@@ -160,7 +160,7 @@ def get_id(update, context):
             )
 
 
-@SaitamaTelethonClient.on(
+@ZerotwoTelethonClient.on(
     events.NewMessage(
         pattern="/ginfo ", from_users=(TIGERS or []) + (DRAGONS or []) + (DEMONS or []),
     ),
@@ -199,7 +199,7 @@ async def group_info(event) -> None:
 
 
 @run_async
-def gifid(update, context):
+def gifid(update: Update, context: CallbackContext):
     msg = update.effective_message
     if msg.reply_to_message and msg.reply_to_message.animation:
         update.effective_message.reply_text(
@@ -211,7 +211,7 @@ def gifid(update, context):
 
 
 @run_async
-def info(update, context):
+def info(update: Update, context: CallbackContext):
     bot, args = context.bot, context.args
     message = update.effective_message
     chat = update.effective_chat
@@ -290,7 +290,7 @@ def info(update, context):
         text += "\n\nThe Disaster level of this person is 'God'."
         disaster_level_present = True
     elif user.id in DEV_USERS:
-        text += "\n\nThis user is member of 'Hero Association'."
+        text += "\n\nThis user is member of 'Zero Two Association'."
         disaster_level_present = True
     elif user.id in DRAGONS:
         text += "\n\nThe Disaster level of this person is 'Dragon'."
@@ -360,7 +360,7 @@ def info(update, context):
 
 
 @run_async
-def about_me(update, context):
+def about_me(update: Update, context: CallbackContext):
     bot, args = context.bot, context.args
     message = update.effective_message
     user_id = extract_user(message, args)
@@ -388,7 +388,7 @@ def about_me(update, context):
 
 
 @run_async
-def set_about_me(update, context):
+def set_about_me(update: Update, context: CallbackContext):
     message = update.effective_message
     user_id = message.from_user.id
     if user_id in [777000, 1087968824]:
@@ -421,14 +421,14 @@ def set_about_me(update, context):
 
 @run_async
 @sudo_plus
-def stats(update, context):
+def stats(update: Update, context: CallbackContext):
     stats = "<b>📊 Current stats:</b>\n" + "\n".join([mod.__stats__() for mod in STATS])
     result = re.sub(r"(\d+)", r"<code>\1</code>", stats)
     update.effective_message.reply_text(result, parse_mode=ParseMode.HTML)
 
 
 @run_async
-def about_bio(update, context):
+def about_bio(update: Update, context: CallbackContext):
     bot, args = context.bot, context.args
     message = update.effective_message
 
@@ -458,7 +458,7 @@ def about_bio(update, context):
 
 
 @run_async
-def set_about_bio(update, context):
+def set_about_bio(update: Update, context: CallbackContext):
     message = update.effective_message
     sender_id = update.effective_user.id
     bot = context.bot
@@ -479,7 +479,7 @@ def set_about_bio(update, context):
 
         if user_id == bot.id and sender_id not in DEV_USERS:
             message.reply_text(
-                "Erm... yeah, I only trust Heroes Association to set my bio.",
+                "Erm... yeah, I only trust Zero Two Association to set my bio.",
             )
             return
 

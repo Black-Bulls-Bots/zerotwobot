@@ -18,7 +18,7 @@ from telegram.utils.helpers import escape_markdown
 
 
 @run_async
-def get_rules(update, context):
+def get_rules(update: Update, context: CallbackContext):
     chat_id = update.effective_chat.id
     send_rules(update, chat_id)
 
@@ -89,7 +89,7 @@ def send_rules(update, chat_id, from_pm=False):
 
 @run_async
 @user_admin
-def set_rules(update, context):
+def set_rules(update: Update, context: CallbackContext):
     chat_id = update.effective_chat.id
     msg = update.effective_message  # type: Optional[Message]
     raw_text = msg.text
@@ -107,7 +107,7 @@ def set_rules(update, context):
 
 @run_async
 @user_admin
-def clear_rules(update, context):
+def clear_rules(update: Update, context: CallbackContext):
     chat_id = update.effective_chat.id
     sql.set_rules(chat_id, "")
     update.effective_message.reply_text("Successfully cleared rules!")

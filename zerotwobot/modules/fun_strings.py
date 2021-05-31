@@ -25,7 +25,7 @@ GIFS = [
     "CgACAgUAAx0CU_rCTAABAjdSX1s3fq5iEJ64YeQLKI8cD7CSuSEAAlUBAAJu09hW5iqWB0hTPD4bBA",
 ]
 
-SLAP_SAITAMA_TEMPLATES = (
+SLAP_ZEROTWO_TEMPLATES = (
     "Slap me one more time and I'll mute you.",
     "Stop slapping me. REEEEEEEEEEEEEE.",
     [
@@ -67,7 +67,7 @@ SLAP_TEMPLATES = (
     "{user1} {hits} {user2} with a bat!.",
     "{user1} {hits} {user2} with a Taijutsu Kick!.",
     "{user1} {hits} {user2} with X-Gloves!.",
-    "{user1} {hits} {user2} with a Jet Punch!.",
+    "{user1} {hits} {user2} with a Jet kick!.",
     "{user1} {hits} {user2} with a Jet Pistol!.",
     "{user1} {hits} {user2} with a United States of Smash!.",
     "{user1} {hits} {user2} with a Detroit Smash!.",
@@ -78,10 +78,10 @@ SLAP_TEMPLATES = (
     "{user1} {hits} {user2} with a Carolina Smash!.",
     "{user1} {hits} {user2} with a King Kong Gun!.",
     "{user1} {hits} {user2} with a baseball bat - metal one.!.",
-    "*Serious punches {user2}*.",
-    "*Normal punches {user2}*.",
-    "*Consecutive Normal punches {user2}*.",
-    "*Two Handed Consecutive Normal Punches {user2}*.",
+    "*Serious kicks {user2}*.",
+    "*Normal kicks {user2}*.",
+    "*Consecutive Normal kicks {user2}*.",
+    "*Two Handed Consecutive Normal kicks {user2}*.",
     "*Ignores {user2} to let them die of embarassment*.",
     "*points at {user2}* What's with this sassy... lost child?.",
     "*Hits {user2} with a Fire Tornado*.",

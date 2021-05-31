@@ -7,7 +7,7 @@ from wikipedia.exceptions import DisambiguationError, PageError
 
 
 @run_async
-def wiki(update, context):
+def wiki(update: Update, context: CallbackContext):
     msg = (
         update.effective_message.reply_to_message
         if update.effective_message.reply_to_message

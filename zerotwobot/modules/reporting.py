@@ -22,7 +22,7 @@ REPORT_IMMUNE_USERS = DRAGONS + TIGERS + WOLVES
 
 @run_async
 @user_admin
-def report_setting(update, context):
+def report_setting(update: Update, context: CallbackContext):
     bot, args = context.bot, context.args
     chat = update.effective_chat
     msg = update.effective_message
@@ -68,7 +68,7 @@ def report_setting(update, context):
 @run_async
 @user_not_admin
 @loggable
-def report(update, context) -> str:
+def report(update: Update, context: CallbackContext) -> str:
     bot = context.bot
     args = context.args
     message = update.effective_message
@@ -220,7 +220,7 @@ def __user_settings__(user_id):
     return text
 
 
-def buttons(update, context):
+def buttons(update: Update, context: CallbackContext):
     bot = context.bot
     query = update.callback_query
     splitter = query.data.replace("report_", "").split("=")
@@ -231,7 +231,7 @@ def buttons(update, context):
             query.answer("✅ Succesfully kicked")
             return ""
         except Exception as err:
-            query.answer("🛑 Failed to Punch")
+            query.answer("🛑 Failed to kick")
             bot.sendMessage(
                 text=f"Error: {err}",
                 chat_id=query.message.chat_id,
