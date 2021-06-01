@@ -84,9 +84,8 @@ if ENV:
     SPAMWATCH_API = os.environ.get("SPAMWATCH_API", None)
 
     ALLOW_CHATS = os.environ.get("ALLOW_CHATS", True)
-    DB_URI1 = os.environ.get("DATABASE_URL")
-    if DB_URI1.startswith("postres://"):
-        DB_URI = DB_URI1.replace("postgres://", "postgresql://")
+    DB_URI = os.environ.get("DATABASE_URL")
+
 
     try:
         BL_CHATS = set(int(x) for x in os.environ.get("BL_CHATS", "").split())
