@@ -20,5 +20,10 @@ zerotwobot/elevated_users.json
 #remove vscode files if it exists
 **vscode
 
+<<<<<<< HEAD
 testing.py 
+=======
+testing.py
+
+>>>>>>> e3cca73 (update /start and /help contents)
 **pyc
