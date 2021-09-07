@@ -71,8 +71,9 @@ def get_readable_time(seconds: int) -> str:
 
 
 PM_START_TEXT = """
-Hey {} Darling, I'm {}!
-I am 002 specially made to manage your group better than anyone around the telegram.
+Hey There {}. I'm so glad that you came to me.
+I'm {}, made specifically to manage your group 
+and have more fun than ever.
 Type /help to get available commands.
 """
 
@@ -237,7 +238,7 @@ def start(update: Update, context: CallbackContext):
                         [
                             InlineKeyboardButton(
                                 text="🧾 Getting Started",
-                                url="https://t.me/OnePunchUpdates/29",
+                                url="https://t.me/jokers_botupdates/4",
                             ),
                             InlineKeyboardButton(
                                 text="🗄 Source code",
@@ -246,8 +247,8 @@ def start(update: Update, context: CallbackContext):
                         ],
                         [
                             InlineKeyboardButton(
-                                text="☠️ Kaizoku Network",
-                                url="https://t.me/Kaizoku/4",
+                                text="🃏 Clown Sec",
+                                url="https://t.me/okatu_gang",
                             ),
                         ],
                     ],
