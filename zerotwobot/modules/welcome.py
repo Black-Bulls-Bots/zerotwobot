@@ -37,7 +37,6 @@ from telegram import (
     InlineKeyboardMarkup,
     ParseMode,
     Update,
-    parsemode,
 )
 from telegram.error import BadRequest
 from telegram.ext import (
@@ -200,7 +199,7 @@ def new_member(update: Update, context: CallbackContext):
             # Give the owner a special welcome
             if new_mem.id == OWNER_ID:
                 update.effective_message.reply_text(
-                    "Oh, Darling I have searched for you everywhere", reply_to_message_id=reply,
+                    "Oh, Genos? Let's get this moving.", reply_to_message_id=reply,
                 )
                 welcome_log = (
                     f"{html.escape(chat.title)}\n"
@@ -275,21 +274,17 @@ def new_member(update: Update, context: CallbackContext):
             # Welcome yourself
             elif new_mem.id == bot.id:
                 creator = None
-                for x in bot.get_chat_administrators(update.effective_chat.id):
+                for x in bot.bot.get_chat_administrators(update.effective_chat.id):
                     if x.status == "creator":
                         creator = x.user
                         break
                 if creator:
                     bot.send_message(
                         JOIN_LOGGER,
-                        f"""
-                        \\#NEWGROUP \
-                        \nGroup Name:   **\\{chat.title}** \
-                        \nID:   `\\{chat.id}` \
-                        \nCreator ID:   `\\{creator.id}` \
-                        \nCreator ID:   \{creator.username} \
-                        """,
-                        parse_mode=ParseMode.MARKDOWN_V2,
+                        "#NEW_GROUP\n<b>Group name:</b> {}\n<b>ID:</b> <code>{}</code>\n<b>Creator:</b> <code>{}</code>".format(
+                            html.escape(chat.title), chat.id, html.escape(creator),
+                        ),
+                        parse_mode=ParseMode.HTML,
                     )
                 else:
                     bot.send_message(
@@ -300,7 +295,7 @@ def new_member(update: Update, context: CallbackContext):
                         parse_mode=ParseMode.HTML,
                     )
                 update.effective_message.reply_text(
-                    "I feel like I'm gonna suffocate in here.", reply_to_message_id=reply,
+                    "Watashi ga kita!", reply_to_message_id=reply,
                 )
                 continue
 

@@ -19,7 +19,3 @@ zerotwobot/elevated_users.json
 
 #remove vscode files if it exists
 **vscode
-
-testing.py
-
-**pyc
