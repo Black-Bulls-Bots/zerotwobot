@@ -7,8 +7,6 @@
 #remove config.py
 zerotwobot/config.py
 
-#remove elevates_users.json
-zerotwobot/elevated_users.json
 
 #remove log files
 *log.txt
