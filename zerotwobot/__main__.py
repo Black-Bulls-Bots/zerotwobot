@@ -248,7 +248,7 @@ def start(update: Update, context: CallbackContext):
                         [
                             InlineKeyboardButton(
                                 text="🃏 Clown Sec",
-                                url="https://t.me/okatu_gang",
+                                url="https:trendinganime.in".
                             ),
                         ],
                     ],
