@@ -247,7 +247,7 @@ def start(update: Update, context: CallbackContext):
                         ],
                         [
                             InlineKeyboardButton(
-                                text="🃏 Clown Sec",
+                                text="🃏 Trending Anime",
                                 url="https:trendinganime.in",
                             ),
                         ],
