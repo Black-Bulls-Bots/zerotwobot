@@ -242,13 +242,13 @@ def start(update: Update, context: CallbackContext):
                             ),
                             InlineKeyboardButton(
                                 text="🗄 Source code",
-                                url="https://github.com/jokershacker22/zerotwobot",
+                                url="https://github.com/ishnaji/zerotwobot",
                             ),
                         ],
                         [
                             InlineKeyboardButton(
-                                text="🃏 Trending Anime",
-                                url="https:trendinganime.in",
+                                text="Trending Anime",
+                                url="https://trendinganime.in",
                             ),
                         ],
                     ],
