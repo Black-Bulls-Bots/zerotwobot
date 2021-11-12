@@ -3,7 +3,7 @@ import re
 from typing import Optional
 
 import telegram
-from zerotwobot import TIGERS, WOLVES, dispatcher
+from zerotwobot import TIGERS, WOLVES, dispatcher, BAN_STICKER
 from zerotwobot.modules.disable import DisableAbleCommandHandler
 from zerotwobot.modules.helper_funcs.chat_status import (
     bot_admin,
@@ -102,7 +102,7 @@ def warn(
         for warn_reason in reasons:
             reply += f"\n - {html.escape(warn_reason)}"
 
-        # message.bot.send_sticker(chat.id, BAN_STICKER)  # Saitama's sticker
+        message.bot.send_sticker(chat.id, BAN_STICKER)  # Saitama's sticker
         keyboard = None
         log_reason = (
             f"<b>{html.escape(chat.title)}:</b>\n"
