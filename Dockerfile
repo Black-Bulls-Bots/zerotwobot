@@ -1,10 +1,10 @@
-FROM python:3.9-slim-buster
+FROM jokerhacker/zerotwo-python:latest
 
-WORKDIR /bot
+RUN  git clone https://github.com/Black-Bulls-Bots/zerotwobot -b main  /root/zerotwo
+RUN  mkdir  /root/zerotwo/bin/
+WORKDIR /root/zerotwo/
 
-COPY requirements.txt requirements.txt
+COPY  ./zerotwobot/elevated_users.json* ./zerotwobot/config.py* /root/zerotwo/zerotwobot/
 RUN pip3 install -r requirements.txt
 
-COPY . .
-
-CMD ["python3', "-m", "zerotwobot"]
+CMD ["python3", "-m", "zerotwobot"]
