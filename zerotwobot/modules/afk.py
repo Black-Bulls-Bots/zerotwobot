@@ -39,9 +39,15 @@ def afk(update: Update, context: CallbackContext):
     sql.set_afk(update.effective_user.id, reason)
     fname = update.effective_user.first_name
     try:
-        update.effective_message.reply_text(
-            "{} is now away!{}".format(fname, notice),
-        )
+        if reason:
+            update.effective_message.reply_text(
+                f"{fname} is now away! \nReason: <code>{reason}</code> \n {notice}",
+                parse_mode="html"
+            )
+        else:
+                update.effective_message.reply_text(
+                "{} is now away!{}".format(fname, notice),
+            )   
     except BadRequest:
         pass
 
