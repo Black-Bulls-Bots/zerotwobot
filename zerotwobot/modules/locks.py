@@ -1,9 +1,9 @@
 import html
 
-from telegram import Message, Chat, ParseMode, MessageEntity
+from telegram import Message, Chat, ParseMode, MessageEntity, Update
 from telegram import TelegramError, ChatPermissions
 from telegram.error import BadRequest
-from telegram.ext import CommandHandler, MessageHandler, Filters
+from telegram.ext import CommandHandler, MessageHandler, Filters, CallbackContext
 from telegram.ext.dispatcher import run_async
 from telegram.utils.helpers import mention_html
 
@@ -131,8 +131,8 @@ def unrestr_members(
             pass
 
 
-@run_async
-def locktypes(update, context):
+
+def locktypes(update: Update, context: CallbackContext):
     update.effective_message.reply_text(
         "\n • ".join(
             ["Locks available: "]
@@ -141,11 +141,11 @@ def locktypes(update, context):
     )
 
 
-@run_async
+
 @user_admin
 @loggable
 @typing_action
-def lock(update, context) -> str:
+def lock(update: Update, context: CallbackContext) -> str:
     args = context.args
     chat = update.effective_chat
     user = update.effective_user
@@ -249,11 +249,11 @@ def lock(update, context) -> str:
     return ""
 
 
-@run_async
+
 @user_admin
 @loggable
 @typing_action
-def unlock(update, context) -> str:
+def unlock(update: Update, context: CallbackContext) -> str:
     args = context.args
     chat = update.effective_chat
     user = update.effective_user
@@ -355,9 +355,9 @@ def unlock(update, context) -> str:
     return ""
 
 
-@run_async
+
 @user_not_admin
-def del_lockables(update, context):
+def del_lockables(update: Update, context: CallbackContext):
     chat = update.effective_chat  # type: Optional[Chat]
     message = update.effective_message  # type: Optional[Message]
     user = update.effective_user
@@ -495,10 +495,10 @@ def build_lock_message(chat_id):
     return res
 
 
-@run_async
+
 @user_admin
 @typing_action
-def list_locks(update, context):
+def list_locks(update: Update, context: CallbackContext):
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user
 
@@ -587,12 +587,12 @@ Locking bots will stop non-admins from adding bots to the chat.
 
 __mod_name__ = "Locks"
 
-LOCKTYPES_HANDLER = DisableAbleCommandHandler("locktypes", locktypes)
-LOCK_HANDLER = CommandHandler("lock", lock, pass_args=True)  # , filters=Filters.chat_type.groups)
+LOCKTYPES_HANDLER = DisableAbleCommandHandler("locktypes", locktypes, run_async=True)
+LOCK_HANDLER = CommandHandler("lock", lock, pass_args=True, run_async=True)  # , filters=Filters.chat_type.groups)
 UNLOCK_HANDLER = CommandHandler(
-    "unlock", unlock, pass_args=True,
+    "unlock", unlock, pass_args=True, run_async=True
 )  # , filters=Filters.chat_type.groups)
-LOCKED_HANDLER = CommandHandler("locks", list_locks)  # , filters=Filters.chat_type.groups)
+LOCKED_HANDLER = CommandHandler("locks", list_locks, run_async=True)  # , filters=Filters.chat_type.groups)
 
 dispatcher.add_handler(LOCK_HANDLER)
 dispatcher.add_handler(UNLOCK_HANDLER)
@@ -600,5 +600,5 @@ dispatcher.add_handler(LOCKTYPES_HANDLER)
 dispatcher.add_handler(LOCKED_HANDLER)
 
 dispatcher.add_handler(
-    MessageHandler(Filters.all & Filters.chat_type.groups, del_lockables), PERM_GROUP,
+    MessageHandler(Filters.all & Filters.chat_type.groups, del_lockables, run_async=True), PERM_GROUP
 )
