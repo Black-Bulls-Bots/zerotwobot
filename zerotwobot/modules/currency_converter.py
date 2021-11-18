@@ -1,10 +1,9 @@
 import requests
 from zerotwobot import CASH_API_KEY, dispatcher
 from telegram import Update, ParseMode
-from telegram.ext import CallbackContext, CommandHandler, run_async
+from telegram.ext import CallbackContext, CommandHandler
 
 
-@run_async
 def convert(update: Update, context: CallbackContext):
     args = update.effective_message.text.split(" ")
 
@@ -41,7 +40,7 @@ def convert(update: Update, context: CallbackContext):
         )
 
     elif len(args) == 1:
-        update.effective_message.reply_text(__help__, parse_mode=ParseMode.MARKDOWN)
+        update.effective_message.reply_text(help, parse_mode=ParseMode.MARKDOWN)
 
     else:
         update.effective_message.reply_text(
@@ -49,8 +48,12 @@ def convert(update: Update, context: CallbackContext):
             parse_mode=ParseMode.MARKDOWN,
         )
 
+help = """
+Converts money from one exchange to another
+Usage: /cash amount from to
+Example: /cash 20 USD INR"""
 
-CONVERTER_HANDLER = CommandHandler("cash", convert)
+CONVERTER_HANDLER = CommandHandler("cash", convert, run_async=True)
 
 dispatcher.add_handler(CONVERTER_HANDLER)
 

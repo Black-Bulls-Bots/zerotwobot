@@ -12,13 +12,13 @@ from zerotwobot.modules.sql import afk_sql as sql
 from zerotwobot.modules.users import get_user_id
 from telegram import MessageEntity, Update
 from telegram.error import BadRequest
-from telegram.ext import CallbackContext, Filters, MessageHandler, run_async
+from telegram.ext import CallbackContext, Filters, MessageHandler
 
 AFK_GROUP = 7
 AFK_REPLY_GROUP = 8
 
 
-@run_async
+
 def afk(update: Update, context: CallbackContext):
     args = update.effective_message.text.split(None, 1)
     user = update.effective_user
@@ -39,14 +39,20 @@ def afk(update: Update, context: CallbackContext):
     sql.set_afk(update.effective_user.id, reason)
     fname = update.effective_user.first_name
     try:
-        update.effective_message.reply_text(
-            "{} is now away!{}".format(fname, notice),
-        )
+        if reason:
+            update.effective_message.reply_text(
+                f"{fname} is now away! \nReason: <code>{reason}</code> \n {notice}",
+                parse_mode="html"
+            )
+        else:
+                update.effective_message.reply_text(
+                "{} is now away!{}".format(fname, notice),
+            )   
     except BadRequest:
         pass
 
 
-@run_async
+
 def no_longer_afk(update: Update, context: CallbackContext):
     user = update.effective_user
     message = update.effective_message
@@ -78,7 +84,7 @@ def no_longer_afk(update: Update, context: CallbackContext):
             return
 
 
-@run_async
+
 def reply_afk(update: Update, context: CallbackContext):
     bot = context.bot
     message = update.effective_message
@@ -160,12 +166,12 @@ __help__ = """
 When marked as AFK, any mentions will be replied to with a message to say you're not available!
 """
 
-AFK_HANDLER = DisableAbleCommandHandler("afk", afk)
+AFK_HANDLER = DisableAbleCommandHandler("afk", afk, run_async=True)
 AFK_REGEX_HANDLER = DisableAbleMessageHandler(
-    Filters.regex(r"^(?i)brb(.*)$"), afk, friendly="afk",
+    Filters.regex(r"^(?i)brb(.*)$"), afk, friendly="afk", run_async=True
 )
-NO_AFK_HANDLER = MessageHandler(Filters.all & Filters.group, no_longer_afk)
-AFK_REPLY_HANDLER = MessageHandler(Filters.all & Filters.group, reply_afk)
+NO_AFK_HANDLER = MessageHandler(Filters.all & Filters.chat_type.groups, no_longer_afk, run_async=True)
+AFK_REPLY_HANDLER = MessageHandler(Filters.all & Filters.chat_type.groups, reply_afk, run_async=True)
 
 dispatcher.add_handler(AFK_HANDLER, AFK_GROUP)
 dispatcher.add_handler(AFK_REGEX_HANDLER, AFK_GROUP)

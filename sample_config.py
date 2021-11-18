@@ -18,7 +18,7 @@ class Config(object):
     API_HASH = "awoo"
     TOKEN = "BOT_TOKEN"  # This var used to be API_KEY but it is now TOKEN, adjust accordingly.
     OWNER_ID = 12345  # If you dont know, run the bot and do /id in your private chat with it, also an integer
-    OWNER_USERNAME = "joker_hacker_6521"
+    OWNER_USERNAME = "kishoree"
     SUPPORT_CHAT = "jokers_botsupport"  # Your own group for support, do not add the @
     JOIN_LOGGER = (
         -23456
@@ -67,6 +67,7 @@ class Config(object):
     AI_API_KEY = "awoo"  # For chatbot, get one from https://coffeehouse.intellivoid.net/dashboard
     BL_CHATS = []  # List of groups that you want blacklisted.
     SPAMMERS = None
+    ALLOW_CHATS = True
 
 
 class Production(Config):

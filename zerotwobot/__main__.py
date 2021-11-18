@@ -68,6 +68,30 @@ def get_readable_time(seconds: int) -> str:
     ping_time += ":".join(time_list)
 
     return ping_time
+buttons = [
+    [
+        InlineKeyboardButton(
+            text="Add to Group",
+            url=f"https://t.me/{dispatcher.bot.username}?startgroup=True",
+        ),
+    ],
+    [
+        InlineKeyboardButton(
+            "Support Group",
+            "https://t.me/blackbulls_support",
+        ),
+        InlineKeyboardButton(
+            "Announcemnets",
+            "https://t.me/blackbull_bots"
+        ),
+    ],
+    [
+        InlineKeyboardButton(
+            text="Source Code",
+            url="https://github.com/Black-Bulls-Bots/zerotwobot"
+        )
+    ]
+]
 
 
 PM_START_TEXT = """
@@ -208,45 +232,7 @@ def start(update: Update, context: CallbackContext):
                     escape_markdown(first_name), escape_markdown(context.bot.first_name),
                 ),
                 parse_mode=ParseMode.MARKDOWN,
-                disable_web_page_preview=True,
-                reply_markup=InlineKeyboardMarkup(
-                    [
-                        [
-                            InlineKeyboardButton(
-                                text="☑️ Add me",
-                                url="t.me/{}?startgroup=true".format(
-                                    context.bot.username,
-                                ),
-                            ),
-                        ],
-                        [
-                            InlineKeyboardButton(
-                                text="🚑 Support",
-                                url=f"https://t.me/{SUPPORT_CHAT}",
-                            ),
-                            InlineKeyboardButton(
-                                text="🔔 Updates",
-                                url="https://t.me/jokers_botupdates",
-                            ),
-                        ],
-                        [
-                            InlineKeyboardButton(
-                                text="🧾 Getting Started",
-                                url="https://t.me/jokers_botupdates/4",
-                            ),
-                            InlineKeyboardButton(
-                                text="🗄 Source code",
-                                url="https://github.com/ishnaji/zerotwobot",
-                            ),
-                        ],
-                        [
-                            InlineKeyboardButton(
-                                text="Trending Anime",
-                                url="https://trendinganime.in",
-                            ),
-                        ],
-                    ],
-                ),
+                reply_markup=InlineKeyboardMarkup(buttons)
             )
     else:
         update.effective_message.reply_text(
@@ -254,6 +240,20 @@ def start(update: Update, context: CallbackContext):
                 uptime,
             ),
             parse_mode=ParseMode.HTML,
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(
+                            text="Support",
+                            url="https://t.me/blackbulls_support",
+                        ),
+                        InlineKeyboardButton(
+                            text=str("Announcement's"),
+                            url="https://t.me/blacbulls_bots",
+                        ),
+                    ],
+                ],
+            ),
         )
 
 
@@ -288,7 +288,7 @@ def error_callback(update: Update, context: CallbackContext):
 
 
 
-def help_button(update, context):
+def help_button(update: Update, context: CallbackContext):
     query = update.callback_query
     mod_match = re.match(r"help_module\((.+?)\)", query.data)
     prev_match = re.match(r"help_prev\((.+?)\)", query.data)

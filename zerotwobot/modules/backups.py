@@ -1,9 +1,9 @@
 import json, time, os
 from io import BytesIO
 
-from telegram import ParseMode, Message
+from telegram import ParseMode, Message, Update
 from telegram.error import BadRequest
-from telegram.ext import CommandHandler, run_async
+from telegram.ext import CommandHandler, CallbackContext
 
 import zerotwobot.modules.sql.notes_sql as sql
 from zerotwobot import dispatcher, LOGGER, OWNER_ID, JOIN_LOGGER, SUPPORT_CHAT
@@ -24,10 +24,10 @@ import zerotwobot.modules.sql.locks_sql as locksql
 from zerotwobot.modules.connection import connected
 
 
-@run_async
+
 @user_admin
 @typing_action
-def import_data(update, context):
+def import_data(update: Update, context: CallbackContext):
     msg = update.effective_message
     chat = update.effective_chat
     user = update.effective_user
@@ -118,9 +118,9 @@ def import_data(update, context):
         msg.reply_text(text, parse_mode="markdown")
 
 
-@run_async
+
 @user_admin
-def export_data(update, context):
+def export_data(update: Update, context: CallbackContext):
     chat_data = context.chat_data
     msg = update.effective_message  # type: Optional[Message]
     user = update.effective_user  # type: Optional[User]
@@ -379,8 +379,8 @@ __help__ = """
 
 """
 
-IMPORT_HANDLER = CommandHandler("import", import_data)
-EXPORT_HANDLER = CommandHandler("export", export_data, pass_chat_data=True)
+IMPORT_HANDLER = CommandHandler("import", import_data, run_async=True)
+EXPORT_HANDLER = CommandHandler("export", export_data, pass_chat_data=True, run_async=True)
 
 dispatcher.add_handler(IMPORT_HANDLER)
 dispatcher.add_handler(EXPORT_HANDLER)
