@@ -21,3 +21,6 @@ zerotwobot/config.py
 testing.py
 
 **pyc
+
+#ignore debug mode logs
+updates.txt
