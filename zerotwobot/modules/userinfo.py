@@ -9,7 +9,6 @@ from telethon import events
 
 from telegram import MAX_MESSAGE_LENGTH, ParseMode, Update, MessageEntity
 from telegram.ext import CallbackContext, CommandHandler
-from telegram.ext.dispatcher import run_async
 from telegram.error import BadRequest
 from telegram.utils.helpers import escape_markdown, mention_html
 
@@ -117,7 +116,7 @@ def make_bar(per):
     return "■" * done + "□" * (10 - done)
 
 
-@run_async
+
 def get_id(update: Update, context: CallbackContext):
     bot, args = context.bot, context.args
     message = update.effective_message
@@ -198,7 +197,7 @@ async def group_info(event) -> None:
     await event.reply(msg)
 
 
-@run_async
+
 def gifid(update: Update, context: CallbackContext):
     msg = update.effective_message
     if msg.reply_to_message and msg.reply_to_message.animation:
@@ -210,7 +209,7 @@ def gifid(update: Update, context: CallbackContext):
         update.effective_message.reply_text("Please reply to a gif to get its ID.")
 
 
-@run_async
+
 def info(update: Update, context: CallbackContext):
     bot, args = context.bot, context.args
     message = update.effective_message
@@ -337,11 +336,10 @@ def info(update: Update, context: CallbackContext):
             _file = bot.get_file(profile["file_id"])
             _file.download(f"{user.id}.png")
 
-            message.reply_document(
-                document=open(f"{user.id}.png", "rb"),
+            message.reply_photo(
+                photo=open(f"{user.id}.png", "rb"),
                 caption=(text),
                 parse_mode=ParseMode.HTML,
-                disable_web_page_preview=True,
             )
 
             os.remove(f"{user.id}.png")
@@ -359,7 +357,7 @@ def info(update: Update, context: CallbackContext):
     rep.delete()
 
 
-@run_async
+
 def about_me(update: Update, context: CallbackContext):
     bot, args = context.bot, context.args
     message = update.effective_message
@@ -387,7 +385,7 @@ def about_me(update: Update, context: CallbackContext):
         update.effective_message.reply_text("There isnt one, use /setme to set one.")
 
 
-@run_async
+
 def set_about_me(update: Update, context: CallbackContext):
     message = update.effective_message
     user_id = message.from_user.id
@@ -419,7 +417,7 @@ def set_about_me(update: Update, context: CallbackContext):
             )
 
 
-@run_async
+
 @sudo_plus
 def stats(update: Update, context: CallbackContext):
     stats = "<b>📊 Current stats:</b>\n" + "\n".join([mod.__stats__() for mod in STATS])
@@ -427,7 +425,7 @@ def stats(update: Update, context: CallbackContext):
     update.effective_message.reply_text(result, parse_mode=ParseMode.HTML)
 
 
-@run_async
+
 def about_bio(update: Update, context: CallbackContext):
     bot, args = context.bot, context.args
     message = update.effective_message
@@ -457,7 +455,7 @@ def about_bio(update: Update, context: CallbackContext):
         )
 
 
-@run_async
+
 def set_about_bio(update: Update, context: CallbackContext):
     message = update.effective_message
     sender_id = update.effective_user.id
@@ -542,16 +540,16 @@ Examples:
  Come and see [HP System explained](https://t.me/OnePunchUpdates/192)
 """
 
-SET_BIO_HANDLER = DisableAbleCommandHandler("setbio", set_about_bio)
-GET_BIO_HANDLER = DisableAbleCommandHandler("bio", about_bio)
+SET_BIO_HANDLER = DisableAbleCommandHandler("setbio", set_about_bio, run_async=True)
+GET_BIO_HANDLER = DisableAbleCommandHandler("bio", about_bio, run_async=True)
 
-STATS_HANDLER = CommandHandler("stats", stats)
-ID_HANDLER = DisableAbleCommandHandler("id", get_id)
-GIFID_HANDLER = DisableAbleCommandHandler("gifid", gifid)
-INFO_HANDLER = DisableAbleCommandHandler(("info", "book"), info)
+STATS_HANDLER = CommandHandler("stats", stats, run_async=True)
+ID_HANDLER = DisableAbleCommandHandler("id", get_id, run_async=True)
+GIFID_HANDLER = DisableAbleCommandHandler("gifid", gifid, run_async=True)
+INFO_HANDLER = DisableAbleCommandHandler(("info", "book"), info, run_async=True)
 
-SET_ABOUT_HANDLER = DisableAbleCommandHandler("setme", set_about_me)
-GET_ABOUT_HANDLER = DisableAbleCommandHandler("me", about_me)
+SET_ABOUT_HANDLER = DisableAbleCommandHandler("setme", set_about_me, run_async=True)
+GET_ABOUT_HANDLER = DisableAbleCommandHandler("me", about_me, run_async=True)
 
 dispatcher.add_handler(STATS_HANDLER)
 dispatcher.add_handler(ID_HANDLER)
