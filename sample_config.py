@@ -69,6 +69,7 @@ class Config(object):
     SPAMMERS = None
     ALLOW_CHATS = True
 
+    TEMP_DOWNLOAD_LOC = "./Downloads"
 
 class Production(Config):
     LOGGER = True
