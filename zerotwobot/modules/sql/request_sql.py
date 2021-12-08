@@ -2,12 +2,12 @@ import threading
 from typing import Union
 
 from zerotwobot.modules.sql import BASE, SESSION
-from sqlalchemy import Boolean, Column, Integer, String
+from sqlalchemy import Boolean, Column, Integer, String, BigInteger
 
 
 class RequestUserSettings(BASE):
     __tablename__ = "user_request_settings"
-    user_id = Column(Integer, primary_key=True)
+    user_id = Column(BigInteger, primary_key=True)
     should_request = Column(Boolean, default=True)
 
     def __init__(self, user_id):
