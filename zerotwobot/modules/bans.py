@@ -694,7 +694,7 @@ KICK_HANDLER = CommandHandler("kick", kick, run_async=True)
 UNBAN_HANDLER = CommandHandler("unban", unban, run_async=True)
 ROAR_HANDLER = CommandHandler("roar", selfunban, run_async=True)
 KICKME_HANDLER = DisableAbleCommandHandler("kickme", kickme, filters=Filters.chat_type.groups, run_async=True)
-BAN_CALLBACK_HANDLER = CallbackQueryHandler(bans_callback, run_async=True)
+BAN_CALLBACK_HANDLER = CallbackQueryHandler(bans_callback, run_async=True, pattern=r"bans_")
 
 dispatcher.add_handler(BAN_HANDLER)
 dispatcher.add_handler(TEMPBAN_HANDLER)
