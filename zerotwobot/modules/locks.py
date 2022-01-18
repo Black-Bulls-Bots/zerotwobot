@@ -1,13 +1,15 @@
 import html
+from posixpath import split
 
-from telegram import Message, Chat, ParseMode, MessageEntity, Update
+from telegram import Message, Chat, ParseMode, MessageEntity, Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram import TelegramError, ChatPermissions
 from telegram.error import BadRequest
-from telegram.ext import CommandHandler, MessageHandler, Filters, CallbackContext
+from telegram.ext import CommandHandler, MessageHandler, Filters, CallbackContext, CallbackQueryHandler
 from telegram.ext.dispatcher import run_async
 from telegram.utils.helpers import mention_html
 
 from alphabet_detector import AlphabetDetector
+from zerotwobot.modules.helper_funcs.filters import CustomFilters
 
 import zerotwobot.modules.sql.locks_sql as sql
 from zerotwobot import dispatcher, DRAGONS, LOGGER
@@ -43,6 +45,15 @@ LOCK_TYPES = {
     "rtl": "rtl",
     "button": "button",
     "inline": "inline",
+    "phone": Filters.entity(MessageEntity.PHONE_NUMBER) | Filters.caption_entity(MessageEntity.PHONE_NUMBER),
+    "command": Filters.command,
+    "email": Filters.entity(MessageEntity.EMAIL) | Filters.caption_entity(MessageEntity.EMAIL),
+    "anonchannel": CustomFilters.anonchannel,
+    "forwardchannel": CustomFilters.forwardchannel,
+    "forwardbot": CustomFilters.forwardbot,
+    #"invitelink": ,
+    "videonote": Filters.video_note,
+
 }
 
 LOCK_CHAT_RESTRICTION = {
@@ -92,6 +103,25 @@ UNLOCK_CHAT_RESTRICTION = {
 PERM_GROUP = 1
 REST_GROUP = 2
 
+#Thanks to AstrakoBot for anonchannel code - https://github.com/Astrako/AstrakoBot/commit/2c076173d48ad4d65b5301cacf6cc8486ff14d96
+
+class CustomCommandHandler(CommandHandler):
+    def __init__(self, command, callback, **kwargs):
+        super().__init__(command, callback, **kwargs)
+
+    def check_update(self, update):
+        if super().check_update(update) and not (
+                sql.is_restr_locked(update.effective_chat.id, 'messages') and not is_user_admin(update.effective_chat,
+                                                                                                update.effective_user.id)):
+            args = update.effective_message.text.split()[1:]
+            filter_result = self.filters(update)
+            if filter_result:
+                return args, filter_result
+            else:
+                return False
+
+
+CommandHandler = CustomCommandHandler
 
 # NOT ASYNC
 def restr_members(
@@ -104,11 +134,12 @@ def restr_members(
             bot.restrict_chat_member(
                 chat_id,
                 mem.user,
-                can_send_messages=messages,
-                can_send_media_messages=media,
-                can_send_other_messages=other,
-                can_add_web_page_previews=previews,
-            )
+                permissions=ChatPermissions(
+                    can_send_messages=messages,
+                    can_send_media_messages=media,
+                    can_send_other_messages=other,
+                    can_add_web_page_previews=previews,
+            ))
         except TelegramError:
             pass
 
@@ -122,11 +153,12 @@ def unrestr_members(
             bot.restrict_chat_member(
                 chat_id,
                 mem.user,
-                can_send_messages=messages,
-                can_send_media_messages=media,
-                can_send_other_messages=other,
-                can_add_web_page_previews=previews,
-            )
+                permissions=ChatPermissions(
+                    can_send_messages=messages,
+                    can_send_media_messages=media,
+                    can_send_other_messages=other,
+                    can_add_web_page_previews=previews,
+            ))
         except TelegramError:
             pass
 
@@ -219,6 +251,20 @@ def lock(update: Update, context: CallbackContext) -> str:
                         LOCK_CHAT_RESTRICTION[ltype.lower()],
                     ),
                 )
+                
+                context.bot.restrict_chat_member(chat.id, int(777000), permissions=ChatPermissions(
+                    can_send_messages=True,
+                    can_send_media_messages=True,
+                    can_send_other_messages=True,
+                    can_add_web_page_previews=True))
+
+                context.bot.restrict_chat_member(chat.id, int(1087968824), permissions=ChatPermissions(
+                    can_send_messages=True,
+                    can_send_media_messages=True,
+                    can_send_other_messages=True,
+                    can_add_web_page_previews=True))
+
+
 
                 send_message(update.effective_message, text, parse_mode="markdown")
                 return (
@@ -472,7 +518,14 @@ def build_lock_message(chat_id):
             locklist.append("rtl = `{}`".format(locks.rtl))
             locklist.append("button = `{}`".format(locks.button))
             locklist.append("egame = `{}`".format(locks.egame))
-            locklist.append("inline = `{}`".format(locks.inline))
+            locklist.append("phone = `{}`".format(locks.phone))
+            locklist.append("command = `{}`".format(locks.command))
+            locklist.append("email = `{}`".format(locks.email))
+            locklist.append("anonchannel = `{}`".format(locks.anonchannel))
+            locklist.append("forwardchannel = `{}`".format(locks.forwardchannel))
+            locklist.append("forwardbot = `{}`".format(locks.forwardbot))
+            locklist.append("videonote = `{}`".format(locks.videonote))
+
     permissions = dispatcher.bot.get_chat(chat_id).permissions
     permslist.append("messages = `{}`".format(permissions.can_send_messages))
     permslist.append("media = `{}`".format(permissions.can_send_media_messages))
@@ -565,7 +618,7 @@ __help__ = """
 Do stickers annoy you? or want to avoid people sharing links? or pictures? \
 You're in the right place!
 The locks module allows you to lock away some common items in the \
-telegram world; the bot will automatically delete them!
+telegram world; our bot will automatically delete them!
 
  • `/locktypes`*:* Lists all possible locktypes
 
@@ -579,10 +632,11 @@ eg:
 Locking urls will auto-delete all messages with urls, locking stickers will restrict all \
 non-admin users from sending stickers, etc.
 Locking bots will stop non-admins from adding bots to the chat.
+Locking anonchannel will stop anonymous channel from messaging in your group.
 
 *Note:*
  • Unlocking permission *info* will allow members (non-admins) to change the group information, such as the description or the group name
- • Unlocking permission *pin* will allow members (non-admins) to pinned a message in a group
+ • Unlocking permission *pin* will allow members (non-admins) to pin a message in a group
 """
 
 __mod_name__ = "Locks"
