@@ -27,6 +27,13 @@ class Permissions(BASE):
     button = Column(Boolean, default=False)
     egame = Column(Boolean, default=False)
     inline = Column(Boolean, default=False)
+    phone = Column(Boolean, default=False)
+    command = Column(Boolean, default=False)
+    email = Column(Boolean, default=False)
+    anonchannel = Column(Boolean, default=False)
+    forwardchannel = Column(Boolean, default=False)
+    forwardbot = Column(Boolean, default=False)
+    videonote = Column(Boolean, default=False)
 
     def __init__(self, chat_id):
         self.chat_id = str(chat_id)  # ensure string
@@ -47,6 +54,13 @@ class Permissions(BASE):
         self.button = False
         self.egame = False
         self.inline = False
+        self.phone = False
+        self.command = False
+        self.email = False
+        self.anonchannel = False
+        self.forwardchannel = False
+        self.forwardbot = False
+        self.videonote = False
 
     def __repr__(self):
         return "<Permissions for %s>" % self.chat_id
@@ -145,6 +159,20 @@ def update_lock(chat_id, lock_type, locked):
             curr_perm.egame = locked
         elif lock_type == "inline":
             curr_perm.inline = locked
+        elif lock_type == "phone":
+            curr_perm.phone = locked
+        elif lock_type == "command":
+            curr_perm.command = locked
+        elif lock_type == "email":
+            curr_perm.email = locked
+        elif lock_type == "anonchannel":
+            curr_perm.anonchannel = locked
+        elif lock_type == "forwardchannel":
+            curr_perm.forwardchannel = locked
+        elif lock_type == "forwardbot":
+            curr_perm.forwardbot = locked
+        elif lock_type == "videonote":
+            curr_perm.videonote = locked
 
         SESSION.add(curr_perm)
         SESSION.commit()
@@ -214,6 +242,20 @@ def is_locked(chat_id, lock_type):
         return curr_perm.egame
     elif lock_type == "inline":
         return curr_perm.inline
+    elif lock_type == "phone":
+        return curr_perm.phone
+    elif lock_type == "command":
+        return curr_perm.command
+    elif lock_type == "email":
+        return curr_perm.email
+    elif lock_type == "anonchannel":
+        return curr_perm.anonchannel
+    elif lock_type == "forwardchannel":
+        return curr_perm.forwardchannel
+    elif lock_type == "forwardbot":
+        return curr_perm.forwardbot
+    elif lock_type == "videonote":
+        return curr_perm.videonote
 
 
 def is_restr_locked(chat_id, lock_type):

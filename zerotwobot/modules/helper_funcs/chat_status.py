@@ -13,7 +13,13 @@ from zerotwobot import (
     dispatcher,
 )
 
-from telegram import Chat, ChatMember, ParseMode, Update
+from telegram import (
+    Chat, 
+    ChatMember, 
+    ParseMode, 
+    Update,
+)
+
 from telegram.ext import CallbackContext
 
 # stores admemes in memory for 10 min.
@@ -355,23 +361,7 @@ def can_restrict(func):
     return restrict_rights
 
 
-def user_can_ban(func):
-    @wraps(func)
-    def user_is_banhammer(update: Update, context: CallbackContext, *args, **kwargs):
-        bot = context.bot
-        user = update.effective_user.id
-        member = update.effective_chat.get_member(user)
-        if (
-            not (member.can_restrict_members or member.status == "creator")
-            and user not in DRAGONS
-        ):
-            update.effective_message.reply_text(
-                "Sorry son, but you're not worthy to wield the banhammer.",
-            )
-            return ""
-        return func(update, context, *args, **kwargs)
 
-    return user_is_banhammer
 
 
 def connection_status(func):

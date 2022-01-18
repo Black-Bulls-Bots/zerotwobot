@@ -4,12 +4,15 @@ from telegram import Update, ParseMode
 from telegram.error import BadRequest, Unauthorized
 from telegram.ext import CallbackContext, CommandHandler, MessageHandler, Filters
 from telegram.utils.helpers import mention_html
+from zerotwobot.modules.helper_funcs.chat_status import user_admin, user_not_admin
+from zerotwobot.modules.log_channel import loggable
 
 from zerotwobot import LOGGER, dispatcher
 from zerotwobot.modules.sql import request_sql as sql
 
 REQUEST_GROUP = 12
 
+@user_admin
 def settings(update: Update, context: CallbackContext):
     message = update.effective_message
     chat = update.effective_chat
@@ -46,6 +49,8 @@ def settings(update: Update, context: CallbackContext):
         else:
             message.reply_text(f"Current request handling preference: <code>{sql.chat_should_request(chat.id)}</code>", parse_mode="html")
 
+@loggable
+@user_not_admin
 def request(update: Update, context: CallbackContext):
     message = update.effective_message
     chat = update.effective_chat
@@ -119,15 +124,31 @@ def request(update: Update, context: CallbackContext):
 
     return ""
 
+def __migrate__(old_chat_id, new_chat_id):
+    sql.migrate_chat(old_chat_id, new_chat_id)
 
+
+def __chat_settings__(chat_id, _):
+    return f"This chat is setup to send user reports to admins, via /request and #request: `{sql.chat_should_request(chat_id)}`"
+
+
+def __user_settings__(user_id):
+    if sql.user_should_request(user_id) is True:
+        text = "You will receive requests from chats you're admin."
+    else:
+        text = "You will *not* receive requests from chats you're admin."
+    return text
 
 
 SETTINGS_HANDLER = CommandHandler("requests", settings, run_async=True)
 REQUEST_HANDLER = CommandHandler("request", request, Filters.chat_type.groups , run_async=True)
+HASH_REQUEST_HANDLER = MessageHandler(Filters.regex(r"(?i)#request(s)?"), request)
+
 
 
 dispatcher.add_handler(SETTINGS_HANDLER)
 dispatcher.add_handler(REQUEST_HANDLER, REQUEST_GROUP)
+dispatcher.add_handler(HASH_REQUEST_HANDLER)
 
 __mod_name__ = "Request Handling"
 __help__ = """

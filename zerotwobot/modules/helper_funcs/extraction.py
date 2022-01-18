@@ -11,6 +11,9 @@ def id_from_reply(message):
     if not prev_message:
         return None, None
     user_id = prev_message.from_user.id
+    #if user id is from channel bot, then fetch channel id from sender_chat 
+    if user_id == 136817688:
+        user_id = message.reply_to_message.sender_chat.id
     res = message.text.split(None, 1)
     if len(res) < 2:
         return user_id, ""

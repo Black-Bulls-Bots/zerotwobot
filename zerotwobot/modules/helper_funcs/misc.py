@@ -1,4 +1,5 @@
-from typing import Dict, List
+from typing import Dict, List, Union
+from html import escape
 
 from zerotwobot import NO_LOAD
 from telegram import MAX_MESSAGE_LENGTH, Bot, InlineKeyboardButton, ParseMode
@@ -125,3 +126,15 @@ def build_keyboard_parser(bot, chat_id, buttons):
 
 def is_module_loaded(name):
     return name not in NO_LOAD
+
+#function to mention username for chats https://t.me/username
+def mention_username(username: str, name: str) -> str:
+    """
+    Args:
+        username (:obj:`str`): The username of chat which you want to mention.
+        name (:obj:`str`): The name the mention is showing.
+
+    Returns:
+        :obj:`str`: The inline mention for the user as HTML.
+    """
+    return f'<a href="t.me/{username}">{escape(name)}</a>'
