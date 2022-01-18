@@ -249,7 +249,7 @@ def start(update: Update, context: CallbackContext):
                         ),
                         InlineKeyboardButton(
                             text=str("Announcement's"),
-                            url="https://t.me/blacbull_bots",
+                            url="https://t.me/blackbull_bots",
                         ),
                     ],
                 ],
