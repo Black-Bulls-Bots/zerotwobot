@@ -45,13 +45,3 @@ class CustomFilters(object):
             )
 
     has_text = _HasText()
-
-    class _AnonChannel(MessageFilter):
-
-        def filter(self, message: Message):
-            return bool(
-                message.from_user and message.from_user.id == 136817688
-            )
-
-    anonchannel = _AnonChannel
-    """Messages that are from `Anonymous Chanels`"""

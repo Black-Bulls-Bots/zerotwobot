@@ -21,7 +21,6 @@ from zerotwobot.modules.helper_funcs.chat_status import (can_delete,
                                                          is_user_admin,
                                                          user_admin,
                                                          user_not_admin)
-from zerotwobot.modules.helper_funcs.filters import CustomFilters
 from zerotwobot.modules.log_channel import loggable
 from zerotwobot.modules.sql.approve_sql import is_approved
 
@@ -47,7 +46,7 @@ LOCK_TYPES = {
     "phone": Filters.entity(MessageEntity.PHONE_NUMBER) | Filters.caption_entity(MessageEntity.PHONE_NUMBER),
     "command": Filters.command,
     "email": Filters.entity(MessageEntity.EMAIL) | Filters.caption_entity(MessageEntity.EMAIL),
-    "anonchannel": CustomFilters.anonchannel,
+    "anonchannel": "anonchannel",
     "forwardchannel": "forwardchannel",
     "forwardbot": "forwardbot",
     #"invitelink": ,
@@ -102,25 +101,6 @@ UNLOCK_CHAT_RESTRICTION = {
 PERM_GROUP = 1
 REST_GROUP = 2
 
-#Thanks to AstrakoBot for anonchannel code - https://github.com/Astrako/AstrakoBot/commit/2c076173d48ad4d65b5301cacf6cc8486ff14d96
-
-class CustomCommandHandler(CommandHandler):
-    def __init__(self, command, callback, **kwargs):
-        super().__init__(command, callback, **kwargs)
-
-    def check_update(self, update):
-        if super().check_update(update) and not (
-                sql.is_restr_locked(update.effective_chat.id, 'messages') and not is_user_admin(update.effective_chat,
-                                                                                                update.effective_user.id)):
-            args = update.effective_message.text.split()[1:]
-            filter_result = self.filters(update)
-            if filter_result:
-                return args, filter_result
-            else:
-                return False
-
-
-CommandHandler = CustomCommandHandler
 
 # NOT ASYNC
 def restr_members(
@@ -478,7 +458,6 @@ def del_lockables(update: Update, context: CallbackContext):
             if sql.is_locked(chat.id, lockable) and can_delete(chat, context.bot.id):
                 if message.forward_from:
                     if message.forward_from.is_bot:
-                        print("working")
                         try:
                             message.delete()
                         except BadRequest as excp:
@@ -486,6 +465,20 @@ def del_lockables(update: Update, context: CallbackContext):
                                 pass
                             else:
                                 LOGGER.exception("ERROR in lockables - forwardchannel")
+                        break
+                continue
+            continue
+        if lockable == "anonchannel":
+            if sql.is_locked(chat.id, lockable) and can_delete(chat, context.bot.id):
+                if message.from_user:
+                    if message.from_user.id == 136817688:
+                        try:
+                            message.delete()
+                        except BadRequest as excp:
+                            if excp.message == "Message to delete not found":
+                                pass
+                            else:
+                                LOGGER.exception("ERROR in lockables - anonchannel")
                         break
                 continue
             continue
