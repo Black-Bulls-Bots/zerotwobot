@@ -1,30 +1,29 @@
 import html
-from posixpath import split
-
-from telegram import Message, Chat, ParseMode, MessageEntity, Update, InlineKeyboardMarkup, InlineKeyboardButton
-from telegram import TelegramError, ChatPermissions
-from telegram.error import BadRequest
-from telegram.ext import CommandHandler, MessageHandler, Filters, CallbackContext, CallbackQueryHandler
-from telegram.ext.dispatcher import run_async
-from telegram.utils.helpers import mention_html
-
-from alphabet_detector import AlphabetDetector
-from zerotwobot.modules.helper_funcs.filters import CustomFilters
+from typing import Optional
 
 import zerotwobot.modules.sql.locks_sql as sql
-from zerotwobot import dispatcher, DRAGONS, LOGGER
-from zerotwobot.modules.disable import DisableAbleCommandHandler
-from zerotwobot.modules.helper_funcs.chat_status import (
-    can_delete,
-    is_user_admin,
-    user_not_admin,
-    is_bot_admin,
-    user_admin,
-)
-from zerotwobot.modules.log_channel import loggable
+from alphabet_detector import AlphabetDetector
+from telegram import (Chat, ChatPermissions, InlineKeyboardButton,
+                      InlineKeyboardMarkup, Message, MessageEntity, ParseMode,
+                      TelegramError, Update)
+from telegram.error import BadRequest
+from telegram.ext import (CallbackContext, CallbackQueryHandler,
+                          CommandHandler, Filters, MessageHandler)
+from telegram.ext.dispatcher import run_async
+from telegram.utils.helpers import mention_html
+from zerotwobot import DRAGONS, LOGGER, dispatcher
 from zerotwobot.modules.connection import connected
+from zerotwobot.modules.disable import DisableAbleCommandHandler
+from zerotwobot.modules.helper_funcs.alternate import (send_message,
+                                                       typing_action)
+from zerotwobot.modules.helper_funcs.chat_status import (can_delete,
+                                                         is_bot_admin,
+                                                         is_user_admin,
+                                                         user_admin,
+                                                         user_not_admin)
+from zerotwobot.modules.helper_funcs.filters import CustomFilters
+from zerotwobot.modules.log_channel import loggable
 from zerotwobot.modules.sql.approve_sql import is_approved
-from zerotwobot.modules.helper_funcs.alternate import send_message, typing_action
 
 ad = AlphabetDetector()
 
@@ -49,8 +48,8 @@ LOCK_TYPES = {
     "command": Filters.command,
     "email": Filters.entity(MessageEntity.EMAIL) | Filters.caption_entity(MessageEntity.EMAIL),
     "anonchannel": CustomFilters.anonchannel,
-    "forwardchannel": CustomFilters.forwardchannel,
-    "forwardbot": CustomFilters.forwardbot,
+    "forwardchannel": "forwardchannel",
+    "forwardbot": "forwardbot",
     #"invitelink": ,
     "videonote": Filters.video_note,
 
@@ -129,6 +128,8 @@ def restr_members(
 ):
     for mem in members:
         if mem.user in DRAGONS:
+            pass
+        elif mem.user == 777000 or mem.user == 1087968824:
             pass
         try:
             bot.restrict_chat_member(
@@ -421,7 +422,7 @@ def del_lockables(update: Update, context: CallbackContext):
                             if excp.message == "Message to delete not found":
                                 pass
                             else:
-                                LOGGER.exception("ERROR in lockables")
+                                LOGGER.exception("ERROR in lockables - rtl:caption")
                         break
                 if message.text:
                     check = ad.detect_alphabet(u"{}".format(message.text))
@@ -432,7 +433,7 @@ def del_lockables(update: Update, context: CallbackContext):
                             if excp.message == "Message to delete not found":
                                 pass
                             else:
-                                LOGGER.exception("ERROR in lockables")
+                                LOGGER.exception("ERROR in lockables - rtl:text")
                         break
             continue
         if lockable == "button":
@@ -444,7 +445,7 @@ def del_lockables(update: Update, context: CallbackContext):
                         if excp.message == "Message to delete not found":
                             pass
                         else:
-                            LOGGER.exception("ERROR in lockables")
+                            LOGGER.exception("ERROR in lockables - button")
                     break
             continue
         if lockable == "inline":
@@ -456,8 +457,37 @@ def del_lockables(update: Update, context: CallbackContext):
                         if excp.message == "Message to delete not found":
                             pass
                         else:
-                            LOGGER.exception("ERROR in lockables")
+                            LOGGER.exception("ERROR in lockables - inline")
                     break
+            continue
+        if lockable == "forwardchannel":
+            if sql.is_locked(chat.id, lockable) and can_delete(chat, context.bot.id):
+                if message.forward_from_chat:
+                    if message.forward_from_chat.type == "channel":
+                        try:
+                            message.delete()
+                        except BadRequest as excp:
+                            if excp.message == "Message to delete not found":
+                                pass
+                            else:
+                                LOGGER.exception("ERROR in lockables - forwardchannel")
+                        break
+                continue
+            continue
+        if lockable == "forwardbot":
+            if sql.is_locked(chat.id, lockable) and can_delete(chat, context.bot.id):
+                if message.forward_from:
+                    if message.forward_from.is_bot:
+                        print("working")
+                        try:
+                            message.delete()
+                        except BadRequest as excp:
+                            if excp.message == "Message to delete not found":
+                                pass
+                            else:
+                                LOGGER.exception("ERROR in lockables - forwardchannel")
+                        break
+                continue
             continue
         if (
             filter(update)

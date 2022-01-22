@@ -55,23 +55,3 @@ class CustomFilters(object):
 
     anonchannel = _AnonChannel
     """Messages that are from `Anonymous Chanels`"""
-
-    class _ForwardChannel(MessageFilter):
-
-        def filter(self, message: Message):
-            return bool(
-                message.forward_from_chat and message.forward_from_chat.type == "channel"
-            )
-
-    forwardchannel = _ForwardChannel
-    """Messages that are forwarded from `Channel`"""
-
-    class _ForwardBot(MessageFilter):
-
-        def filter(self, message: Message):
-            return bool(
-                message.forward_from and message.forward_from.is_bot
-            )
-    
-    forwardbot = _ForwardBot
-    """Messages that are forwarded from `Bot`"""
