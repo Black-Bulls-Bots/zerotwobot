@@ -8,7 +8,7 @@
          "manager",
          "Mizuhara"
       ],
-   "repository": "https://github.com/jokeracker22/zerotwobot",
+   "repository": "https://github.com/Black-Bulls-Bots/zerotwobot",
    "addons": [
       {
          "options": {
@@ -37,16 +37,16 @@
       "OWNER_ID": {
          "description": "Your user ID as an integer.",
          "required": true,
-         "value": "1638803785"
+         "value": "2094704420"
       },
       "OWNER_USERNAME": {
          "description": "Your username without the @",
-         "value": "joker_hacker_6512"
+         "value": "kishoreee"
       },
       "SUPPORT_CHAT": {
          "description": "Your Telegram support group chat username where your users will go and bother you with shit But be like: MyGroupChatUsernameBlah. If this ever points to saitama support than consider you made an enemy.",
          "required": true,
-         "value": "MyAwesomeSupportGroupGoesHere"
+         "value": "blackbulls_support"
       },
       "EVENT_LOGS": {
          "description": "Event logs channel to note down important bot level events, recommend to make this public. ex: '-123456'",
@@ -138,7 +138,7 @@
       "DONATION_LINK": {
          "description": "Optional: link where you would like to receive donations. If you are a noob, better leave it linking to paul",
          "required": false,
-         "value": "https://www.paypal.me/PaulSonOfLars"
+         "value": "https://0.0.0.0"
       },
       "DEL_CMDS": {
          "description": "Set this to True if you want to delete command messages from users who don't have the perms to run that command.",
