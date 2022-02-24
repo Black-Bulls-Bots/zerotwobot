@@ -51,9 +51,6 @@ def reverse(update: Update, context: CallbackContext):
 
         edit.edit_text("Downloaded Image, uploading to google...")
 
-        if os.path.isfile("reverse.jpg"):
-            os.remove("reverse.jpg")
-
         result = Search(file_path="reverse.jpg")
         edit.edit_text("Uploaded to google, fetching results...")
         name = result["output"]
@@ -78,3 +75,13 @@ def reverse(update: Update, context: CallbackContext):
 
 REVERSE_HANDLER = DisableAbleCommandHandler("reverse", reverse, run_async=True)
 dispatcher.add_handler(REVERSE_HANDLER)
+
+__help__ = """
+Reverse search any image using google image search.
+
+Usage:
+    - sending /reverse by replying to any image
+    - /reverse https://sample.com/sample.jpg
+"""
+
+__mod_name__ = "Reverse"
