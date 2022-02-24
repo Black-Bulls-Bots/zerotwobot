@@ -60,6 +60,11 @@ def no_longer_afk(update: Update, context: CallbackContext):
     if not user:  # ignore channels
         return
 
+    if sql.is_afk(user.id):
+        afk_user = sql.check_afk_status(user.id)
+
+        time = humanize.naturaldelta(datetime.now() - afk_user.time)
+
     res = sql.rm_afk(user.id)
     if res:
         if message.new_chat_members:  # dont say msg
@@ -74,11 +79,12 @@ def no_longer_afk(update: Update, context: CallbackContext):
                 "{} is back online!",
                 "{} is finally here!",
                 "Welcome back! {}",
-                "Where is {}?\nIn the chat!",
+                "We missed you {}",
             ]
             chosen_option = random.choice(options)
             update.effective_message.reply_text(
-                chosen_option.format(firstname),
+                chosen_option.format(firstname) + f"\n\nYou were AFK for: <code>{time}</code>",
+                parse_mode="html"
             )
         except:
             return
