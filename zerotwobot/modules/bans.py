@@ -358,8 +358,9 @@ def kickme(update: Update, context: CallbackContext):
         return
 
     res = update.effective_chat.unban_member(user_id)  # unban on current user = kick
+    #BUG: parsing not working
     if res:
-        update.effective_message.reply_text(html.escape("<b>You got the Devil's Kiss, Now die in peace</b>"), parse_mode="html")
+        update.effective_message.reply_text(html.escape("You got the Devil's Kiss, Now die in peace"), parse_mode="html")
     else:
         update.effective_message.reply_text("Huh? I can't :/")
 
