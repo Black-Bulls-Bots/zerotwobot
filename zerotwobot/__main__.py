@@ -78,17 +78,18 @@ buttons = [
     [
         InlineKeyboardButton(
             "Support Group",
-            "https://t.me/blackbulls_support",
+            "https://t.me/Marin_Support",
         ),
         InlineKeyboardButton(
-            "Announcemnets",
-            "https://t.me/blackbull_bots"
+            "My Husband ",
+            "https://t.me/Im_The_Ownerr",
+"
         ),
     ],
     [
         InlineKeyboardButton(
-            text="Source Code",
-            url="https://github.com/Black-Bulls-Bots/zerotwobot"
+            text="Open Scource Repo",
+            url="https://te.legra.ph/file/d10893d91fa49a2956630.jpg"
         )
     ]
 ]
@@ -98,12 +99,14 @@ PM_START_TEXT = """
 Hey There {}. I'm so glad that you came to me.
 I'm {}, made specifically to manage your group 
 and have more fun than ever.
+ Please Add Our Network Tag- ⌞ᴀᴋᴀᴛsᴜᴋɪ⌝
+And Join Our Network @Akatsuki_Network
 Type /help to get available commands.
 """
 
 HELP_STRINGS = """
 Hey there!.
-My Name is {}, from Darling in The FranXX. Take me as your group's darling to have fun with me. \
+My Name is {}, from My Dress Up Darling. Take me as your group's darling to have fun with me. \
 I can help you with the following commands.
 
 *Main* commands available:
@@ -121,10 +124,10 @@ And the following:
     "" if not ALLOW_EXCL else "\nAll commands can either be used with / or !.\n",
 )
 
-ZEROTWO_IMG = "https://telegra.ph/file/3a09ae55283b69f3da197.jpg"
+ZEROTWO_IMG = "https://te.legra.ph/file/94b7a5162d6ce377d2237.jpg"
 
 DONATE_STRING = """Heya, glad to hear you want to donate!
- You can support the project by contacting @joker_hacker_6521 \
+ You can support the project by contacting @Im_the_ownerr \
  Supporting isnt always financial! \
  Those who cannot provide monetary support are welcome to help us develop the bot at @jokers_botsupport."""
 
@@ -245,11 +248,11 @@ def start(update: Update, context: CallbackContext):
                     [
                         InlineKeyboardButton(
                             text="Support",
-                            url="https://t.me/blackbulls_support",
+                            url="https://t.me/Marin_Support",
                         ),
                         InlineKeyboardButton(
-                            text=str("Announcement's"),
-                            url="https://t.me/blackbull_bots",
+                            text=str("Network"),
+                            url="https://t.me/Akatsuki_Network",
                         ),
                     ],
                 ],
@@ -627,7 +630,7 @@ def main():
 
     if SUPPORT_CHAT is not None and isinstance(SUPPORT_CHAT, str):
         try:
-            dispatcher.bot.sendMessage(f"@{SUPPORT_CHAT}", "Hey developer's I'm Now online")
+            dispatcher.bot.sendMessage(f"@{SUPPORT_CHAT}", "Hey Marin is Now online")
         except Unauthorized:
             LOGGER.warning(
                 "Bot isnt able to send message to support_chat, go and check!",
