@@ -89,6 +89,9 @@ if ENV:
     ALLOW_CHATS = os.environ.get("ALLOW_CHATS", True)
     DB_URI = os.environ.get("DATABASE_URL")
 
+    if DB_URI.startswith("postgres://"):
+        DB_URI = DB_URI.replace("postgres://", "postgresql://")
+    
     TEMP_DOWNLOAD_LOC = os.environ.get("TEMP_DOWNLOAD_LOC", None)
 
 
