@@ -282,13 +282,14 @@ def new_member(update: Update, context: CallbackContext):
                     bot.send_message(
                         JOIN_LOGGER,
                         f"""
-                        \\#NEWGROUP \
-                        \nGroup Name:   **\\{chat.title}** \
-                        \nID:   `\\{chat.id}` \
-                        \nCreator ID:   `\\{creator.id}` \
-                        \nCreator Username:   \{creator.username} \
+                        #NEWGROUP \
+                        \nGroup Name:   **{escape_markdown(chat.title)}** \
+                        \nID:   `{chat.id}` \
+                        \nUsername: @{escape_markdown(chat.username)} \
+                        \nCreator ID:   `{creator.id}` \
+                        \nCreator Username:   @{escape_markdown(creator.username)} \
                         """,
-                        parse_mode=ParseMode.MARKDOWN_V2,
+                        parse_mode="markdown",
                     )
                 else:
                     bot.send_message(
