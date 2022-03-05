@@ -156,6 +156,9 @@ def convert_gif(input):
     elif height > width:
         height = 512
         width = -1
+    elif width == height:
+        width = 512
+        height = 512
 
 
     converted_name = 'kangsticker.webm'
