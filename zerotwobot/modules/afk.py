@@ -83,7 +83,7 @@ def no_longer_afk(update: Update, context: CallbackContext):
             ]
             chosen_option = random.choice(options)
             update.effective_message.reply_text(
-                chosen_option.format(firstname) + f"\n\nYou were AFK for: <code>{time}</code>",
+                chosen_option.format(firstname) + f"\nYou were AFK for: <code>{time}</code>",
                 parse_mode="html"
             )
         except:
