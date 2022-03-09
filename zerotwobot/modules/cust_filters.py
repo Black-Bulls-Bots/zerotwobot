@@ -369,8 +369,7 @@ def reply_filter(update: Update, context: CallbackContext):
 
                 if filt.file_type in (sql.Types.BUTTON_TEXT, sql.Types.TEXT):
                     try:
-                        context.bot.send_message(
-                            chat.id,
+                        message.reply_text(
                             markdown_to_html(filtext),
                             parse_mode=ParseMode.HTML,
                             disable_web_page_preview=True,
