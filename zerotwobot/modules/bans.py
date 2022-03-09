@@ -82,7 +82,7 @@ def ban(update: Update, context: CallbackContext) -> str:
             return log_message
     elif (
         not (member.can_restrict_members or member.status == "creator")
-        and user not in DRAGONS
+        and user.id not in DRAGONS
     ):
         update.effective_message.reply_text(
             "Sorry son, but you're not worthy to wield the banhammer.",
@@ -115,7 +115,7 @@ def ban(update: Update, context: CallbackContext) -> str:
                 message.reply_text("I can't act against our own.")
             elif user_id in DRAGONS:
                 message.reply_text(
-                    "Fighting this Dragon here will put me and my peaople's at risk.",
+                    "Fighting this Dragon here will put me and my people's at risk.",
                 )
             elif user_id in DEMONS:
                 message.reply_text(
@@ -551,7 +551,7 @@ def bans_callback(update: Update, context: CallbackContext):
                     message.edit_text("I can't act against our own.")
                 elif user_id in DRAGONS:
                     message.edit_text(
-                        "Fighting this Dragon here will put me and my peaople's at risk.",
+                        "Fighting this Dragon here will put me and my people's at risk.",
                     )
                 elif user_id in DEMONS:
                     message.edit_text(
