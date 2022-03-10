@@ -15,6 +15,10 @@ from zerotwobot import (
     URL,
     WEBHOOK,
     SUPPORT_CHAT,
+    PYTHON_VERSION,
+    BOT_VERSION,
+    PTB_VERSION,
+    BOT_API_VERSION,
     dispatcher,
     StartTime,
     telethn,
@@ -94,12 +98,7 @@ buttons = [
 ]
 
 
-PM_START_TEXT = """
-Hey There {}. I'm so glad that you came to me.
-I'm {}, made specifically to manage your group 
-and have more fun than ever.
-Type /help to get available commands.
-"""
+
 
 HELP_STRINGS = """
 Hey there!.
@@ -121,7 +120,7 @@ And the following:
     "" if not ALLOW_EXCL else "\nAll commands can either be used with / or !.\n",
 )
 
-ZEROTWO_IMG = "https://telegra.ph/file/3a09ae55283b69f3da197.jpg"
+ZEROTWO_IMG = "https://telegra.ph/file/5b9bc54b0ae753bb1ec18.jpg"
 
 DONATE_STRING = """Heya, glad to hear you want to donate!
  You can support the project by contacting @joker_hacker_6521 \
@@ -228,16 +227,23 @@ def start(update: Update, context: CallbackContext):
             first_name = update.effective_user.first_name
             update.effective_message.reply_photo(
                 ZEROTWO_IMG,
-                PM_START_TEXT.format(
-                    escape_markdown(first_name), escape_markdown(context.bot.first_name),
-                ),
+                caption=escape_markdown(f"""                
+                Hey There {first_name}. \
+                \nI'm {context.bot.first_name}, made specifically to manage your group and have more fun than ever. \
+                \nType /help to get available commands. \
+
+                \nVersion info: \
+                \nI'm running on v{BOT_VERSION} \
+                \nPython: {PYTHON_VERSION} \
+                \nPTB: {PTB_VERSION} \
+                \nBOT_API: {BOT_API_VERSION}"""),
                 parse_mode=ParseMode.MARKDOWN,
                 reply_markup=InlineKeyboardMarkup(buttons)
             )
     else:
         update.effective_message.reply_text(
-            "I'm awake already!\n<b>Haven't slept since:</b> <code>{}</code>".format(
-                uptime,
+            "I'm running successfully on v{}\n<b>Haven't slept since:</b> <code>{}</code>".format(
+                BOT_VERSION,uptime,
             ),
             parse_mode=ParseMode.HTML,
             reply_markup=InlineKeyboardMarkup(

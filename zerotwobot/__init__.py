@@ -1,10 +1,13 @@
 import logging
 import os
+import platform
 import sys
 import time
 import spamwatch
 
 import telegram.ext as tg
+from telegram import __version__ as ptb_version
+from telegram import bot_api_version
 from telethon import TelegramClient
 from dotenv import load_dotenv
 
@@ -29,6 +32,10 @@ if sys.version_info[0] < 3 or sys.version_info[1] < 9:
     quit(1)
 
 ENV = bool(os.environ.get("ENV", False))
+BOT_VERSION = "0.2"
+PTB_VERSION = ptb_version
+BOT_API_VERSION = bot_api_version
+PYTHON_VERSION = platform.python_version()
 
 if ENV:
     TOKEN = os.environ.get("TOKEN", None)
