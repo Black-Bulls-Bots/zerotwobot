@@ -207,11 +207,11 @@ def anime(update: Update, context: CallbackContext):
         return
     if json:
         json = json["data"]["Media"]
-        msg = f"*{json['title']['romaji']}*(`{json['title']['native']}`)\n*Type*: {json['format']}\n*Status*: {json['status']}\n*Episodes*: {json.get('episodes', 'N/A')}\n*Duration*: {json.get('duration', 'N/A')} Per Ep.\n*Score*: {json['averageScore']}\n*Genres*: `"
+        msg = f"*{json['title']['romaji']}*(`{json['title']['native']}`)\n\n➢ *Type*: {json['format']}\n➢ *Status*: {json['status']}\n➢ *Episodes*: {json.get('episodes', 'N/A')}\n➢ *Duration*: {json.get('duration', 'N/A')} Per Ep.\n➢ *Score*: {json['averageScore']}\n➢ *Genres*: `"
         for x in json["genres"]:
             msg += f"{x}, "
         msg = msg[:-2] + "`\n"
-        msg += "*Studios*: `"
+        msg += "➢ *Studios*: `"
         for x in json["studios"]["nodes"]:
             msg += f"{x['name']}, "
         msg = msg[:-2] + "`\n"
@@ -230,7 +230,7 @@ def anime(update: Update, context: CallbackContext):
             .replace("<br>", "")
         )
         msg += shorten(description, info)
-        image = json.get("bannerImage", None)
+        image = f"https://img.anili.st/media/{anime_id}"
         if trailer:
             buttons = [
                 [
@@ -327,19 +327,19 @@ def manga(update: Update, context: CallbackContext):
             if title_native:
                 msg += f"(`{title_native}`)"
         if start_date:
-            msg += f"\n*Start Date* - `{start_date}`"
+            msg += f"\n\n➢ *Start Date* - `{start_date}`"
         if status:
-            msg += f"\n*Status* - `{status}`"
+            msg += f"\n➢ *Status* - `{status}`"
         if score:
-            msg += f"\n*Score* - `{score}`"
-        msg += "\n*Genres* - "
+            msg += f"\n➢ *Score* - `{score}`"
+        msg += "\n➢ *Genres* - "
         for x in json.get("genres", []):
             msg += f"{x}, "
         msg = msg[:-2]
         info = json["siteUrl"]
         buttons = [[InlineKeyboardButton("More Info", url=info)]]
-        image = json.get("bannerImage", False)
-        msg += f"_{json.get('description', None)}_"
+        image = f"https://img.anili.st/media/{json['id']}"
+        msg += f"\n➢ *Description* - _{json.get('description', None)}_"
         if image:
             try:
                 update.effective_message.reply_photo(
