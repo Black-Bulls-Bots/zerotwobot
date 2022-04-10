@@ -11,7 +11,18 @@ from telegram import bot_api_version
 from telethon import TelegramClient
 from dotenv import load_dotenv
 
+try:
+    from zerotwobot.config import Development as Config
+except:
+    print("Can't import config!")
+
+
 load_dotenv()
+
+try:
+    LOGGER_LEVEL = int(os.environ.get("LOGGER_LEVEL"))
+except:
+    LOGGER_LEVEL = int(Config.LOGGER_LEVEL)
 
 StartTime = time.time()
 
@@ -19,7 +30,7 @@ StartTime = time.time()
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[logging.FileHandler("log.txt"), logging.StreamHandler()],
-    level=logging.DEBUG,
+    level=LOGGER_LEVEL,
 )
 
 LOGGER = logging.getLogger(__name__)
@@ -32,7 +43,7 @@ if sys.version_info[0] < 3 or sys.version_info[1] < 9:
     quit(1)
 
 ENV = bool(os.environ.get("ENV", False))
-BOT_VERSION = "0.2"
+BOT_VERSION = "0.3"
 PTB_VERSION = ptb_version
 BOT_API_VERSION = bot_api_version
 PYTHON_VERSION = platform.python_version()
@@ -108,7 +119,6 @@ if ENV:
         raise Exception("Your blacklisted chats list does not contain valid integers.")
 
 else:
-    from zerotwobot.config import Development as Config
 
     TOKEN = Config.TOKEN
 
