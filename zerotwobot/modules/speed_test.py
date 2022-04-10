@@ -46,7 +46,7 @@ def speedtestxyz_callback(update: Update, context: CallbackContext):
             replymsg += f"\nDownload: `{convert(result['download'])}Mb/s`\nUpload: `{convert(result['upload'])}Mb/s`\nPing: `{result['ping']}`"
             update.effective_message.edit_text(replymsg, parse_mode=ParseMode.MARKDOWN)
     else:
-        query.answer("You are required to join Zero Two Association to use this command.")
+        query.answer("You are required to join Black Bulls to use this command.")
 
 
 SPEED_TEST_HANDLER = DisableAbleCommandHandler("speedtest", speedtestxyz, run_async=True)
