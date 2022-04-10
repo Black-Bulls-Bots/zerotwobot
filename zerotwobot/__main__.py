@@ -123,7 +123,7 @@ And the following:
 ZEROTWO_IMG = "https://telegra.ph/file/5b9bc54b0ae753bb1ec18.jpg"
 
 DONATE_STRING = """Heya, glad to hear you want to donate!
- You can support the project by contacting @joker_hacker_6521 \
+ You can support the project by contacting @kishoreee \
  Supporting isnt always financial! \
  Those who cannot provide monetary support are welcome to help us develop the bot at @jokers_botsupport."""
 
