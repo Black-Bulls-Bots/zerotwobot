@@ -528,7 +528,7 @@ def devlist(update: Update, context: CallbackContext):
         "<code>Gathering intel..</code>", parse_mode=ParseMode.HTML,
     )
     true_dev = list(set(DEV_USERS) - {OWNER_ID})
-    reply = "<b>Zero Two Association Members ⚡️:</b>\n"
+    reply = "<b>Black Bulls Members ⚡️:</b>\n"
     for each_user in true_dev:
         user_id = int(each_user)
         try:
@@ -549,12 +549,12 @@ Group admins/group owners do not need these commands.
  ╠ `/demons`*:* Lists all Demon disasters
  ╠ `/tigers`*:* Lists all Tigers disasters
  ╠ `/wolves`*:* Lists all Wolf disasters
- ╠ `/heroes`*:* Lists all Zero Two Association members
+ ╠ `/darlings`*:* Lists all Black Bulls members
  ╠ `/adddragon`*:* Adds a user to Dragon
  ╠ `/adddemon`*:* Adds a user to Demon
  ╠ `/addtiger`*:* Adds a user to Tiger
  ╠ `/addwolf`*:* Adds a user to Wolf
- ╚ `Add dev doesnt exist, devs should know how to add themselves`
+ ╚ `Add dev doesn't exist, devs should know how to add themselves`
 
  ╔ *Ping:*
  ╠ `/ping`*:* gets ping time of bot to telegram server
@@ -606,9 +606,6 @@ Group admins/group owners do not need these commands.
  ╠ `/rmute user group`*:* Remote mute
  ╚ `/runmute user group`*:* Remote un-mute
 
- ╔ *Windows self hosted only:*
- ╠ `/reboot`*:* Restarts the bots service
- ╚ `/gitpull`*:* Pulls the repo and then restarts the bots service
 
  ╔ *Chatbot:*
  ╚ `/listaichats`*:* Lists the chats the chatmode is enabled in
@@ -644,7 +641,7 @@ WHITELISTLIST_HANDLER = CommandHandler(["whitelistlist", "wolves"], whitelistlis
 TIGERLIST_HANDLER = CommandHandler(["tigers"], tigerlist, run_async=True)
 SUPPORTLIST_HANDLER = CommandHandler(["supportlist", "demons"], supportlist, run_async=True)
 SUDOLIST_HANDLER = CommandHandler(["sudolist", "dragons"], sudolist, run_async=True)
-DEVLIST_HANDLER = CommandHandler(["devlist", "heroes"], devlist, run_async=True)
+DEVLIST_HANDLER = CommandHandler(["devlist", "darlings"], devlist, run_async=True)
 
 dispatcher.add_handler(SUDO_HANDLER)
 dispatcher.add_handler(SUPPORT_HANDLER)
