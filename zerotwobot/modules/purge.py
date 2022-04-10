@@ -1,12 +1,13 @@
 import time
 from telethon import events
+from telethon.errors.rpcerrorlist import MessageDeleteForbiddenError
 
 from zerotwobot import telethn
 from zerotwobot.modules.helper_funcs.telethn.chatstatus import (
     can_delete_messages,
     user_is_admin,
+    user_can_purge
 )
-
 
 async def purge_messages(event):
     start = time.perf_counter()
@@ -14,9 +15,13 @@ async def purge_messages(event):
         return
 
     if not await user_is_admin(
-        user_id=event.sender_id, message=event,
+        user_id=event.sender_id, message=event
     ) and event.from_id not in [1087968824]:
         await event.reply("Only Admins are allowed to use this command")
+        return
+
+    if not await user_can_purge(user_id=event.sender_id, message=event):
+        await event.reply("You don't have the permission to delete messages")
         return
 
     if not await can_delete_messages(message=event):
@@ -52,22 +57,44 @@ async def delete_messages(event):
         return
 
     if not await user_is_admin(
-        user_id=event.sender_id, message=event,
+        user_id=event.sender_id, message=event
     ) and event.from_id not in [1087968824]:
         await event.reply("Only Admins are allowed to use this command")
         return
 
-    if not await can_delete_messages(message=event):
-        await event.reply("Can't seem to delete this?")
+    if not await user_can_purge(user_id=event.sender_id, message=event):
+        await event.reply("You don't have the permission to delete messages")
         return
 
     message = await event.get_reply_message()
+    me = await telethn.get_me()
+    BOT_ID = me.id
+
+    if not await can_delete_messages(message=event)\
+        and message\
+            and not int(message.sender.id) == int(BOT_ID):
+        if event.chat.admin_rights is None:
+            return await event.reply(
+                "I'm not an admin, do you mind promoting me first?"
+                )
+        elif not event.chat.admin_rights.delete_messages:
+            return await event.reply(
+                "I don't have the permission to delete messages!"
+                )
+
     if not message:
         await event.reply("Whadya want to delete?")
         return
     chat = await event.get_input_chat()
-    del_message = [message, event.message]
-    await event.client.delete_messages(chat, del_message)
+    # del_message = [message, event.message]
+    # Separated to make it possible for the bot to delete its own messages even if its not an admin
+    await event.client.delete_messages(chat, message)
+    try:
+        await event.client.delete_messages(chat, event.message)
+    except MessageDeleteForbiddenError:
+        print("error in deleting message {} in {}".format(event.message.id, event.chat.id))
+        pass
+
 
 
 __help__ = """
