@@ -3,7 +3,8 @@ from zerotwobot import ALLOW_EXCL
 from zerotwobot import DEV_USERS, DRAGONS, DEMONS, TIGERS, WOLVES
 
 from telegram import Update
-from telegram.ext import CommandHandler, MessageHandler, RegexHandler, Filters
+from telegram.ext import CommandHandler, MessageHandler
+from telegram.ext import filters as filters_module
 from pyrate_limiter import (
     BucketFullException,
     Duration,
@@ -64,10 +65,10 @@ class CustomCommandHandler(CommandHandler):
 
         if allow_edit is False:
             self.filters &= ~(
-                Filters.update.edited_message | Filters.update.edited_channel_post
+                filters_module.UpdateType.EDITED_MESSAGE | filters_module.UpdateType.EDITED_CHANNEL_POST
             )
 
-    def check_update(self, update):
+    async def check_update(self, update):
         if isinstance(update, Update) and update.effective_message:
             message = update.effective_message
 
@@ -81,19 +82,19 @@ class CustomCommandHandler(CommandHandler):
                     return False
 
             if message.text and len(message.text) > 1:
-                fst_word = message.text.split(None, 1)[0]
+                fst_word = await message.text.split(None, 1)[0]
                 if len(fst_word) > 1 and any(
                     fst_word.startswith(start) for start in CMD_STARTERS
                 ):
 
-                    args = message.text.split()[1:]
+                    args = await message.text.split()[1:]
                     command = fst_word[1:].split("@")
                     command.append(message.bot.username)
                     if user_id == 1087968824:
                         user_id = update.effective_chat.id
                     if not (
                         command[0].lower() in self.command
-                        and command[1].lower() == message.bot.username.lower()
+                        and command[1].lower() == await message.bot.username.lower()
                     ):
                         return None
                     if SpamChecker.check_user(user_id):
@@ -104,15 +105,15 @@ class CustomCommandHandler(CommandHandler):
                     else:
                         return False
 
-    def handle_update(self, update, dispatcher, check_result, context=None):
+def handle_update(self, update, application, check_result, context=None):
         if context:
-            self.collect_additional_context(context, update, dispatcher, check_result)
+            self.collect_additional_context(context, update, application, check_result)
             return self.callback(update, context)
         else:
-            optional_args = self.collect_optional_args(dispatcher, update, check_result)
-            return self.callback(dispatcher.bot, update, **optional_args)
+            optional_args = self.collect_optional_args(application, update, check_result)
+            return self.callback(application.bot, update, **optional_args)
 
-    def collect_additional_context(self, context, update, dispatcher, check_result):
+async def collect_additional_context(self, context, update, application, check_result):
         if isinstance(check_result, bool):
             context.args = update.effective_message.text.split()[1:]
         else:
@@ -121,17 +122,20 @@ class CustomCommandHandler(CommandHandler):
                 context.update(check_result[1])
 
 
-class CustomRegexHandler(RegexHandler):
-    def __init__(self, pattern, callback, friendly="", **kwargs):
-        super().__init__(pattern, callback, **kwargs)
-
 
 class CustomMessageHandler(MessageHandler):
-    def __init__(self, filters, callback, friendly="", allow_edit=False, **kwargs):
-        super().__init__(filters, callback, **kwargs)
+    def __init__(
+        self, filters, 
+        callback, 
+        block, 
+        friendly="", 
+        allow_edit=False, 
+        **kwargs
+    ):
+        super().__init__(filters, callback, block=block, **kwargs)
         if allow_edit is False:
             self.filters &= ~(
-                Filters.update.edited_message | Filters.update.edited_channel_post
+                filters_module.UpdateType.EDITED_MESSAGE | filters_module.UpdateType.EDITED_CHANNEL_POST
             )
 
         def check_update(self, update):
