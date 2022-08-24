@@ -1,14 +1,13 @@
 from emoji import UNICODE_EMOJI
-from googletrans import LANGUAGES, Translator
-from telegram import ParseMode, Update
+from google_trans_new_that_works import LANGUAGES, google_translator
+from telegram import Update
+from telegram.constants import ParseMode
 from telegram.ext import CallbackContext
 
-from zerotwobot import dispatcher
+from zerotwobot import application
 from zerotwobot.modules.disable import DisableAbleCommandHandler
 
-
-
-def totranslate(update: Update, context: CallbackContext):
+async def totranslate(update: Update, context: CallbackContext):
     message = update.effective_message
     problem_lang_code = []
     for key in LANGUAGES:
@@ -60,23 +59,23 @@ def totranslate(update: Update, context: CallbackContext):
             if emoji in text:
                 text = text.replace(emoji, "")
 
-        trl = Translator()
+        trl = google_translator()
         if source_lang is None:
             detection = trl.detect(text)
-            trans_str = trl.translate(text, dest=dest_lang)
-            return message.reply_text(
+            trans_str = trl.translate(text, lang_tgt=dest_lang)
+            return await message.reply_text(
                 f"Translated from `{detection.lang}` to `{dest_lang}`:\n`{trans_str.text}`",
                 parse_mode=ParseMode.MARKDOWN,
             )
         else:
-            trans_str = trl.translate(text, dest=dest_lang, src=source_lang)
-            message.reply_text(
+            trans_str = trl.translate(text, lang_tgt=dest_lang, lang_src=source_lang)
+            await message.reply_text(
                 f"Translated from `{source_lang}` to `{dest_lang}`:\n`{trans_str.text}`",
                 parse_mode=ParseMode.MARKDOWN,
             )
 
     except IndexError:
-        update.effective_message.reply_text(
+        await update.effective_message.reply_text(
             "Reply to messages or write messages from other languages ​​for translating into the intended language\n\n"
             "Example: `/tr en-ta` to translate from English to Tamil\n"
             "Or use: `/tr ta` for automatic detection and translating it into Tamil.\n"
@@ -85,7 +84,7 @@ def totranslate(update: Update, context: CallbackContext):
             disable_web_page_preview=True,
         )
     except ValueError:
-        update.effective_message.reply_text("The intended language is not found!")
+        await update.effective_message.reply_text("The intended language is not found!")
     else:
         return
 
@@ -97,9 +96,9 @@ __help__ = """
   `/tr hi-en`*:* translates hindi to english
 """
 
-TRANSLATE_HANDLER = DisableAbleCommandHandler(["tr", "tl"], totranslate, run_async=True)
+TRANSLATE_HANDLER = DisableAbleCommandHandler(["tr", "tl"], totranslate, block=False)
 
-dispatcher.add_handler(TRANSLATE_HANDLER)
+application.add_handler(TRANSLATE_HANDLER)
 
 __mod_name__ = "Translator"
 __command_list__ = ["tr", "tl"]
