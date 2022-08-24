@@ -1,11 +1,12 @@
 import requests
-from zerotwobot import dispatcher
+from zerotwobot import application
 from zerotwobot.modules.disable import DisableAbleCommandHandler
-from telegram import ParseMode, Update
+from telegram import Update
+from telegram.constants import ParseMode
 from telegram.ext import CallbackContext
 
 
-def paste(update: Update, context: CallbackContext):
+async def paste(update: Update, context: CallbackContext):
     args = context.args
     message = update.effective_message
 
@@ -13,10 +14,10 @@ def paste(update: Update, context: CallbackContext):
         data = message.reply_to_message.text
 
     elif len(args) >= 1:
-        data = message.text.split(None, 1)[1]
+        data = await message.text.split(None, 1)[1]
 
     else:
-        message.reply_text("What am I supposed to do with this?")
+        await message.reply_text("What am I supposed to do with this?")
         return
 
     key = (
@@ -30,13 +31,13 @@ def paste(update: Update, context: CallbackContext):
 
     reply_text = f"Nekofied to *Nekobin* : {url}"
 
-    message.reply_text(
+    await message.reply_text(
         reply_text, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True,
     )
 
 
-PASTE_HANDLER = DisableAbleCommandHandler("paste", paste, run_async=True)
-dispatcher.add_handler(PASTE_HANDLER)
+PASTE_HANDLER = DisableAbleCommandHandler("paste", paste, block=False)
+application.add_handler(PASTE_HANDLER)
 
 __command_list__ = ["paste"]
 __handlers__ = [PASTE_HANDLER]

@@ -11,7 +11,7 @@ from zerotwobot import (
     DEMONS,
     TIGERS,
     WOLVES,
-    dispatcher,
+    application,
 )
 from zerotwobot.modules.helper_funcs.chat_status import (
     dev_plus,
@@ -20,9 +20,11 @@ from zerotwobot.modules.helper_funcs.chat_status import (
 )
 from zerotwobot.modules.helper_funcs.extraction import extract_user
 from zerotwobot.modules.log_channel import gloggable
-from telegram import ParseMode, TelegramError, Update
+from telegram import Update
+from telegram.error import TelegramError
+from telegram.constants import ParseMode
 from telegram.ext import CallbackContext, CommandHandler
-from telegram.utils.helpers import mention_html
+from telegram.helpers import mention_html
 
 ELEVATED_USERS_FILE = os.path.join(os.getcwd(), "zerotwobot/elevated_users.json")
 
@@ -44,25 +46,25 @@ def check_user_id(user_id: int, context: CallbackContext) -> Optional[str]:
 
 @dev_plus
 @gloggable
-def addsudo(update: Update, context: CallbackContext) -> str:
+async def addsudo(update: Update, context: CallbackContext) -> str:
     message = update.effective_message
     user = update.effective_user
     chat = update.effective_chat
     bot, args = context.bot, context.args
     user_id = extract_user(message, args)
-    user_member = bot.getChat(user_id)
+    user_member = await bot.getChat(user_id)
     rt = ""
 
     reply = check_user_id(user_id, bot)
     if reply:
-        message.reply_text(reply)
+        await message.reply_text(reply)
         return ""
 
     with open(ELEVATED_USERS_FILE, "r") as infile:
         data = json.load(infile)
 
     if user_id in DRAGONS:
-        message.reply_text("This member is already a Dragon Disaster")
+        await message.reply_text("This member is already a Dragon Disaster")
         return ""
 
     if user_id in DEMONS:
@@ -81,7 +83,7 @@ def addsudo(update: Update, context: CallbackContext) -> str:
     with open(ELEVATED_USERS_FILE, "w") as outfile:
         json.dump(data, outfile, indent=4)
 
-    update.effective_message.reply_text(
+    await update.effective_message.reply_text(
         rt
         + "\nSuccessfully set Disaster level of {} to Dragon!".format(
             user_member.first_name,
@@ -103,7 +105,7 @@ def addsudo(update: Update, context: CallbackContext) -> str:
 
 @sudo_plus
 @gloggable
-def addsupport(
+async def addsupport(
     update: Update,
     context: CallbackContext,
 ) -> str:
@@ -112,12 +114,12 @@ def addsupport(
     chat = update.effective_chat
     bot, args = context.bot, context.args
     user_id = extract_user(message, args)
-    user_member = bot.getChat(user_id)
+    user_member = await bot.getChat(user_id)
     rt = ""
 
     reply = check_user_id(user_id, bot)
     if reply:
-        message.reply_text(reply)
+        await message.reply_text(reply)
         return ""
 
     with open(ELEVATED_USERS_FILE, "r") as infile:
@@ -129,7 +131,7 @@ def addsupport(
         DRAGONS.remove(user_id)
 
     if user_id in DEMONS:
-        message.reply_text("This user is already a Demon Disaster.")
+        await message.reply_text("This user is already a Demon Disaster.")
         return ""
 
     if user_id in WOLVES:
@@ -143,7 +145,7 @@ def addsupport(
     with open(ELEVATED_USERS_FILE, "w") as outfile:
         json.dump(data, outfile, indent=4)
 
-    update.effective_message.reply_text(
+    await update.effective_message.reply_text(
         rt + f"\n{user_member.first_name} was added as a Demon Disaster!",
     )
 
@@ -162,18 +164,18 @@ def addsupport(
 
 @sudo_plus
 @gloggable
-def addwhitelist(update: Update, context: CallbackContext) -> str:
+async def addwhitelist(update: Update, context: CallbackContext) -> str:
     message = update.effective_message
     user = update.effective_user
     chat = update.effective_chat
     bot, args = context.bot, context.args
     user_id = extract_user(message, args)
-    user_member = bot.getChat(user_id)
+    user_member = await bot.getChat(user_id)
     rt = ""
 
     reply = check_user_id(user_id, bot)
     if reply:
-        message.reply_text(reply)
+        await message.reply_text(reply)
         return ""
 
     with open(ELEVATED_USERS_FILE, "r") as infile:
@@ -190,7 +192,7 @@ def addwhitelist(update: Update, context: CallbackContext) -> str:
         DEMONS.remove(user_id)
 
     if user_id in WOLVES:
-        message.reply_text("This user is already a Wolf Disaster.")
+        await message.reply_text("This user is already a Wolf Disaster.")
         return ""
 
     data["whitelists"].append(user_id)
@@ -199,7 +201,7 @@ def addwhitelist(update: Update, context: CallbackContext) -> str:
     with open(ELEVATED_USERS_FILE, "w") as outfile:
         json.dump(data, outfile, indent=4)
 
-    update.effective_message.reply_text(
+    await update.effective_message.reply_text(
         rt + f"\nSuccessfully promoted {user_member.first_name} to a Wolf Disaster!",
     )
 
@@ -218,18 +220,18 @@ def addwhitelist(update: Update, context: CallbackContext) -> str:
 
 @sudo_plus
 @gloggable
-def addtiger(update: Update, context: CallbackContext) -> str:
+async def addtiger(update: Update, context: CallbackContext) -> str:
     message = update.effective_message
     user = update.effective_user
     chat = update.effective_chat
     bot, args = context.bot, context.args
     user_id = extract_user(message, args)
-    user_member = bot.getChat(user_id)
+    user_member = await bot.getChat(user_id)
     rt = ""
 
     reply = check_user_id(user_id, bot)
     if reply:
-        message.reply_text(reply)
+        await message.reply_text(reply)
         return ""
 
     with open(ELEVATED_USERS_FILE, "r") as infile:
@@ -251,7 +253,7 @@ def addtiger(update: Update, context: CallbackContext) -> str:
         WOLVES.remove(user_id)
 
     if user_id in TIGERS:
-        message.reply_text("This user is already a Tiger.")
+        await message.reply_text("This user is already a Tiger.")
         return ""
 
     data["tigers"].append(user_id)
@@ -260,7 +262,7 @@ def addtiger(update: Update, context: CallbackContext) -> str:
     with open(ELEVATED_USERS_FILE, "w") as outfile:
         json.dump(data, outfile, indent=4)
 
-    update.effective_message.reply_text(
+    await update.effective_message.reply_text(
         rt + f"\nSuccessfully promoted {user_member.first_name} to a Tiger Disaster!",
     )
 
@@ -279,24 +281,24 @@ def addtiger(update: Update, context: CallbackContext) -> str:
 
 @dev_plus
 @gloggable
-def removesudo(update: Update, context: CallbackContext) -> str:
+async def removesudo(update: Update, context: CallbackContext) -> str:
     message = update.effective_message
     user = update.effective_user
     chat = update.effective_chat
     bot, args = context.bot, context.args
     user_id = extract_user(message, args)
-    user_member = bot.getChat(user_id)
+    user_member = await bot.getChat(user_id)
 
     reply = check_user_id(user_id, bot)
     if reply:
-        message.reply_text(reply)
+        await message.reply_text(reply)
         return ""
 
     with open(ELEVATED_USERS_FILE, "r") as infile:
         data = json.load(infile)
 
     if user_id in DRAGONS:
-        message.reply_text("Requested HA to demote this user to Civilian")
+        await message.reply_text("Requested HA to demote this user to Civilian")
         DRAGONS.remove(user_id)
         data["sudos"].remove(user_id)
 
@@ -315,31 +317,31 @@ def removesudo(update: Update, context: CallbackContext) -> str:
         return log_message
 
     else:
-        message.reply_text("This user is not a Dragon Disaster!")
+        await message.reply_text("This user is not a Dragon Disaster!")
         return ""
 
 
 
 @sudo_plus
 @gloggable
-def removesupport(update: Update, context: CallbackContext) -> str:
+async def removesupport(update: Update, context: CallbackContext) -> str:
     message = update.effective_message
     user = update.effective_user
     chat = update.effective_chat
     bot, args = context.bot, context.args
     user_id = extract_user(message, args)
-    user_member = bot.getChat(user_id)
+    user_member = await bot.getChat(user_id)
 
     reply = check_user_id(user_id, bot)
     if reply:
-        message.reply_text(reply)
+        await message.reply_text(reply)
         return ""
 
     with open(ELEVATED_USERS_FILE, "r") as infile:
         data = json.load(infile)
 
     if user_id in DEMONS:
-        message.reply_text("Requested HA to demote this user to Civilian")
+        await message.reply_text("Requested HA to demote this user to Civilian")
         DEMONS.remove(user_id)
         data["supports"].remove(user_id)
 
@@ -358,31 +360,31 @@ def removesupport(update: Update, context: CallbackContext) -> str:
         return log_message
 
     else:
-        message.reply_text("This user is not a Demon level Disaster!")
+        await message.reply_text("This user is not a Demon level Disaster!")
         return ""
 
 
 
 @sudo_plus
 @gloggable
-def removewhitelist(update: Update, context: CallbackContext) -> str:
+async def removewhitelist(update: Update, context: CallbackContext) -> str:
     message = update.effective_message
     user = update.effective_user
     chat = update.effective_chat
     bot, args = context.bot, context.args
     user_id = extract_user(message, args)
-    user_member = bot.getChat(user_id)
+    user_member = await bot.getChat(user_id)
 
     reply = check_user_id(user_id, bot)
     if reply:
-        message.reply_text(reply)
+        await message.reply_text(reply)
         return ""
 
     with open(ELEVATED_USERS_FILE, "r") as infile:
         data = json.load(infile)
 
     if user_id in WOLVES:
-        message.reply_text("Demoting to normal user")
+        await message.reply_text("Demoting to normal user")
         WOLVES.remove(user_id)
         data["whitelists"].remove(user_id)
 
@@ -400,31 +402,31 @@ def removewhitelist(update: Update, context: CallbackContext) -> str:
 
         return log_message
     else:
-        message.reply_text("This user is not a Wolf Disaster!")
+        await message.reply_text("This user is not a Wolf Disaster!")
         return ""
 
 
 
 @sudo_plus
 @gloggable
-def removetiger(update: Update, context: CallbackContext) -> str:
+async def removetiger(update: Update, context: CallbackContext) -> str:
     message = update.effective_message
     user = update.effective_user
     chat = update.effective_chat
     bot, args = context.bot, context.args
     user_id = extract_user(message, args)
-    user_member = bot.getChat(user_id)
+    user_member = await bot.getChat(user_id)
 
     reply = check_user_id(user_id, bot)
     if reply:
-        message.reply_text(reply)
+        await message.reply_text(reply)
         return ""
 
     with open(ELEVATED_USERS_FILE, "r") as infile:
         data = json.load(infile)
 
     if user_id in TIGERS:
-        message.reply_text("Demoting to normal user")
+        await message.reply_text("Demoting to normal user")
         TIGERS.remove(user_id)
         data["tigers"].remove(user_id)
 
@@ -442,22 +444,22 @@ def removetiger(update: Update, context: CallbackContext) -> str:
 
         return log_message
     else:
-        message.reply_text("This user is not a Tiger Disaster!")
+        await message.reply_text("This user is not a Tiger Disaster!")
         return ""
 
 
 
 @whitelist_plus
-def whitelistlist(update: Update, context: CallbackContext):
+async def whitelistlist(update: Update, context: CallbackContext):
     reply = "<b>Known Wolf Disasters 🐺:</b>\n"
-    m = update.effective_message.reply_text(
+    m = await update.effective_message.reply_text(
         "<code>Gathering intel..</code>", parse_mode=ParseMode.HTML,
     )
     bot = context.bot
     for each_user in WOLVES:
         user_id = int(each_user)
         try:
-            user = bot.get_chat(user_id)
+            user = await bot.get_chat(user_id)
 
             reply += f"• {mention_html(user_id, html.escape(user.first_name))}\n"
         except TelegramError:
@@ -467,16 +469,16 @@ def whitelistlist(update: Update, context: CallbackContext):
 
 
 @whitelist_plus
-def tigerlist(update: Update, context: CallbackContext):
+async def tigerlist(update: Update, context: CallbackContext):
     reply = "<b>Known Tiger Disasters 🐯:</b>\n"
-    m = update.effective_message.reply_text(
+    m = await update.effective_message.reply_text(
         "<code>Gathering intel..</code>", parse_mode=ParseMode.HTML,
     )
     bot = context.bot
     for each_user in TIGERS:
         user_id = int(each_user)
         try:
-            user = bot.get_chat(user_id)
+            user = await bot.get_chat(user_id)
             reply += f"• {mention_html(user_id, html.escape(user.first_name))}\n"
         except TelegramError:
             pass
@@ -485,16 +487,16 @@ def tigerlist(update: Update, context: CallbackContext):
 
 
 @whitelist_plus
-def supportlist(update: Update, context: CallbackContext):
+async def supportlist(update: Update, context: CallbackContext):
     bot = context.bot
-    m = update.effective_message.reply_text(
+    m = await update.effective_message.reply_text(
         "<code>Gathering intel..</code>", parse_mode=ParseMode.HTML,
     )
     reply = "<b>Known Demon Disasters 👹:</b>\n"
     for each_user in DEMONS:
         user_id = int(each_user)
         try:
-            user = bot.get_chat(user_id)
+            user = await bot.get_chat(user_id)
             reply += f"• {mention_html(user_id, html.escape(user.first_name))}\n"
         except TelegramError:
             pass
@@ -503,9 +505,9 @@ def supportlist(update: Update, context: CallbackContext):
 
 
 @whitelist_plus
-def sudolist(update: Update, context: CallbackContext):
+async def sudolist(update: Update, context: CallbackContext):
     bot = context.bot
-    m = update.effective_message.reply_text(
+    m = await update.effective_message.reply_text(
         "<code>Gathering intel..</code>", parse_mode=ParseMode.HTML,
     )
     true_sudo = list(set(DRAGONS) - set(DEV_USERS))
@@ -513,7 +515,7 @@ def sudolist(update: Update, context: CallbackContext):
     for each_user in true_sudo:
         user_id = int(each_user)
         try:
-            user = bot.get_chat(user_id)
+            user = await bot.get_chat(user_id)
             reply += f"• {mention_html(user_id, html.escape(user.first_name))}\n"
         except TelegramError:
             pass
@@ -522,9 +524,9 @@ def sudolist(update: Update, context: CallbackContext):
 
 
 @whitelist_plus
-def devlist(update: Update, context: CallbackContext):
+async def devlist(update: Update, context: CallbackContext):
     bot = context.bot
-    m = update.effective_message.reply_text(
+    m = await update.effective_message.reply_text(
         "<code>Gathering intel..</code>", parse_mode=ParseMode.HTML,
     )
     true_dev = list(set(DEV_USERS) - {OWNER_ID})
@@ -532,7 +534,7 @@ def devlist(update: Update, context: CallbackContext):
     for each_user in true_dev:
         user_id = int(each_user)
         try:
-            user = bot.get_chat(user_id)
+            user = await bot.get_chat(user_id)
             reply += f"• {mention_html(user_id, html.escape(user.first_name))}\n"
         except TelegramError:
             pass
@@ -628,35 +630,35 @@ Group admins/group owners do not need these commands.
 Visit @blackbulls\_support for more information.
 """
 
-SUDO_HANDLER = CommandHandler(("addsudo", "adddragon"), addsudo, run_async=True)
-SUPPORT_HANDLER = CommandHandler(("addsupport", "adddemon"), addsupport, run_async=True)
-TIGER_HANDLER = CommandHandler(("addtiger"), addtiger, run_async=True)
-WHITELIST_HANDLER = CommandHandler(("addwhitelist", "addwolf"), addwhitelist, run_async=True)
-UNSUDO_HANDLER = CommandHandler(("removesudo", "removedragon"), removesudo, run_async=True)
-UNSUPPORT_HANDLER = CommandHandler(("removesupport", "removedemon"), removesupport, run_async=True)
-UNTIGER_HANDLER = CommandHandler(("removetiger"), removetiger, run_async=True)
-UNWHITELIST_HANDLER = CommandHandler(("removewhitelist", "removewolf"), removewhitelist, run_async=True)
+SUDO_HANDLER = CommandHandler(("addsudo", "adddragon"), addsudo, block=False)
+SUPPORT_HANDLER = CommandHandler(("addsupport", "adddemon"), addsupport, block=False)
+TIGER_HANDLER = CommandHandler(("addtiger"), addtiger, block=False)
+WHITELIST_HANDLER = CommandHandler(("addwhitelist", "addwolf"), addwhitelist, block=False)
+UNSUDO_HANDLER = CommandHandler(("removesudo", "removedragon"), removesudo, block=False)
+UNSUPPORT_HANDLER = CommandHandler(("removesupport", "removedemon"), removesupport, block=False)
+UNTIGER_HANDLER = CommandHandler(("removetiger"), removetiger, block=False)
+UNWHITELIST_HANDLER = CommandHandler(("removewhitelist", "removewolf"), removewhitelist, block=False)
 
-WHITELISTLIST_HANDLER = CommandHandler(["whitelistlist", "wolves"], whitelistlist, run_async=True)
-TIGERLIST_HANDLER = CommandHandler(["tigers"], tigerlist, run_async=True)
-SUPPORTLIST_HANDLER = CommandHandler(["supportlist", "demons"], supportlist, run_async=True)
-SUDOLIST_HANDLER = CommandHandler(["sudolist", "dragons"], sudolist, run_async=True)
-DEVLIST_HANDLER = CommandHandler(["devlist", "darlings"], devlist, run_async=True)
+WHITELISTLIST_HANDLER = CommandHandler(["whitelistlist", "wolves"], whitelistlist, block=False)
+TIGERLIST_HANDLER = CommandHandler(["tigers"], tigerlist, block=False)
+SUPPORTLIST_HANDLER = CommandHandler(["supportlist", "demons"], supportlist, block=False)
+SUDOLIST_HANDLER = CommandHandler(["sudolist", "dragons"], sudolist, block=False)
+DEVLIST_HANDLER = CommandHandler(["devlist", "darlings"], devlist, block=False)
 
-dispatcher.add_handler(SUDO_HANDLER)
-dispatcher.add_handler(SUPPORT_HANDLER)
-dispatcher.add_handler(TIGER_HANDLER)
-dispatcher.add_handler(WHITELIST_HANDLER)
-dispatcher.add_handler(UNSUDO_HANDLER)
-dispatcher.add_handler(UNSUPPORT_HANDLER)
-dispatcher.add_handler(UNTIGER_HANDLER)
-dispatcher.add_handler(UNWHITELIST_HANDLER)
+application.add_handler(SUDO_HANDLER)
+application.add_handler(SUPPORT_HANDLER)
+application.add_handler(TIGER_HANDLER)
+application.add_handler(WHITELIST_HANDLER)
+application.add_handler(UNSUDO_HANDLER)
+application.add_handler(UNSUPPORT_HANDLER)
+application.add_handler(UNTIGER_HANDLER)
+application.add_handler(UNWHITELIST_HANDLER)
 
-dispatcher.add_handler(WHITELISTLIST_HANDLER)
-dispatcher.add_handler(TIGERLIST_HANDLER)
-dispatcher.add_handler(SUPPORTLIST_HANDLER)
-dispatcher.add_handler(SUDOLIST_HANDLER)
-dispatcher.add_handler(DEVLIST_HANDLER)
+application.add_handler(WHITELISTLIST_HANDLER)
+application.add_handler(TIGERLIST_HANDLER)
+application.add_handler(SUPPORTLIST_HANDLER)
+application.add_handler(SUDOLIST_HANDLER)
+application.add_handler(DEVLIST_HANDLER)
 
 __mod_name__ = "Disasters"
 __handlers__ = [

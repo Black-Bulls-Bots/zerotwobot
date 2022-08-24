@@ -1,14 +1,14 @@
 import os
 from time import sleep
 
-from zerotwobot import OWNER_ID, dispatcher
+from zerotwobot import OWNER_ID, application
 from zerotwobot.modules.helper_funcs.extraction import extract_user
 from zerotwobot.modules.sql.users_sql import get_user_com_chats
 from telegram import Update
-from telegram.error import BadRequest, RetryAfter, Unauthorized
-from telegram.ext import CallbackContext, CommandHandler, Filters
+from telegram.error import BadRequest, RetryAfter, Forbidden
+from telegram.ext import CallbackContext, CommandHandler, filters
 
-def get_user_common_chats(update: Update, context: CallbackContext):
+async def get_user_common_chats(update: Update, context: CallbackContext):
     bot, args = context.bot, context.args
     msg = update.effective_message
     user = extract_user(msg, args)
@@ -19,16 +19,16 @@ def get_user_common_chats(update: Update, context: CallbackContext):
     if not common_list:
         msg.reply_text("No common chats with this user!")
         return
-    name = bot.get_chat(user).first_name
+    name = await bot.get_chat(user).first_name
     text = f"<b>Common chats with {name}</b>\n"
     for chat in common_list:
         try:
-            chat_name = bot.get_chat(chat).title
+            chat_name = await bot.get_chat(chat).title
             sleep(0.3)
             text += f"• <code>{chat_name}</code>\n"
         except BadRequest:
             pass
-        except Unauthorized:
+        except Forbidden:
             pass
         except RetryAfter as e:
             sleep(e.retry_after)
@@ -44,7 +44,7 @@ def get_user_common_chats(update: Update, context: CallbackContext):
 
 
 COMMON_CHATS_HANDLER = CommandHandler(
-    "getchats", get_user_common_chats, filters=Filters.user(OWNER_ID), run_async=True
+    "getchats", get_user_common_chats, filters=filters.User(OWNER_ID), block=False
 )
 
-dispatcher.add_handler(COMMON_CHATS_HANDLER)
+application.add_handler(COMMON_CHATS_HANDLER)

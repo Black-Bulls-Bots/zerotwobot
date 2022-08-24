@@ -1,11 +1,12 @@
 import requests
-from zerotwobot import dispatcher
+from zerotwobot import application
 from zerotwobot.modules.disable import DisableAbleCommandHandler
-from telegram import ParseMode, Update
+from telegram import Update
+from telegram.constants import ParseMode
 from telegram.ext import CallbackContext
 
 
-def ud(update: Update, context: CallbackContext):
+async def ud(update: Update, context: CallbackContext):
     message = update.effective_message
     text = message.text[len("/ud ") :]
     results = requests.get(
@@ -15,12 +16,12 @@ def ud(update: Update, context: CallbackContext):
         reply_text = f'*{text}*\n\n{results["list"][0]["definition"]}\n\n_{results["list"][0]["example"]}_'
     except:
         reply_text = "No results found."
-    message.reply_text(reply_text, parse_mode=ParseMode.MARKDOWN)
+    await message.reply_text(reply_text, parse_mode=ParseMode.MARKDOWN)
 
 
-UD_HANDLER = DisableAbleCommandHandler(["ud"], ud, run_async=True)
+UD_HANDLER = DisableAbleCommandHandler(["ud"], ud, block=False)
 
-dispatcher.add_handler(UD_HANDLER)
+application.add_handler(UD_HANDLER)
 
 __command_list__ = ["ud"]
 __handlers__ = [UD_HANDLER]

@@ -7,10 +7,11 @@ from telethon.tl.functions.channels import GetFullChannelRequest
 from telethon.tl.types import ChannelParticipantsAdmins
 from telethon import events
 
-from telegram import MAX_MESSAGE_LENGTH, ParseMode, Update, MessageEntity
+from telegram import Update, MessageEntity
+from telegram.constants import ParseMode
 from telegram.ext import CallbackContext, CommandHandler
 from telegram.error import BadRequest
-from telegram.utils.helpers import escape_markdown, mention_html
+from telegram.helpers import escape_markdown, mention_html
 
 from zerotwobot import (
     DEV_USERS,
@@ -20,7 +21,7 @@ from zerotwobot import (
     TIGERS,
     WOLVES,
     INFOPIC,
-    dispatcher,
+    application,
     sw,
 )
 from zerotwobot.__main__ import STATS, TOKEN, USER_INFO
@@ -34,7 +35,7 @@ from zerotwobot import telethn as ZerotwoTelethonClient
 
 
 
-def get_id(update: Update, context: CallbackContext):
+async def get_id(update: Update, context: CallbackContext):
     bot, args = context.bot, context.args
     message = update.effective_message
     chat = update.effective_chat
@@ -57,7 +58,7 @@ def get_id(update: Update, context: CallbackContext):
 
         else:
 
-            user = bot.get_chat(user_id)
+            user = await bot.get_chat(user_id)
             msg.reply_text(
                 f"{html.escape(user.first_name)}'s id is <code>{user.id}</code>.",
                 parse_mode=ParseMode.HTML,
@@ -115,26 +116,26 @@ async def group_info(event) -> None:
 
 
 
-def gifid(update: Update, context: CallbackContext):
+async def gifid(update: Update, context: CallbackContext):
     msg = update.effective_message
     if msg.reply_to_message and msg.reply_to_message.animation:
-        update.effective_message.reply_text(
+        await update.effective_message.reply_text(
             f"Gif ID:\n<code>{msg.reply_to_message.animation.file_id}</code>",
             parse_mode=ParseMode.HTML,
         )
     else:
-        update.effective_message.reply_text("Please reply to a gif to get its ID.")
+        await update.effective_message.reply_text("Please reply to a gif to get its ID.")
 
 
 
-def info(update: Update, context: CallbackContext):
+async def info(update: Update, context: CallbackContext):
     bot, args = context.bot, context.args
     message = update.effective_message
     chat = update.effective_chat
     user_id = extract_user(update.effective_message, args)
 
     if user_id:
-        user = bot.get_chat(user_id)
+        user = await bot.get_chat(user_id)
 
     elif not message.reply_to_message and not args:
         user = message.from_user
@@ -148,13 +149,13 @@ def info(update: Update, context: CallbackContext):
             and not message.parse_entities([MessageEntity.TEXT_MENTION])
         )
     ):
-        message.reply_text("I can't extract a user from this.")
+        await message.reply_text("I can't extract a user from this.")
         return
 
     else:
         return
 
-    rep = message.reply_text("<code>Appraising...</code>", parse_mode=ParseMode.HTML)
+    rep = await message.reply_text("<code>Appraising...</code>", parse_mode=ParseMode.HTML)
 
     text = (
         f"╒═══「<b> Appraisal results:</b> 」\n"
@@ -177,7 +178,7 @@ def info(update: Update, context: CallbackContext):
         if afk_st:
             text += _stext.format("AFK")
         else:
-            status = status = bot.get_chat_member(chat.id, user.id).status
+            status = status = await bot.get_chat_member(chat.id, user.id).status
             if status:
                 if status in {"left", "kicked"}:
                     text += _stext.format("Not here")
@@ -245,11 +246,11 @@ def info(update: Update, context: CallbackContext):
 
     if INFOPIC:
         try:
-            profile = context.bot.get_user_profile_photos(user.id).photos[0][-1]
-            _file = bot.get_file(profile["file_id"])
+            profile = await context.bot.get_user_profile_photos(user.id).photos[0][-1]
+            _file = await bot.get_file(profile["file_id"])
             _file.download(f"{user.id}.png")
 
-            message.reply_photo(
+            await message.reply_photo(
                 photo=open(f"{user.id}.png", "rb"),
                 caption=(text),
                 parse_mode=ParseMode.HTML,
@@ -258,12 +259,12 @@ def info(update: Update, context: CallbackContext):
             os.remove(f"{user.id}.png")
         # Incase user don't have profile pic, send normal text
         except IndexError:
-            message.reply_text(
+            await message.reply_text(
                 text, parse_mode=ParseMode.HTML, disable_web_page_preview=True,
             )
 
     else:
-        message.reply_text(
+        await message.reply_text(
             text, parse_mode=ParseMode.HTML, disable_web_page_preview=True,
         )
 
@@ -274,10 +275,10 @@ def info(update: Update, context: CallbackContext):
 
 
 @sudo_plus
-def stats(update: Update, context: CallbackContext):
+async def stats(update: Update, context: CallbackContext):
     stats = "<b>📊 Current stats:</b>\n" + "\n".join([mod.__stats__() for mod in STATS])
     result = re.sub(r"(\d+)", r"<code>\1</code>", stats)
-    update.effective_message.reply_text(result, parse_mode=ParseMode.HTML)
+    await update.effective_message.reply_text(result, parse_mode=ParseMode.HTML)
 
 
 __help__ = """
@@ -290,16 +291,16 @@ __help__ = """
 """
 
 
-STATS_HANDLER = CommandHandler("stats", stats, run_async=True)
-ID_HANDLER = DisableAbleCommandHandler("id", get_id, run_async=True)
-GIFID_HANDLER = DisableAbleCommandHandler("gifid", gifid, run_async=True)
-INFO_HANDLER = DisableAbleCommandHandler(("info", "book"), info, run_async=True)
+STATS_HANDLER = CommandHandler("stats", stats, block=False)
+ID_HANDLER = DisableAbleCommandHandler("id", get_id, block=False)
+GIFID_HANDLER = DisableAbleCommandHandler("gifid", gifid, block=False)
+INFO_HANDLER = DisableAbleCommandHandler(("info", "book"), info, block=False)
 
 
-dispatcher.add_handler(STATS_HANDLER)
-dispatcher.add_handler(ID_HANDLER)
-dispatcher.add_handler(GIFID_HANDLER)
-dispatcher.add_handler(INFO_HANDLER)
+application.add_handler(STATS_HANDLER)
+application.add_handler(ID_HANDLER)
+application.add_handler(GIFID_HANDLER)
+application.add_handler(INFO_HANDLER)
 
 
 __mod_name__ = "Info"

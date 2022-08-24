@@ -6,21 +6,23 @@ from html import escape
 import requests
 from bs4 import BeautifulSoup as bs
 from PIL import Image
-from telegram import (InlineKeyboardButton, InlineKeyboardMarkup, ParseMode,
-                      TelegramError, Update, constants)
+from telegram import (InlineKeyboardButton, InlineKeyboardMarkup,
+                      Update, constants)
+from telegram.error import TelegramError
+from telegram.constants import ParseMode
 from telegram.ext import CallbackContext
-from telegram.utils.helpers import mention_html
-from zerotwobot import dispatcher
+from telegram.helpers import mention_html
+from zerotwobot import application
 from zerotwobot.modules.disable import DisableAbleCommandHandler
 from zerotwobot.modules.helper_funcs.misc import convert_gif
 
 combot_stickers_url = "https://combot.org/telegram/stickers?q="
 
 
-def stickerid(update: Update, context: CallbackContext):
+async def stickerid(update: Update, context: CallbackContext):
     msg = update.effective_message
     if msg.reply_to_message and msg.reply_to_message.sticker:
-        update.effective_message.reply_text(
+        await update.effective_message.reply_text(
             "Hello "
             + f"{mention_html(msg.from_user.id, msg.from_user.first_name)}"
             + ", The sticker id you are replying is :\n <code>"
@@ -29,7 +31,7 @@ def stickerid(update: Update, context: CallbackContext):
             parse_mode=ParseMode.HTML,
         )
     else:
-        update.effective_message.reply_text(
+        await update.effective_message.reply_text(
             "Hello "
             + f"{mention_html(msg.from_user.id, msg.from_user.first_name)}"
             + ", Please reply to sticker message to get id sticker",
@@ -37,7 +39,7 @@ def stickerid(update: Update, context: CallbackContext):
         )
 
 
-def cb_sticker(update: Update, context: CallbackContext):
+async def cb_sticker(update: Update, context: CallbackContext):
     msg = update.effective_message
     split = msg.text.split(" ", 1)
     if len(split) == 1:
@@ -57,23 +59,23 @@ def cb_sticker(update: Update, context: CallbackContext):
     msg.reply_text(reply, parse_mode=ParseMode.MARKDOWN)
 
 
-def getsticker(update: Update, context: CallbackContext):
+async def getsticker(update: Update, context: CallbackContext):
     bot = context.bot
     msg = update.effective_message
     chat_id = update.effective_chat.id
     if msg.reply_to_message and msg.reply_to_message.sticker:
         file_id = msg.reply_to_message.sticker.file_id
-        new_file = bot.get_file(file_id)
+        new_file = await bot.get_file(file_id)
         new_file.download("sticker.png")
-        bot.send_document(chat_id, document=open("sticker.png", "rb"))
+        await bot.send_document(chat_id, document=open("sticker.png", "rb"))
         os.remove("sticker.png")
     else:
-        update.effective_message.reply_text(
+        await update.effective_message.reply_text(
             "Please reply to a sticker for me to upload its PNG.",
         )
 
 
-def kang(update: Update, context: CallbackContext):
+async def kang(update: Update, context: CallbackContext):
     msg = update.effective_message
     user = update.effective_user
     args = context.args
@@ -83,7 +85,7 @@ def kang(update: Update, context: CallbackContext):
     max_stickers = 120
     while packname_found == 0:
         try:
-            stickerset = context.bot.get_sticker_set(packname)
+            stickerset = await context.bot.get_sticker_set(packname)
             if len(stickerset.stickers) >= max_stickers:
                 packnum += 1
                 packname = (
@@ -123,7 +125,7 @@ def kang(update: Update, context: CallbackContext):
         else:
             msg.reply_text("Yea, I can't kang that.")
 
-        kang_file = context.bot.get_file(file_id)
+        kang_file = await context.bot.get_file(file_id)
         if not is_animated and not (is_video or is_gif):
             kang_file.download("kangsticker.png")
         elif is_animated:
@@ -164,7 +166,7 @@ def kang(update: Update, context: CallbackContext):
                     im.thumbnail(maxsize)
                 if not msg.reply_to_message.sticker:
                     im.save(kangsticker, "PNG")
-                context.bot.add_sticker_to_set(
+                await context.bot.add_sticker_to_set(
                     user_id=user.id,
                     name=packname,
                     png_sticker=open("kangsticker.png", "rb"),
@@ -195,7 +197,7 @@ def kang(update: Update, context: CallbackContext):
                     )
                 elif e.message == "Sticker_png_dimensions":
                     im.save(kangsticker, "PNG")
-                    context.bot.add_sticker_to_set(
+                    await context.bot.add_sticker_to_set(
                         user_id=user.id,
                         name=packname,
                         png_sticker=open("kangsticker.png", "rb"),
@@ -226,7 +228,7 @@ def kang(update: Update, context: CallbackContext):
             max_stickers = 50
             while packname_found == 0:
                 try:
-                    stickerset = context.bot.get_sticker_set(packname)
+                    stickerset = await context.bot.get_sticker_set(packname)
                     if len(stickerset.stickers) >= max_stickers:
                         packnum += 1
                         packname = (
@@ -243,7 +245,7 @@ def kang(update: Update, context: CallbackContext):
                     if e.message == "Stickerset_invalid":
                         packname_found = 1
             try:
-                context.bot.add_sticker_to_set(
+                await context.bot.add_sticker_to_set(
                     user_id=user.id,
                     name=packname,
                     tgs_sticker=open("kangsticker.tgs", "rb"),
@@ -285,7 +287,7 @@ def kang(update: Update, context: CallbackContext):
 
             while packname_found == 0:
                 try:
-                    stickerset = context.bot.get_sticker_set(packname)
+                    stickerset = await context.bot.get_sticker_set(packname)
                     if len(stickerset.stickers) >= max_stickers:
                         packnum += 1
                         packname = (
@@ -304,7 +306,7 @@ def kang(update: Update, context: CallbackContext):
                         packname_found = 1
                     
             try:
-                context.bot.add_sticker_to_set(
+                await context.bot.add_sticker_to_set(
                     user_id=user.id,
                     name=packname,
                     webm_sticker=open("kangsticker.webm", "rb"),
@@ -368,7 +370,7 @@ def kang(update: Update, context: CallbackContext):
                 im.thumbnail(maxsize)
             im.save(kangsticker, "PNG")
             msg.reply_photo(photo=open("kangsticker.png", "rb"))
-            context.bot.add_sticker_to_set(
+            await context.bot.add_sticker_to_set(
                 user_id=user.id,
                 name=packname,
                 png_sticker=open("kangsticker.png", "rb"),
@@ -397,7 +399,7 @@ def kang(update: Update, context: CallbackContext):
                 )
             elif e.message == "Sticker_png_dimensions":
                 im.save(kangsticker, "PNG")
-                context.bot.add_sticker_to_set(
+                await context.bot.add_sticker_to_set(
                     user_id=user.id,
                     name=packname,
                     png_sticker=open("kangsticker.png", "rb"),
@@ -450,7 +452,7 @@ def kang(update: Update, context: CallbackContext):
         pass
 
 
-def makepack_internal(
+async def makepack_internal(
     update,
     context,
     msg,
@@ -469,7 +471,7 @@ def makepack_internal(
         if packnum > 0:
             extra_version = " " + str(packnum)
         if png_sticker:
-            success = context.bot.create_new_sticker_set(
+            success = await context.bot.create_new_sticker_set(
                 user.id,
                 packname,
                 f"{name}s kang pack" + extra_version,
@@ -477,7 +479,7 @@ def makepack_internal(
                 emojis=emoji,
             )
         if tgs_sticker:
-            success = context.bot.create_new_sticker_set(
+            success = await context.bot.create_new_sticker_set(
                 user.id,
                 packname,
                 f"{name}s animated kang pack" + extra_version,
@@ -485,7 +487,7 @@ def makepack_internal(
                 emojis=emoji,
             )
         if webm_sticker:
-            success = context.bot.create_new_sticker_set(
+            success = await context.bot.create_new_sticker_set(
                 user.id,
                 packname,
                 f"{name}s video kang pack" + extra_version,
@@ -539,12 +541,12 @@ __help__ = """
 """
 
 __mod_name__ = "Stickers"
-STICKERID_HANDLER = DisableAbleCommandHandler("stickerid", stickerid, run_async=True)
-GETSTICKER_HANDLER = DisableAbleCommandHandler("getsticker", getsticker)
-KANG_HANDLER = DisableAbleCommandHandler("kang", kang, admin_ok=True, run_async=True)
-STICKERS_HANDLER = DisableAbleCommandHandler("stickers", cb_sticker, run_async=True)
+STICKERID_HANDLER = DisableAbleCommandHandler("stickerid", stickerid, block=False)
+GETSTICKER_HANDLER = DisableAbleCommandHandler("getsticker", getsticker, block=False)
+KANG_HANDLER = DisableAbleCommandHandler("kang", kang, admin_ok=True, block=False)
+STICKERS_HANDLER = DisableAbleCommandHandler("stickers", cb_sticker, block=False)
 
-dispatcher.add_handler(STICKERS_HANDLER)
-dispatcher.add_handler(STICKERID_HANDLER)
-dispatcher.add_handler(GETSTICKER_HANDLER)
-dispatcher.add_handler(KANG_HANDLER)
+application.add_handler(STICKERS_HANDLER)
+application.add_handler(STICKERID_HANDLER)
+application.add_handler(GETSTICKER_HANDLER)
+application.add_handler(KANG_HANDLER)

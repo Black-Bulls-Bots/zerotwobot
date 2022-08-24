@@ -1,7 +1,7 @@
 import html
 from typing import Optional
 
-from zerotwobot import LOGGER, TIGERS, dispatcher
+from zerotwobot import LOGGER, TIGERS, application
 from zerotwobot.modules.helper_funcs.chat_status import (
     bot_admin,
     can_restrict,
@@ -15,10 +15,11 @@ from zerotwobot.modules.helper_funcs.extraction import (
 )
 from zerotwobot.modules.helper_funcs.string_handling import extract_time
 from zerotwobot.modules.log_channel import loggable
-from telegram import Bot, Chat, ChatPermissions, ParseMode, Update
+from telegram import Bot, Chat, ChatPermissions, Update
+from telegram.constants import ParseMode
 from telegram.error import BadRequest
 from telegram.ext import CallbackContext, CommandHandler
-from telegram.utils.helpers import mention_html
+from telegram.helpers import mention_html
 
 
 def check_user(user_id: int, bot: Bot, chat: Chat) -> Optional[str]:
@@ -51,7 +52,7 @@ def check_user(user_id: int, bot: Bot, chat: Chat) -> Optional[str]:
 @bot_admin
 @user_admin
 @loggable
-def mute(update: Update, context: CallbackContext) -> str:
+async def mute(update: Update, context: CallbackContext) -> str:
     bot = context.bot
     args = context.args
 
@@ -63,7 +64,7 @@ def mute(update: Update, context: CallbackContext) -> str:
     reply = check_user(user_id, bot, chat)
 
     if reply:
-        message.reply_text(reply)
+        await message.reply_text(reply)
         return ""
 
     member = chat.get_member(user_id)
@@ -80,8 +81,8 @@ def mute(update: Update, context: CallbackContext) -> str:
 
     if member.can_send_messages is None or member.can_send_messages:
         chat_permissions = ChatPermissions(can_send_messages=False)
-        bot.restrict_chat_member(chat.id, user_id, chat_permissions)
-        bot.sendMessage(
+        await bot.restrict_chat_member(chat.id, user_id, chat_permissions)
+        await bot.sendMessage(
             chat.id,
             f"Muted <b>{html.escape(member.user.first_name)}</b> with no expiration date!",
             parse_mode=ParseMode.HTML,
@@ -89,7 +90,7 @@ def mute(update: Update, context: CallbackContext) -> str:
         return log
 
     else:
-        message.reply_text("This user is already muted!")
+        await message.reply_text("This user is already muted!")
 
     return ""
 
@@ -99,7 +100,7 @@ def mute(update: Update, context: CallbackContext) -> str:
 @bot_admin
 @user_admin
 @loggable
-def unmute(update: Update, context: CallbackContext) -> str:
+async def unmute(update: Update, context: CallbackContext) -> str:
     bot, args = context.bot, context.args
     chat = update.effective_chat
     user = update.effective_user
@@ -107,7 +108,7 @@ def unmute(update: Update, context: CallbackContext) -> str:
 
     user_id = extract_user(message, args)
     if not user_id:
-        message.reply_text(
+        await message.reply_text(
             "You'll need to either give me a username to unmute, or reply to someone to be unmuted.",
         )
         return ""
@@ -121,7 +122,7 @@ def unmute(update: Update, context: CallbackContext) -> str:
             and member.can_send_other_messages
             and member.can_add_web_page_previews
         ):
-            message.reply_text("This user already has the right to speak.")
+            await message.reply_text("This user already has the right to speak.")
         else:
             chat_permissions = ChatPermissions(
                 can_send_messages=True,
@@ -134,10 +135,10 @@ def unmute(update: Update, context: CallbackContext) -> str:
                 can_add_web_page_previews=True,
             )
             try:
-                bot.restrict_chat_member(chat.id, int(user_id), chat_permissions)
+                await bot.restrict_chat_member(chat.id, int(user_id), chat_permissions)
             except BadRequest:
                 pass
-            bot.sendMessage(
+            await bot.sendMessage(
                 chat.id,
                 f"I shall allow <b>{html.escape(member.user.first_name)}</b> to text!",
                 parse_mode=ParseMode.HTML,
@@ -149,7 +150,7 @@ def unmute(update: Update, context: CallbackContext) -> str:
                 f"<b>User:</b> {mention_html(member.user.id, member.user.first_name)}"
             )
     else:
-        message.reply_text(
+        await message.reply_text(
             "This user isn't even in the chat, unmuting them won't make them talk more than they "
             "already do!",
         )
@@ -163,7 +164,7 @@ def unmute(update: Update, context: CallbackContext) -> str:
 @can_restrict
 @user_admin
 @loggable
-def temp_mute(update: Update, context: CallbackContext) -> str:
+async def temp_mute(update: Update, context: CallbackContext) -> str:
     bot, args = context.bot, context.args
     chat = update.effective_chat
     user = update.effective_user
@@ -173,13 +174,13 @@ def temp_mute(update: Update, context: CallbackContext) -> str:
     reply = check_user(user_id, bot, chat)
 
     if reply:
-        message.reply_text(reply)
+        await message.reply_text(reply)
         return ""
 
     member = chat.get_member(user_id)
 
     if not reason:
-        message.reply_text("You haven't specified a time to mute this user for!")
+        await message.reply_text("You haven't specified a time to mute this user for!")
         return ""
 
     split_reason = reason.split(None, 1)
@@ -208,22 +209,22 @@ def temp_mute(update: Update, context: CallbackContext) -> str:
     try:
         if member.can_send_messages is None or member.can_send_messages:
             chat_permissions = ChatPermissions(can_send_messages=False)
-            bot.restrict_chat_member(
+            await bot.restrict_chat_member(
                 chat.id, user_id, chat_permissions, until_date=mutetime,
             )
-            bot.sendMessage(
+            await bot.sendMessage(
                 chat.id,
                 f"Muted <b>{html.escape(member.user.first_name)}</b> for {time_val}!",
                 parse_mode=ParseMode.HTML,
             )
             return log
         else:
-            message.reply_text("This user is already muted.")
+            await message.reply_text("This user is already muted.")
 
     except BadRequest as excp:
         if excp.message == "Reply message not found":
             # Do not reply
-            message.reply_text(f"Muted for {time_val}!", quote=False)
+            await message.reply_text(f"Muted for {time_val}!", quote=False)
             return log
         else:
             LOGGER.warning(update)
@@ -234,7 +235,7 @@ def temp_mute(update: Update, context: CallbackContext) -> str:
                 chat.id,
                 excp.message,
             )
-            message.reply_text("Well damn, I can't mute that user.")
+            await message.reply_text("Well damn, I can't mute that user.")
 
     return ""
 
@@ -246,13 +247,13 @@ __help__ = """
  • `/unmute <userhandle>`*:* unmutes a user. Can also be used as a reply, muting the replied to user.
 """
 
-MUTE_HANDLER = CommandHandler("mute", mute, run_async=True)
-UNMUTE_HANDLER = CommandHandler("unmute", unmute, run_async=True)
-TEMPMUTE_HANDLER = CommandHandler(["tmute", "tempmute"], temp_mute, run_async=True)
+MUTE_HANDLER = CommandHandler("mute", mute, block=False)
+UNMUTE_HANDLER = CommandHandler("unmute", unmute, block=False)
+TEMPMUTE_HANDLER = CommandHandler(["tmute", "tempmute"], temp_mute, block=False)
 
-dispatcher.add_handler(MUTE_HANDLER)
-dispatcher.add_handler(UNMUTE_HANDLER)
-dispatcher.add_handler(TEMPMUTE_HANDLER)
+application.add_handler(MUTE_HANDLER)
+application.add_handler(UNMUTE_HANDLER)
+application.add_handler(TEMPMUTE_HANDLER)
 
 __mod_name__ = "Muting"
 __handlers__ = [MUTE_HANDLER, UNMUTE_HANDLER, TEMPMUTE_HANDLER]

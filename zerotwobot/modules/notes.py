@@ -4,7 +4,7 @@ import random
 from typing import Optional
 
 import zerotwobot.modules.sql.notes_sql as sql
-from zerotwobot import LOGGER, JOIN_LOGGER, SUPPORT_CHAT, dispatcher, DRAGONS
+from zerotwobot import LOGGER, JOIN_LOGGER, SUPPORT_CHAT, application, DRAGONS
 from zerotwobot.modules.disable import DisableAbleCommandHandler
 from zerotwobot.modules.helper_funcs.handlers import MessageHandlerChecker
 from zerotwobot.modules.helper_funcs.chat_status import user_admin, connection_status
@@ -14,20 +14,19 @@ from zerotwobot.modules.helper_funcs.string_handling import (
     escape_invalid_curly_brackets,
 )
 from telegram import (
-    MAX_MESSAGE_LENGTH,
     InlineKeyboardMarkup,
     Message,
-    ParseMode,
     Update,
     InlineKeyboardButton,
 )
+from telegram.constants import ParseMode, MessageLimit
 from telegram.error import BadRequest
-from telegram.utils.helpers import escape_markdown, mention_markdown
+from telegram.helpers import escape_markdown, mention_markdown
 from telegram.ext import (
     CallbackContext,
     CommandHandler,
     CallbackQueryHandler,
-    Filters,
+    filters,
     MessageHandler,
 )
 
@@ -42,19 +41,19 @@ MYVIDEO_MATCHER = re.compile(r"^###video(!photo)?###:")
 MYVIDEONOTE_MATCHER = re.compile(r"^###video_note(!photo)?###:")
 
 ENUM_FUNC_MAP = {
-    sql.Types.TEXT.value: dispatcher.bot.send_message,
-    sql.Types.BUTTON_TEXT.value: dispatcher.bot.send_message,
-    sql.Types.STICKER.value: dispatcher.bot.send_sticker,
-    sql.Types.DOCUMENT.value: dispatcher.bot.send_document,
-    sql.Types.PHOTO.value: dispatcher.bot.send_photo,
-    sql.Types.AUDIO.value: dispatcher.bot.send_audio,
-    sql.Types.VOICE.value: dispatcher.bot.send_voice,
-    sql.Types.VIDEO.value: dispatcher.bot.send_video,
+    sql.Types.TEXT.value: application.bot.send_message,
+    sql.Types.BUTTON_TEXT.value: application.bot.send_message,
+    sql.Types.STICKER.value: application.bot.send_sticker,
+    sql.Types.DOCUMENT.value: application.bot.send_document,
+    sql.Types.PHOTO.value: application.bot.send_photo,
+    sql.Types.AUDIO.value: application.bot.send_audio,
+    sql.Types.VOICE.value: application.bot.send_voice,
+    sql.Types.VIDEO.value: application.bot.send_video,
 }
 
 
 # Do not async
-def get(update: Update, context: CallbackContext, notename, show_none=True, no_format=False):
+async def get(update: Update, context: CallbackContext, notename, show_none=True, no_format=False):
     bot = context.bot
     chat_id = update.effective_message.chat.id
     note_chat_id = update.effective_chat.id
@@ -72,12 +71,12 @@ def get(update: Update, context: CallbackContext, notename, show_none=True, no_f
         if note.is_reply:
             if JOIN_LOGGER:
                 try:
-                    bot.forward_message(
+                    await bot.forward_message(
                         chat_id=chat_id, from_chat_id=JOIN_LOGGER, message_id=note.value,
                     )
                 except BadRequest as excp:
                     if excp.message == "Message to forward not found":
-                        message.reply_text(
+                        await message.reply_text(
                             "This message seems to have been lost - I'll remove it "
                             "from your notes list.",
                         )
@@ -86,12 +85,12 @@ def get(update: Update, context: CallbackContext, notename, show_none=True, no_f
                         raise
             else:
                 try:
-                    bot.forward_message(
+                    await bot.forward_message(
                         chat_id=chat_id, from_chat_id=chat_id, message_id=note.value,
                     )
                 except BadRequest as excp:
                     if excp.message == "Message to forward not found":
-                        message.reply_text(
+                        await message.reply_text(
                             "Looks like the original sender of this note has deleted "
                             "their message - sorry! Get your bot admin to start using a "
                             "message dump to avoid this. I'll remove this note from "
@@ -168,7 +167,7 @@ def get(update: Update, context: CallbackContext, notename, show_none=True, no_f
 
             try:
                 if note.msgtype in (sql.Types.BUTTON_TEXT, sql.Types.TEXT):
-                    bot.send_message(
+                    await bot.send_message(
                         chat_id,
                         text,
                         reply_to_message_id=reply_id,
@@ -189,20 +188,20 @@ def get(update: Update, context: CallbackContext, notename, show_none=True, no_f
 
             except BadRequest as excp:
                 if excp.message == "Entity_mention_user_invalid":
-                    message.reply_text(
+                    await message.reply_text(
                         "Looks like you tried to mention someone I've never seen before. If you really "
                         "want to mention them, forward one of their messages to me, and I'll be able "
                         "to tag them!",
                     )
                 elif FILE_MATCHER.match(note.value):
-                    message.reply_text(
+                    await message.reply_text(
                         "This note was an incorrectly imported file from another bot - I can't use "
                         "it. If you really need it, you'll have to save it again. In "
                         "the meantime, I'll remove it from your notes list.",
                     )
                     sql.rm_note(note_chat_id, notename)
                 else:
-                    message.reply_text(
+                    await message.reply_text(
                         "This note could not be sent, as it is incorrectly formatted. Ask in "
                         f"@{SUPPORT_CHAT} if you can't figure out why!",
                     )
@@ -214,33 +213,33 @@ def get(update: Update, context: CallbackContext, notename, show_none=True, no_f
                     LOGGER.warning("Message was: %s", str(note.value))
         return
     elif show_none:
-        message.reply_text("This note doesn't exist")
+        await message.reply_text("This note doesn't exist")
 
 
 
 @connection_status
-def cmd_get(update: Update, context: CallbackContext):
+async def cmd_get(update: Update, context: CallbackContext):
     bot, args = context.bot, context.args
     if len(args) >= 2 and args[1].lower() == "noformat":
         get(update, context, args[0].lower(), show_none=True, no_format=True)
     elif len(args) >= 1:
         get(update, context, args[0].lower(), show_none=True)
     else:
-        update.effective_message.reply_text("Get rekt")
+        await update.effective_message.reply_text("Get rekt")
 
 
 
 @connection_status
-def hash_get(update: Update, context: CallbackContext):
+async def hash_get(update: Update, context: CallbackContext):
     message = update.effective_message.text
-    fst_word = message.split()[0]
+    fst_word = await message.split()[0]
     no_hash = fst_word[1:].lower()
     get(update, context, no_hash, show_none=False)
 
 
 
 @connection_status
-def slash_get(update: Update, context: CallbackContext):
+async def slash_get(update: Update, context: CallbackContext):
     message, chat_id = update.effective_message.text, update.effective_chat.id
     no_slash = message[1:]
     note_list = sql.get_all_chat_notes(chat_id)
@@ -250,13 +249,13 @@ def slash_get(update: Update, context: CallbackContext):
         note_name = str(noteid).strip(">").split()[1]
         get(update, context, note_name, show_none=False)
     except IndexError:
-        update.effective_message.reply_text("Wrong Note ID 😾")
+        await update.effective_message.reply_text("Wrong Note ID 😾")
 
 
 
 @user_admin
 @connection_status
-def save(update: Update, context: CallbackContext):
+async def save(update: Update, context: CallbackContext):
     chat_id = update.effective_chat.id
     msg = update.effective_message  # type: Optional[Message]
 
@@ -296,25 +295,25 @@ def save(update: Update, context: CallbackContext):
 
 @user_admin
 @connection_status
-def clear(update: Update, context: CallbackContext):
+async def clear(update: Update, context: CallbackContext):
     args = context.args
     chat_id = update.effective_chat.id
     if len(args) >= 1:
         notename = args[0].lower()
 
         if sql.rm_note(chat_id, notename):
-            update.effective_message.reply_text("Successfully removed note.")
+            await update.effective_message.reply_text("Successfully removed note.")
         else:
-            update.effective_message.reply_text("That's not a note in my database!")
+            await update.effective_message.reply_text("That's not a note in my database!")
 
 
 
-def clearall(update: Update, context: CallbackContext):
+async def clearall(update: Update, context: CallbackContext):
     chat = update.effective_chat
     user = update.effective_user
     member = chat.get_member(user.id)
     if member.status != "creator" and user.id not in DRAGONS:
-        update.effective_message.reply_text(
+        await update.effective_message.reply_text(
             "Only the chat owner can clear all notes at once.",
         )
     else:
@@ -328,7 +327,7 @@ def clearall(update: Update, context: CallbackContext):
                 [InlineKeyboardButton(text="Cancel", callback_data="notes_cancel")],
             ],
         )
-        update.effective_message.reply_text(
+        await update.effective_message.reply_text(
             f"Are you sure you would like to clear ALL notes in {chat.title}? This action cannot be undone.",
             reply_markup=buttons,
             parse_mode=ParseMode.MARKDOWN,
@@ -336,7 +335,7 @@ def clearall(update: Update, context: CallbackContext):
 
 
 
-def clearall_btn(update: Update, context: CallbackContext):
+async def clearall_btn(update: Update, context: CallbackContext):
     query = update.callback_query
     chat = update.effective_chat
     message = update.effective_message
@@ -348,28 +347,28 @@ def clearall_btn(update: Update, context: CallbackContext):
                 for notename in note_list:
                     note = notename.name.lower()
                     sql.rm_note(chat.id, note)
-                message.edit_text("Deleted all notes.")
+                await message.edit_text("Deleted all notes.")
             except BadRequest:
                 return
 
         if member.status == "administrator":
-            query.answer("Only owner of the chat can do this.")
+            await query.answer("Only owner of the chat can do this.")
 
         if member.status == "member":
-            query.answer("You need to be admin to do this.")
+            await query.answer("You need to be admin to do this.")
     elif query.data == "notes_cancel":
         if member.status == "creator" or query.from_user.id in DRAGONS:
-            message.edit_text("Clearing of all notes has been cancelled.")
+            await message.edit_text("Clearing of all notes has been cancelled.")
             return
         if member.status == "administrator":
-            query.answer("Only owner of the chat can do this.")
+            await query.answer("Only owner of the chat can do this.")
         if member.status == "member":
-            query.answer("You need to be admin to do this.")
+            await query.answer("You need to be admin to do this.")
 
 
 
 @connection_status
-def list_notes(update: Update, context: CallbackContext):
+async def list_notes(update: Update, context: CallbackContext):
     chat_id = update.effective_chat.id
     note_list = sql.get_all_chat_notes(chat_id)
     notes = len(note_list) + 1
@@ -379,22 +378,22 @@ def list_notes(update: Update, context: CallbackContext):
             note_name = f"`{note_id:2}.`  `#{(note.name.lower())}`\n"
         else:
             note_name = f"`{note_id}.`  `#{(note.name.lower())}`\n"
-        if len(msg) + len(note_name) > MAX_MESSAGE_LENGTH:
-            update.effective_message.reply_text(msg, parse_mode=ParseMode.MARKDOWN)
+        if len(msg) + len(note_name) > MessageLimit.TEXT_LENGTH:
+            await update.effective_message.reply_text(msg, parse_mode=ParseMode.MARKDOWN)
             msg = ""
         msg += note_name
 
     if not note_list:
         try:
-            update.effective_message.reply_text("No notes in this chat!")
+            await update.effective_message.reply_text("No notes in this chat!")
         except BadRequest:
-            update.effective_message.reply_text("No notes in this chat!", quote=False)
+            await update.effective_message.reply_text("No notes in this chat!", quote=False)
 
     elif len(msg) != 0:
-        update.effective_message.reply_text(msg, parse_mode=ParseMode.MARKDOWN)
+        await update.effective_message.reply_text(msg, parse_mode=ParseMode.MARKDOWN)
 
 
-def __import_data__(chat_id, data):
+async def __import_data__(chat_id, data):
     failures = []
     for notename, notedata in data.get("extra", {}).items():
         match = FILE_MATCHER.match(notedata)
@@ -491,7 +490,7 @@ def __import_data__(chat_id, data):
     if failures:
         with BytesIO(str.encode("\n".join(failures))) as output:
             output.name = "failed_imports.txt"
-            dispatcher.bot.send_document(
+            await application.bot.send_document(
                 chat_id,
                 document=output,
                 filename="failed_imports.txt",
@@ -544,21 +543,21 @@ A button can be added to a note by using standard markdown link syntax - the lin
 __mod_name__ = "Notes"
 
 GET_HANDLER = CommandHandler("get", cmd_get)
-HASH_GET_HANDLER = MessageHandler(Filters.regex(r"^#[^\s]+"), hash_get, run_async=True)
-SLASH_GET_HANDLER = MessageHandler(Filters.regex(r"^/\d+$"), slash_get, run_async=True)
-SAVE_HANDLER = CommandHandler("save", save, run_async=True)
-DELETE_HANDLER = CommandHandler("clear", clear, run_async=True)
+HASH_GET_HANDLER = MessageHandler(filters.Regex(r"^#[^\s]+"), hash_get, block=False)
+SLASH_GET_HANDLER = MessageHandler(filters.Regex(r"^/\d+$"), slash_get, block=False)
+SAVE_HANDLER = CommandHandler("save", save, block=False)
+DELETE_HANDLER = CommandHandler("clear", clear, block=False)
 
-LIST_HANDLER = DisableAbleCommandHandler(["notes", "saved"], list_notes, admin_ok=True, run_async=True)
+LIST_HANDLER = DisableAbleCommandHandler(["notes", "saved"], list_notes, admin_ok=True, block=False)
 
-CLEARALL = DisableAbleCommandHandler("removeallnotes", clearall, run_async=True)
-CLEARALL_BTN = CallbackQueryHandler(clearall_btn, pattern=r"notes_.*", run_async=True)
+CLEARALL = DisableAbleCommandHandler("removeallnotes", clearall, block=False)
+CLEARALL_BTN = CallbackQueryHandler(clearall_btn, pattern=r"notes_.*", block=False)
 
-dispatcher.add_handler(GET_HANDLER)
-dispatcher.add_handler(SAVE_HANDLER)
-dispatcher.add_handler(LIST_HANDLER)
-dispatcher.add_handler(DELETE_HANDLER)
-dispatcher.add_handler(HASH_GET_HANDLER)
-dispatcher.add_handler(SLASH_GET_HANDLER)
-dispatcher.add_handler(CLEARALL)
-dispatcher.add_handler(CLEARALL_BTN)
+application.add_handler(GET_HANDLER)
+application.add_handler(SAVE_HANDLER)
+application.add_handler(LIST_HANDLER)
+application.add_handler(DELETE_HANDLER)
+application.add_handler(HASH_GET_HANDLER)
+application.add_handler(SLASH_GET_HANDLER)
+application.add_handler(CLEARALL)
+application.add_handler(CLEARALL_BTN)

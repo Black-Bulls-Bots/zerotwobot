@@ -1,13 +1,14 @@
 from zerotwobot.modules.helper_funcs.chat_status import user_admin
 from zerotwobot.modules.disable import DisableAbleCommandHandler
-from zerotwobot import dispatcher
+from zerotwobot import application
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from telegram import ParseMode, Update
-from telegram.ext import CallbackContext, Filters, CommandHandler
+from telegram import Update
+from telegram.constants import ParseMode
+from telegram.ext import CallbackContext, filters, CommandHandler
 
 MARKDOWN_HELP = f"""
-Markdown is a very powerful formatting tool supported by telegram. {dispatcher.bot.first_name} has some enhancements, to make sure that \
+Markdown is a very powerful formatting tool supported by telegram. {application.bot.first_name} has some enhancements, to make sure that \
 saved messages are correctly parsed, and to allow you to create buttons.
 
 • <code>_italic_</code>: wrapping text with '_' will produce italic text
@@ -33,27 +34,27 @@ Keep in mind that your message <b>MUST</b> contain some text other than just a b
 
 
 @user_admin
-def echo(update: Update, context: CallbackContext):
+async def echo(update: Update, context: CallbackContext):
     args = update.effective_message.text.split(None, 1)
     message = update.effective_message
 
     if message.reply_to_message:
-        message.reply_to_message.reply_text(
+        await message.reply_to_message.reply_text(
             args[1], parse_mode="MARKDOWN", disable_web_page_preview=True,
         )
     else:
-        message.reply_text(
+        await message.reply_text(
             args[1], quote=False, parse_mode="MARKDOWN", disable_web_page_preview=True,
         )
-    message.delete()
+    await message.delete()
 
 
-def markdown_help_sender(update: Update):
-    update.effective_message.reply_text(MARKDOWN_HELP, parse_mode=ParseMode.HTML)
-    update.effective_message.reply_text(
+async def markdown_help_sender(update: Update):
+    await update.effective_message.reply_text(MARKDOWN_HELP, parse_mode=ParseMode.HTML)
+    await update.effective_message.reply_text(
         "Try forwarding the following message to me, and you'll see, and Use #test!",
     )
-    update.effective_message.reply_text(
+    await update.effective_message.reply_text(
         "/save test This is a markdown test. _italics_, *bold*, code, "
         "[URL](example.com) [button](buttonurl:github.com) "
         "[button2](buttonurl://google.com:same)",
@@ -61,9 +62,9 @@ def markdown_help_sender(update: Update):
 
 
 
-def markdown_help(update: Update, context: CallbackContext):
+async def markdown_help(update: Update, context: CallbackContext):
     if update.effective_chat.type != "private":
-        update.effective_message.reply_text(
+        await update.effective_message.reply_text(
             "Contact me in pm",
             reply_markup=InlineKeyboardMarkup(
                 [
@@ -108,11 +109,11 @@ Output: `1.0 USD = 75.505 INR`
 • 🕐 [Timezones list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
 """
 
-ECHO_HANDLER = DisableAbleCommandHandler("echo", echo, filters=Filters.chat_type.groups, run_async=True)
-MD_HELP_HANDLER = CommandHandler("markdownhelp", markdown_help, run_async=True)
+ECHO_HANDLER = DisableAbleCommandHandler("echo", echo, filters=filters.ChatType.GROUPS, block=False)
+MD_HELP_HANDLER = CommandHandler("markdownhelp", markdown_help, block=False)
 
-dispatcher.add_handler(ECHO_HANDLER)
-dispatcher.add_handler(MD_HELP_HANDLER)
+application.add_handler(ECHO_HANDLER)
+application.add_handler(MD_HELP_HANDLER)
 
 __mod_name__ = "Extras"
 __command_list__ = ["id", "echo"]

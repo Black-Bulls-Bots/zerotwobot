@@ -1,10 +1,11 @@
 import requests
-from zerotwobot import CASH_API_KEY, dispatcher
-from telegram import Update, ParseMode
+from zerotwobot import CASH_API_KEY, application
+from telegram import Update
+from telegram.constants import ParseMode
 from telegram.ext import CallbackContext, CommandHandler
 
 
-def convert(update: Update, context: CallbackContext):
+async def convert(update: Update, context: CallbackContext):
     args = update.effective_message.text.split(" ")
 
     if len(args) == 4:
@@ -12,7 +13,7 @@ def convert(update: Update, context: CallbackContext):
             orig_cur_amount = float(args[1])
 
         except ValueError:
-            update.effective_message.reply_text("Invalid Amount Of Currency")
+            await update.effective_message.reply_text("Invalid Amount Of Currency")
             return
 
         orig_cur = args[2].upper()
@@ -32,18 +33,18 @@ def convert(update: Update, context: CallbackContext):
                 response["Realtime Currency Exchange Rate"]["5. Exchange Rate"],
             )
         except KeyError:
-            update.effective_message.reply_text("Currency Not Supported.")
+            await update.effective_message.reply_text("Currency Not Supported.")
             return
         new_cur_amount = round(orig_cur_amount * current_rate, 5)
-        update.effective_message.reply_text(
+        await update.effective_message.reply_text(
             f"{orig_cur_amount} {orig_cur} = {new_cur_amount} {new_cur}",
         )
 
     elif len(args) == 1:
-        update.effective_message.reply_text(help, parse_mode=ParseMode.MARKDOWN)
+        await update.effective_message.reply_text(help, parse_mode=ParseMode.MARKDOWN)
 
     else:
-        update.effective_message.reply_text(
+        await update.effective_message.reply_text(
             f"*Invalid Args!!:* Required 3 But Passed {len(args) -1}",
             parse_mode=ParseMode.MARKDOWN,
         )
@@ -53,9 +54,9 @@ Converts money from one exchange to another
 Usage: /cash amount from to
 Example: /cash 20 USD INR"""
 
-CONVERTER_HANDLER = CommandHandler("cash", convert, run_async=True)
+CONVERTER_HANDLER = CommandHandler("cash", convert, block=False)
 
-dispatcher.add_handler(CONVERTER_HANDLER)
+application.add_handler(CONVERTER_HANDLER)
 
 __command_list__ = ["cash"]
 __handlers__ = [CONVERTER_HANDLER]

@@ -1,7 +1,7 @@
 from random import randint
 
 import requests as r
-from zerotwobot import SUPPORT_CHAT, WALL_API, dispatcher
+from zerotwobot import SUPPORT_CHAT, WALL_API, application
 from zerotwobot.modules.disable import DisableAbleCommandHandler
 from telegram import Update
 from telegram.ext import CallbackContext
@@ -10,7 +10,7 @@ from telegram.ext import CallbackContext
 
 #Need to fix this module ASAP
 
-def wall(update: Update, context: CallbackContext):
+async def wall(update: Update, context: CallbackContext):
     chat_id = update.effective_chat.id
     msg = update.effective_message
     args = context.args
@@ -22,7 +22,7 @@ def wall(update: Update, context: CallbackContext):
         return
     else:
         caption = query
-        term = query.replace(" ", "%20")
+        term = await query.replace(" ", "%20")
         json_rep = r.get(
             f"https://wall.alphacoders.com/api2.0/get.php?auth={WALL_API}&method=search&term={term}",
         ).json()
@@ -38,14 +38,14 @@ def wall(update: Update, context: CallbackContext):
                 wallpaper = wallpapers[index]
                 wallpaper = wallpaper.get("url_image")
                 wallpaper = wallpaper.replace("\\", "")
-                bot.send_photo(
+                await bot.send_photo(
                     chat_id,
                     photo=wallpaper,
                     caption="Preview",
                     reply_to_message_id=msg_id,
                     timeout=60,
                 )
-                bot.send_document(
+                await bot.send_document(
                     chat_id,
                     document=wallpaper,
                     filename="wallpaper",
@@ -55,5 +55,5 @@ def wall(update: Update, context: CallbackContext):
                 )
 
 
-WALLPAPER_HANDLER = DisableAbleCommandHandler("wall", wall, run_async=True)
-dispatcher.add_handler(WALLPAPER_HANDLER)
+WALLPAPER_HANDLER = DisableAbleCommandHandler("wall", wall, block=False)
+application.add_handler(WALLPAPER_HANDLER)

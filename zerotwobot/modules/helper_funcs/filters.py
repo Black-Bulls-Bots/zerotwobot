@@ -1,6 +1,6 @@
 from zerotwobot import DEV_USERS, DRAGONS, DEMONS
 from telegram import Message
-from telegram.ext import MessageFilter
+from telegram.ext.filters import MessageFilter
 
 
 class CustomFilters(object):
@@ -25,7 +25,7 @@ class CustomFilters(object):
     class _MimeType(MessageFilter):
         def __init__(self, mimetype):
             self.mime_type = mimetype
-            self.name = "CustomFilters.mime_type({})".format(self.mime_type)
+            self.name = "CustomFilters.Mime_type({})".format(self.mime_type)
 
         def filter(self, message: Message):
             return bool(
