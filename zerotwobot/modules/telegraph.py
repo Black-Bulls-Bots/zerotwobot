@@ -8,18 +8,20 @@ import os
 from datetime import datetime
 
 from PIL import Image
-from telegraph import Telegraph, exceptions, upload
+from telegraph.aio import Telegraph
 
-from zerotwobot import TEMP_DOWNLOAD_LOC, dispatcher
+from zerotwobot import TEMP_DOWNLOAD_LOC, application
 from telegram import Update
 from telegram.ext import CallbackContext, CommandHandler
 
-telegrph = Telegraph()
 
-r = telegrph.create_account(short_name="telegraph")
-auth_url = r["auth_url"]
+async def telegraph(update: Update, context: CallbackContext):
 
-def telegraph(update: Update, context: CallbackContext):
+    telegrph = Telegraph()
+
+    r = await telegrph.create_account(short_name="zerotwobot")
+    auth_url = r["auth_url"]
+
     message = update.effective_message
     chat = update.effective_chat
     user = update.effective_user
@@ -28,10 +30,10 @@ def telegraph(update: Update, context: CallbackContext):
 
 
     if not args:
-        message.reply_text("Sorry invalid option \n Ex: /telegraph m - for media \n /telegraph t - for text")
+        await message.reply_text("Sorry invalid option \n Ex: /telegraph m - for media \n /telegraph t - for text")
         return 
 
-    msg = message.reply_text("<code>Started telegraph module...</code>", parse_mode="html")        
+    msg = await message.reply_text("<code>Started telegraph module...</code>", parse_mode="html")        
 
     if not os.path.isdir(TEMP_DOWNLOAD_LOC):
         os.mkdir(TEMP_DOWNLOAD_LOC)
@@ -54,8 +56,8 @@ def telegraph(update: Update, context: CallbackContext):
                 msg.edit_text("<code>Downloaded image/video</code>", parse_mode="html")
 
                 try:
-                    media_url = upload.upload_file(downloaded_file)
-                except exceptions.TelegraphException as exc:
+                    media_url = telegrph.upload.upload_file(downloaded_file)
+                except telegrph.exceptions.TelegraphException as exc:
                     msg.edit_text(f"ERROR: {exc}")
                 else:
                     msg.edit_text(
@@ -85,6 +87,6 @@ def telegraph(update: Update, context: CallbackContext):
             msg.edit_text("Haha! I know this trick so tag any image/video/text")
 
 
-TELEGRAPH_HANDLER = CommandHandler("telegraph", telegraph, run_async=True)
+TELEGRAPH_HANDLER = CommandHandler("telegraph", telegraph, block=False)
 
-dispatcher.add_handler(TELEGRAPH_HANDLER)
+application.add_handler(TELEGRAPH_HANDLER)
