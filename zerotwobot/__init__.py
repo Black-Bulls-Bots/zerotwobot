@@ -4,10 +4,11 @@ import platform
 import sys
 import time
 import spamwatch
-
+import asyncio
 import telegram.ext as tg
+from telegram.ext import Application
 from telegram import __version__ as ptb_version
-from telegram import bot_api_version
+from telegram import __bot_api_version__
 from telethon import TelegramClient
 from dotenv import load_dotenv
 
@@ -45,7 +46,7 @@ if sys.version_info[0] < 3 or sys.version_info[1] < 9:
 ENV = bool(os.environ.get("ENV", False))
 BOT_VERSION = "0.3"
 PTB_VERSION = ptb_version
-BOT_API_VERSION = bot_api_version
+BOT_API_VERSION = __bot_api_version__
 PYTHON_VERSION = platform.python_version()
 
 if ENV:
@@ -198,9 +199,10 @@ else:
         sw = None
         LOGGER.warning("Can't connect to SpamWatch!")
 
-updater = tg.Updater(TOKEN, workers=WORKERS, use_context=True)
 telethn = TelegramClient("zero-two", API_ID, API_HASH)
-dispatcher = updater.dispatcher
+
+application = Application.builder().token(TOKEN).build()
+asyncio.get_event_loop().run_until_complete(application.bot.initialize())
 
 DRAGONS = list(DRAGONS) + list(DEV_USERS)
 DEV_USERS = list(DEV_USERS)
@@ -212,10 +214,8 @@ TIGERS = list(TIGERS)
 from zerotwobot.modules.helper_funcs.handlers import (
     CustomCommandHandler,
     CustomMessageHandler,
-    CustomRegexHandler,
 )
 
 # make sure the regex handler can take extra kwargs
-tg.RegexHandler = CustomRegexHandler
 tg.CommandHandler = CustomCommandHandler
 tg.MessageHandler = CustomMessageHandler
