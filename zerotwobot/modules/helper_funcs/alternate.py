@@ -1,5 +1,7 @@
 from telegram.error import BadRequest
 from functools import wraps
+from telegram import Update
+from telegram.ext import ContextTypes
 from telegram.constants import ChatAction
 
 
@@ -11,51 +13,51 @@ async def send_message(message, text, *args, **kwargs):
             return await message.reply_text(text, quote=False, *args, **kwargs)
 
 
-async def typing_action(func):
+def typing_action(func):
     """Sends typing action while processing func command."""
 
     @wraps(func)
-    async def command_func(update, context, *args, **kwargs):
+    async def command_func(update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs):
         await context.bot.send_chat_action(
             chat_id=update.effective_chat.id, action=ChatAction.TYPING,
         )
-        return func(update, context, *args, **kwargs)
+        return await func(update, context, *args, **kwargs)
 
     return command_func
 
-async def sticker_action(func):
+def sticker_action(func):
     """Sends typing action while processing func command."""
 
     @wraps(func)
-    async def command_func(update, context, *args, **kwargs):
+    async def command_func(update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs):
         await context.bot.send_chat_action(
             chat_id=update.effective_chat.id, action=ChatAction.CHOOSE_STICKER,
         )
-        return func(update, context, *args, **kwargs)
+        return await func(update, context, *args, **kwargs)
 
     return command_func
 
-async def document_action(func):
+def document_action(func):
     """Sends typing action while processing func command."""
 
     @wraps(func)
-    async def command_func(update, context, *args, **kwargs):
+    async def command_func(update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs):
         await context.bot.send_chat_action(
             chat_id=update.effective_chat.id, action=ChatAction.UPLOAD_DOCUMENT,
         )
-        return func(update, context, *args, **kwargs)
+        return await func(update, context, *args, **kwargs)
 
     return command_func
 
-async def photo_action(func):
+def photo_action(func):
     """Sends typing action while processing func command."""
 
     @wraps(func)
-    async def command_func(update, context, *args, **kwargs):
+    async def command_func(update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs):
         await context.bot.send_chat_action(
             chat_id=update.effective_chat.id, action=ChatAction.UPLOAD_PHOTO,
         )
-        return func(update, context, *args, **kwargs)
+        return await func(update, context, *args, **kwargs)
 
     return command_func
 

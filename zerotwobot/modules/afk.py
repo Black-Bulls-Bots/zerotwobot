@@ -12,14 +12,14 @@ from zerotwobot.modules.sql import afk_sql as sql
 from zerotwobot.modules.users import get_user_id
 from telegram import MessageEntity, Update
 from telegram.error import BadRequest
-from telegram.ext import CallbackContext, filters, MessageHandler
+from telegram.ext import ContextTypes, filters, MessageHandler
 
 AFK_GROUP = 7
 AFK_REPLY_GROUP = 8
 
 
 
-async def afk(update: Update, context: CallbackContext):
+async def afk(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_message.text:
         args = update.effective_message.text.split(None, 1)
     else:
@@ -56,7 +56,7 @@ async def afk(update: Update, context: CallbackContext):
 
 
 
-async def no_longer_afk(update: Update, context: CallbackContext):
+async def no_longer_afk(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     message = update.effective_message
 
@@ -94,7 +94,7 @@ async def no_longer_afk(update: Update, context: CallbackContext):
 
 
 
-async def reply_afk(update: Update, context: CallbackContext):
+async def reply_afk(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
     message = update.effective_message
     userc = update.effective_user
@@ -119,7 +119,7 @@ async def reply_afk(update: Update, context: CallbackContext):
             if ent.type != MessageEntity.MENTION:
                 return
 
-            user_id = get_user_id(
+            user_id = await get_user_id(
                 message.text[ent.offset: ent.offset + ent.length],
             )
             if not user_id:
@@ -137,15 +137,15 @@ async def reply_afk(update: Update, context: CallbackContext):
                 return
             fst_name = chat.first_name
 
-            check_afk(update, context, user_id, fst_name, userc_id)
+            await check_afk(update, context, user_id, fst_name, userc_id)
 
     elif message.reply_to_message:
         user_id = message.reply_to_message.from_user.id
         fst_name = message.reply_to_message.from_user.first_name
-        check_afk(update, context, user_id, fst_name, userc_id)
+        await check_afk(update, context, user_id, fst_name, userc_id)
 
 
-async def check_afk(update: Update, context: CallbackContext, user_id: int, fst_name: str, userc_id: int):
+async def check_afk(update: Update, context: ContextTypes.DEFAULT_TYPE, user_id: int, fst_name: str, userc_id: int):
     if sql.is_afk(user_id):
         user = sql.check_afk_status(user_id)
 

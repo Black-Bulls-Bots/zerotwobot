@@ -1,7 +1,7 @@
 from datetime import datetime
 from functools import wraps
 
-from telegram.ext import CallbackContext
+from telegram.ext import ContextTypes
 
 from zerotwobot.modules.helper_funcs.misc import is_module_loaded
 
@@ -18,19 +18,19 @@ if is_module_loaded(FILENAME):
     from zerotwobot.modules.helper_funcs.chat_status import user_admin
     from zerotwobot.modules.sql import log_channel_sql as sql
 
-    async def loggable(func):
+    def loggable(func):
         @wraps(func)
         async def log_action(
             update: Update,
-            context: CallbackContext,
+            context: ContextTypes.DEFAULT_TYPE,
             job_queue: JobQueue = None,
             *args,
             **kwargs,
         ):
             if not job_queue:
-                result = func(update, context, *args, **kwargs)
+                result = await func(update, context, *args, **kwargs)
             else:
-                result = func(update, context, job_queue, *args, **kwargs)
+                result = await func(update, context, job_queue, *args, **kwargs)
 
             chat = update.effective_chat
             message = update.effective_message
@@ -43,16 +43,16 @@ if is_module_loaded(FILENAME):
                     result += f'\n<b>Link:</b> <a href="https://t.me/{chat.username}/{message.message_id}">click here</a>'
                 log_chat = sql.get_chat_log_channel(chat.id)
                 if log_chat:
-                    send_log(context, log_chat, chat.id, result)
+                    await send_log(context, log_chat, chat.id, result)
 
             return result
 
         return log_action
 
-    async def gloggable(func):
+    def gloggable(func):
         @wraps(func)
-        async def glog_action(update: Update, context: CallbackContext, *args, **kwargs):
-            result = func(update, context, *args, **kwargs)
+        async def glog_action(update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs):
+            result = await func(update, context, *args, **kwargs)
             chat = update.effective_chat
             message = update.effective_message
 
@@ -66,14 +66,14 @@ if is_module_loaded(FILENAME):
                     result += f'\n<b>Link:</b> <a href="https://t.me/{chat.username}/{message.message_id}">click here</a>'
                 log_chat = str(EVENT_LOGS)
                 if log_chat:
-                    send_log(context, log_chat, chat.id, result)
+                    await send_log(context, log_chat, chat.id, result)
 
             return result
 
         return glog_action
 
     async def send_log(
-        context: CallbackContext, log_chat_id: str, orig_chat_id: str, result: str,
+        context: ContextTypes.DEFAULT_TYPE, log_chat_id: str, orig_chat_id: str, result: str,
     ):
         bot = context.bot
         try:
@@ -102,7 +102,7 @@ if is_module_loaded(FILENAME):
 
     
     @user_admin
-    async def logging(update: Update, context: CallbackContext):
+    async def logging(update: Update, context: ContextTypes.DEFAULT_TYPE):
         bot = context.bot
         message = update.effective_message
         chat = update.effective_chat
@@ -121,7 +121,7 @@ if is_module_loaded(FILENAME):
 
     
     @user_admin
-    async def setlog(update: Update, context: CallbackContext):
+    async def setlog(update: Update, context: ContextTypes.DEFAULT_TYPE):
         bot = context.bot
         message = update.effective_message
         chat = update.effective_chat
@@ -165,7 +165,7 @@ if is_module_loaded(FILENAME):
 
     
     @user_admin
-    async def unsetlog(update: Update, context: CallbackContext):
+    async def unsetlog(update: Update, context: ContextTypes.DEFAULT_TYPE):
         bot = context.bot
         message = update.effective_message
         chat = update.effective_chat
@@ -180,10 +180,10 @@ if is_module_loaded(FILENAME):
         else:
             await message.reply_text("No log channel has been set yet!")
 
-    async def __stats__():
+    def __stats__():
         return f"• {sql.num_logchannels()} log channels set."
 
-    async def __migrate__(old_chat_id, new_chat_id):
+    def __migrate__(old_chat_id, new_chat_id):
         sql.migrate_chat(old_chat_id, new_chat_id)
 
     async def __chat_settings__(chat_id, user_id):

@@ -4,13 +4,13 @@ import requests as r
 from zerotwobot import SUPPORT_CHAT, WALL_API, application
 from zerotwobot.modules.disable import DisableAbleCommandHandler
 from telegram import Update
-from telegram.ext import CallbackContext
+from telegram.ext import ContextTypes
 
 # Wallpapers module by @TheRealPhoenix using wall.alphacoders.com
 
 #Need to fix this module ASAP
 
-async def wall(update: Update, context: CallbackContext):
+async def wall(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     msg = update.effective_message
     args = context.args
@@ -18,7 +18,7 @@ async def wall(update: Update, context: CallbackContext):
     bot = context.bot
     query = " ".join(args)
     if not query:
-        msg.reply_text("Please enter a query!")
+        await msg.reply_text("Please enter a query!")
         return
     else:
         caption = query
@@ -27,11 +27,11 @@ async def wall(update: Update, context: CallbackContext):
             f"https://wall.alphacoders.com/api2.0/get.php?auth={WALL_API}&method=search&term={term}",
         ).json()
         if not json_rep.get("success"):
-            msg.reply_text(f"An error occurred! Report this @{SUPPORT_CHAT}")
+            await msg.reply_text(f"An error occurred! Report this @{SUPPORT_CHAT}")
         else:
             wallpapers = json_rep.get("wallpapers")
             if not wallpapers:
-                msg.reply_text("No results found! Refine your search.")
+                await  msg.reply_text("No results found! Refine your search.")
                 return
             else:
                 index = randint(0, len(wallpapers) - 1)  # Choose random index

@@ -4,7 +4,7 @@ from typing import List
 import requests
 from telegram import Update
 from telegram.constants import ParseMode
-from telegram.ext import CallbackContext
+from telegram.ext import ContextTypes
 
 from zerotwobot import StartTime, application
 from zerotwobot.modules.helper_funcs.chat_status import sudo_plus
@@ -71,11 +71,11 @@ def ping_func(to_ping: List[str]) -> List[str]:
 
 
 @sudo_plus
-async def ping(update: Update, context: CallbackContext):
+async def ping(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.effective_message
 
     start_time = time.time()
-    message = msg.reply_text("Pinging...")
+    message = await msg.reply_text("Pinging...")
     end_time = time.time()
     telegram_ping = str(round((end_time - start_time) * 1000, 3)) + " ms"
     uptime = get_readable_time((time.time() - StartTime))
@@ -90,7 +90,7 @@ async def ping(update: Update, context: CallbackContext):
 
 
 @sudo_plus
-async def pingall(update: Update, context: CallbackContext):
+async def pingall(update: Update, context: ContextTypes.DEFAULT_TYPE):
     to_ping = ["Kaizoku", "Kayo", "Telegram", "Jikan"]
     pinged_list = ping_func(to_ping)
     pinged_list.insert(2, "")

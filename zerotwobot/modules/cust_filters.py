@@ -11,7 +11,7 @@ from telegram.ext import (
     MessageHandler,
     ApplicationHandlerStop,
     CallbackQueryHandler,
-    CallbackContext,
+    ContextTypes,
 )
 from telegram.ext import filters as filters_module
 from telegram.helpers import mention_html, escape_markdown
@@ -53,11 +53,11 @@ ENUM_FUNC_MAP = {
 
 
 @typing_action
-async def list_handlers(update: Update, context: CallbackContext):
+async def list_handlers(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat = update.effective_chat
     user = update.effective_user
 
-    conn = connected(context.bot, update, chat, user.id, need_admin=False)
+    conn = await connected(context.bot, update, chat, user.id, need_admin=False)
     if not conn is False:
         chat_id = conn
         chat_name = await application.bot.getChat(conn).title
@@ -74,7 +74,7 @@ async def list_handlers(update: Update, context: CallbackContext):
     all_handlers = sql.get_chat_triggers(chat_id)
 
     if not all_handlers:
-        send_message(
+        await send_message(
             update.effective_message, "No filters saved in {}!".format(chat_name),
         )
         return
@@ -82,7 +82,7 @@ async def list_handlers(update: Update, context: CallbackContext):
     for keyword in all_handlers:
         entry = " • `{}`\n".format(escape_markdown(keyword))
         if len(entry) + len(filter_list) > MessageLimit.TEXT_LENGTH:
-            send_message(
+            await send_message(
                 update.effective_message,
                 filter_list.format(chat_name),
                 parse_mode=telegram.ParseMode.MARKDOWN,
@@ -91,7 +91,7 @@ async def list_handlers(update: Update, context: CallbackContext):
         else:
             filter_list += entry
 
-    send_message(
+    await send_message(
         update.effective_message,
         filter_list.format(chat_name),
         parse_mode=telegram.ParseMode.MARKDOWN,
@@ -100,7 +100,7 @@ async def list_handlers(update: Update, context: CallbackContext):
 
 @user_admin
 @typing_action
-async def filters(update: Update, context: CallbackContext):
+async def filters(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat = update.effective_chat
     user = update.effective_user
     msg = update.effective_message
@@ -108,7 +108,7 @@ async def filters(update: Update, context: CallbackContext):
         None, 1,
     )  # use python's maxsplit to separate Cmd, keyword, and reply_text
 
-    conn = connected(context.bot, update, chat, user.id)
+    conn = await connected(context.bot, update, chat, user.id)
     if not conn is False:
         chat_id = conn
         chat_name = await application.bot.getChat(conn).title
@@ -120,7 +120,7 @@ async def filters(update: Update, context: CallbackContext):
             chat_name = chat.title
 
     if not msg.reply_to_message and len(args) < 2:
-        send_message(
+        await send_message(
             update.effective_message,
             "Please provide keyboard keyword for this filter to reply with!",
         )
@@ -128,7 +128,7 @@ async def filters(update: Update, context: CallbackContext):
 
     if msg.reply_to_message:
         if len(args) < 2:
-            send_message(
+            await send_message(
                 update.effective_message,
                 "Please provide keyword for this filter to reply with!",
             )
@@ -158,7 +158,7 @@ async def filters(update: Update, context: CallbackContext):
         )
         text = text.strip()
         if not text:
-            send_message(
+            await send_message(
                 update.effective_message,
                 "There is no note message - You can't JUST have buttons, you need a message to go with it!",
             )
@@ -180,7 +180,7 @@ async def filters(update: Update, context: CallbackContext):
         text = text.strip()
 
     elif not text and not file_type:
-        send_message(
+        await send_message(
             update.effective_message,
             "Please provide keyword for this filter reply with!",
         )
@@ -201,22 +201,22 @@ async def filters(update: Update, context: CallbackContext):
         )
         text = text.strip()
         if (msg.reply_to_message.text or msg.reply_to_message.caption) and not text:
-            send_message(
+            await send_message(
                 update.effective_message,
                 "There is no note message - You can't JUST have buttons, you need a message to go with it!",
             )
             return
 
     else:
-        send_message(update.effective_message, "Invalid filter!")
+        await send_message(update.effective_message, "Invalid filter!")
         return
 
-    add = addnew_filter(update, chat_id, keyword, text, file_type, file_id, buttons)
+    add = await (update, chat_id, keyword, text, file_type, file_id, buttons)
     # This is an old method
     # sql.add_filter(chat_id, keyword, content, is_sticker, is_document, is_image, is_audio, is_voice, is_video, buttons)
 
     if add is True:
-        send_message(
+        await send_message(
             update.effective_message,
             "Saved filter '{}' in *{}*!".format(keyword, chat_name),
             parse_mode=telegram.ParseMode.MARKDOWN,
@@ -226,12 +226,12 @@ async def filters(update: Update, context: CallbackContext):
 
 @user_admin
 @typing_action
-async def stop_filter(update: Update, context: CallbackContext):
+async def stop_filter(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat = update.effective_chat
     user = update.effective_user
     args = update.effective_message.text.split(None, 1)
 
-    conn = connected(context.bot, update, chat, user.id)
+    conn = await connected(context.bot, update, chat, user.id)
     if not conn is False:
         chat_id = conn
         chat_name = await application.bot.getChat(conn).title
@@ -243,33 +243,33 @@ async def stop_filter(update: Update, context: CallbackContext):
             chat_name = chat.title
 
     if len(args) < 2:
-        send_message(update.effective_message, "What should i stop?")
+        await send_message(update.effective_message, "What should i stop?")
         return
 
     chat_filters = sql.get_chat_triggers(chat_id)
 
     if not chat_filters:
-        send_message(update.effective_message, "No filters active here!")
+        await send_message(update.effective_message, "No filters active here!")
         return
 
     for keyword in chat_filters:
         if keyword == args[1]:
             sql.remove_filter(chat_id, args[1])
-            send_message(
+            await send_message(
                 update.effective_message,
                 "Okay, I'll stop replying to that filter in *{}*.".format(chat_name),
                 parse_mode=telegram.ParseMode.MARKDOWN,
             )
             raise ApplicationHandlerStop
 
-    send_message(
+    await send_message(
         update.effective_message,
         "That's not a filter - Click: /filters to get currently active filters.",
     )
 
 
 
-async def reply_filter(update: Update, context: CallbackContext):
+async def reply_filter(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat = update.effective_chat  # type: Optional[Chat]
     message = update.effective_message  # type: Optional[Message]
 
@@ -378,7 +378,7 @@ async def reply_filter(update: Update, context: CallbackContext):
                     except BadRequest as excp:
                         LOGGER.exception("Error in filters: " + excp.message)
                         try:
-                            send_message(
+                            await send_message(
                                 update.effective_message,
                                 get_exception(excp, filt, chat),
                             )
@@ -394,7 +394,7 @@ async def reply_filter(update: Update, context: CallbackContext):
                             reply_markup=keyboard,
                         )
                     except BadRequest:
-                        send_message(
+                        await send_message(
                             message,
                             "I don't have the permission to send the content of the filter.",
                         )
@@ -428,7 +428,7 @@ async def reply_filter(update: Update, context: CallbackContext):
                     except BadRequest as excp:
                         if excp.message == "Unsupported url protocol":
                             try:
-                                send_message(
+                                await send_message(
                                     update.effective_message,
                                     "You seem to be trying to use an unsupported url protocol. "
                                     "Telegram doesn't support buttons for some protocols, such as tg://. Please try "
@@ -438,7 +438,7 @@ async def reply_filter(update: Update, context: CallbackContext):
                                 LOGGER.exception("Error in filters: " + excp.message)
                         else:
                             try:
-                                send_message(
+                                await send_message(
                                     update.effective_message,
                                     "This message couldn't be sent as it's incorrectly formatted.",
                                 )
@@ -463,10 +463,10 @@ async def reply_filter(update: Update, context: CallbackContext):
 
 
 
-async def rmall_filters(update: Update, context: CallbackContext):
+async def rmall_filters(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat = update.effective_chat
     user = update.effective_user
-    member = chat.get_member(user.id)
+    member = await chat.get_member(user.id)
     if member.status != "creator" and user.id not in DRAGONS:
         await update.effective_message.reply_text(
             "Only the chat owner can clear all notes at once.",
@@ -490,11 +490,11 @@ async def rmall_filters(update: Update, context: CallbackContext):
 
 
 
-async def rmall_callback(update: Update, context: CallbackContext):
+async def rmall_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     chat = update.effective_chat
     msg = update.effective_message
-    member = chat.get_member(query.from_user.id)
+    member = await chat.get_member(query.from_user.id)
     if query.data == "filters_rmall":
         if member.status == "creator" or query.from_user.id in DRAGONS:
             allfilters = sql.get_chat_triggers(chat.id)
@@ -543,11 +543,11 @@ def get_exception(excp, filt, chat):
 
 
 # NOT ASYNC NOT A HANDLER
-def addnew_filter(update, chat_id, keyword, text, file_type, file_id, buttons):
+async def addnew_filter(update, chat_id, keyword, text, file_type, file_id, buttons):
     msg = update.effective_message
     totalfilt = sql.get_chat_triggers(chat_id)
     if len(totalfilt) >= 150:  # Idk why i made this like function....
-        msg.reply_text("This group has reached its max filters limit of 150.")
+        await msg.reply_text("This group has reached its max filters limit of 150.")
         return False
     else:
         sql.new_add_filter(chat_id, keyword, text, file_type, file_id, buttons)

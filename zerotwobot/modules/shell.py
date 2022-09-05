@@ -4,13 +4,13 @@ from zerotwobot import LOGGER, application
 from zerotwobot.modules.helper_funcs.chat_status import dev_plus
 from telegram import Update
 from telegram.constants import ParseMode
-from telegram.ext import CallbackContext, CommandHandler
+from telegram.ext import ContextTypes, CommandHandler
 
 
 @dev_plus
-async def shell(update: Update, context: CallbackContext):
+async def shell(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
-    cmd = await message.text.split(" ", 1)
+    cmd = message.text.split(" ", 1)
     if len(cmd) == 1:
         await message.reply_text("No command to execute was given.")
         return

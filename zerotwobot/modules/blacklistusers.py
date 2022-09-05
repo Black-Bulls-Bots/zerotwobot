@@ -19,7 +19,7 @@ from zerotwobot.modules.log_channel import gloggable
 from telegram import Update
 from telegram.constants import ParseMode
 from telegram.error import BadRequest
-from telegram.ext import CallbackContext, CommandHandler
+from telegram.ext import ContextTypes, CommandHandler
 from telegram.helpers import mention_html
 
 BLACKLISTWHITELIST = [OWNER_ID] + DEV_USERS + DRAGONS + WOLVES + DEMONS
@@ -29,11 +29,11 @@ BLABLEUSERS = [OWNER_ID] + DEV_USERS
 
 @dev_plus
 @gloggable
-async def bl_user(update: Update, context: CallbackContext) -> str:
+async def bl_user(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     message = update.effective_message
     user = update.effective_user
     bot, args = context.bot, context.args
-    user_id, reason = extract_user_and_text(message, args)
+    user_id, reason = await extract_user_and_text(message, context, args)
 
     if not user_id:
         await message.reply_text("I doubt that's a user.")
@@ -72,11 +72,11 @@ async def bl_user(update: Update, context: CallbackContext) -> str:
 
 @dev_plus
 @gloggable
-async def unbl_user(update: Update, context: CallbackContext) -> str:
+async def unbl_user(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     message = update.effective_message
     user = update.effective_user
     bot, args = context.bot, context.args
-    user_id = extract_user(message, args)
+    user_id = await extract_user(message, context, args)
 
     if not user_id:
         await message.reply_text("I doubt that's a user.")
@@ -114,7 +114,7 @@ async def unbl_user(update: Update, context: CallbackContext) -> str:
 
 
 @dev_plus
-async def bl_users(update: Update, context: CallbackContext):
+async def bl_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
     users = []
     bot = context.bot
     for each_user in sql.BLACKLIST_USERS:

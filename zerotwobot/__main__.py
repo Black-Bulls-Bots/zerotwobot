@@ -39,7 +39,7 @@ from telegram.error import (
     Forbidden,
 )
 from telegram.ext import (
-    CallbackContext,
+    ContextTypes,
     CallbackQueryHandler,
     CommandHandler,
     filters,
@@ -142,7 +142,7 @@ async def send_help(chat_id, text, keyboard=None):
 
 
 
-async def start(update: Update, context: CallbackContext):
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     HELP_STRINGS = """
     Hey there!.
@@ -194,12 +194,12 @@ async def start(update: Update, context: CallbackContext):
     if update.effective_chat.type == "private":
         if len(args) >= 1:
             if args[0].lower() == "help":
-                send_help(update.effective_chat.id, HELP_STRINGS)
+                await send_help(update.effective_chat.id, HELP_STRINGS)
             elif args[0].lower().startswith("ghelp_"):
                 mod = args[0].lower().split("_", 1)[1]
                 if not HELPABLE.get(mod, False):
                     return
-                send_help(
+                await send_help(
                     update.effective_chat.id,
                     HELPABLE[mod].__help__,
                     InlineKeyboardMarkup(
@@ -207,17 +207,15 @@ async def start(update: Update, context: CallbackContext):
                     ),
                 )
             elif args[0].lower() == "markdownhelp":
-                IMPORTED["extras"].markdown_help_sender(update)
-            elif args[0].lower() == "disasters":
-                IMPORTED["disasters"].send_disasters(update)
+                await IMPORTED["extras"].markdown_help_sender(update)
             elif args[0].lower().startswith("stngs_"):
                 match = re.match("stngs_(.*)", args[0].lower())
                 chat = await application.bot.getChat(match.group(1))
 
-                if is_user_admin(chat, update.effective_user.id):
-                    send_settings(match.group(1), update.effective_user.id, False)
+                if await is_user_admin(chat, update.effective_user.id):
+                    await send_settings(match.group(1), update.effective_user.id, False)
                 else:
-                    send_settings(match.group(1), update.effective_user.id, True)
+                    await send_settings(match.group(1), update.effective_user.id, True)
 
             elif args[0][1:].isdigit() and "rules" in IMPORTED:
                 IMPORTED["rules"].send_rules(update, args[0], from_pm=True)
@@ -263,28 +261,33 @@ async def start(update: Update, context: CallbackContext):
 
 
 # for test purposes
-async def error_callback(update: Update, context: CallbackContext):
+async def error_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     error = context.error
     try:
         raise error
     except Forbidden:
-        print("no nono1")
+        print("\nForbidden Erro\n")
         print(error)
+        raise error
         # remove update.message.chat_id from conversation list
     except BadRequest:
-        print("no nono2")
+        print("\nBadRequest Error\n")
         print("BadRequest caught")
         print(error)
+        raise error
 
         # handle malformed requests - read more below!
     except TimedOut:
-        print("no nono3")
+        print("\nTimedOut Error\n")
+        raise error
         # handle slow connection problems
     except NetworkError:
-        print("no nono4")
+        print("\n NetWork Error\n")
+        raise error
         # handle other connection problems
     except ChatMigrated as err:
-        print("no nono5")
+        print("\n ChatMigrated error\n")
+        raise error
         print(err)
         # the chat_id of a group has changed, use e.new_chat_id instead
     except TelegramError:
@@ -293,7 +296,7 @@ async def error_callback(update: Update, context: CallbackContext):
 
 
 
-async def help_button(update: Update, context: CallbackContext):
+async def help_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     HELP_STRINGS = """
     Hey there!.
     My Name is {}, from Darling in The FranXX. Take me as your group's darling to have fun with me. \
@@ -378,7 +381,7 @@ async def help_button(update: Update, context: CallbackContext):
 
 
 
-async def get_help(update: Update, context: CallbackContext):
+async def get_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     HELP_STRINGS = """
     Hey there!.
@@ -500,7 +503,7 @@ async def send_settings(chat_id, user_id, user=False):
 
 
 
-async def settings_button(update: Update, context: CallbackContext):
+async def settings_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     user = update.effective_user
     bot = context.bot
@@ -584,16 +587,16 @@ async def settings_button(update: Update, context: CallbackContext):
 
 
 
-async def get_settings(update: Update, context: CallbackContext):
+async def get_settings(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     msg = update.effective_message  # type: Optional[Message]
 
     # ONLY send settings in PM
     if chat.type != chat.PRIVATE:
-        if is_user_admin(chat, user.id):
+        if await is_user_admin(chat, user.id):
             text = "Click here to get this chat's settings, as well as yours."
-            msg.reply_text(
+            await msg.reply_text(
                 text,
                 reply_markup=InlineKeyboardMarkup(
                     [
@@ -612,11 +615,11 @@ async def get_settings(update: Update, context: CallbackContext):
             text = "Click here to check your settings."
 
     else:
-        send_settings(chat.id, user.id, True)
+        await send_settings(chat.id, user.id, True)
 
 
 
-async def donate(update: Update, context: CallbackContext):
+async def donate(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_message.from_user
     chat = update.effective_chat  # type: Optional[Chat]
     bot = context.bot
@@ -650,7 +653,7 @@ async def donate(update: Update, context: CallbackContext):
             )
 
 
-async def migrate_chats(update: Update, context: CallbackContext):
+async def migrate_chats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.effective_message  # type: Optional[Message]
     if msg.migrate_to_chat_id:
         old_chat = update.effective_chat.id

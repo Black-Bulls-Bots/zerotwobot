@@ -13,11 +13,11 @@ from telegram import (
 )
 from telegram.constants import ParseMode
 from telegram.error import BadRequest
-from telegram.ext import CallbackContext, CommandHandler, filters
+from telegram.ext import ContextTypes, CommandHandler, filters
 from telegram.helpers import escape_markdown
 
 
-async def get_rules(update: Update, context: CallbackContext):
+async def get_rules(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     send_rules(update, chat_id)
 
@@ -54,7 +54,7 @@ async def send_rules(update, chat_id, from_pm=False):
             "This probably doesn't mean it's lawless though...!",
         )
     elif rules and reply_msg:
-        reply_msg.reply_text(
+        await reply_msg.reply_text(
             "Please click the button below to see the rules.",
             reply_markup=InlineKeyboardMarkup(
                 [
@@ -87,7 +87,7 @@ async def send_rules(update, chat_id, from_pm=False):
 
 
 @user_admin
-async def set_rules(update: Update, context: CallbackContext):
+async def set_rules(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     msg = update.effective_message  # type: Optional[Message]
     raw_text = msg.text
@@ -104,7 +104,7 @@ async def set_rules(update: Update, context: CallbackContext):
 
 
 @user_admin
-async def clear_rules(update: Update, context: CallbackContext):
+async def clear_rules(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     sql.set_rules(chat_id, "")
     await update.effective_message.reply_text("Successfully cleared rules!")

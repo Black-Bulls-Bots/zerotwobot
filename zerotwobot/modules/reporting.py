@@ -8,7 +8,7 @@ from telegram import Chat, InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.constants import ParseMode
 from telegram.error import BadRequest, Forbidden
 from telegram.ext import (
-    CallbackContext,
+    ContextTypes,
     CallbackQueryHandler,
     CommandHandler,
     filters,
@@ -20,7 +20,7 @@ REPORT_GROUP = 12
 REPORT_IMMUNE_USERS = DRAGONS + TIGERS + WOLVES
 
 @user_admin
-async def report_setting(update: Update, context: CallbackContext):
+async def report_setting(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, args = context.bot, context.args
     chat = update.effective_chat
     msg = update.effective_message
@@ -29,15 +29,15 @@ async def report_setting(update: Update, context: CallbackContext):
         if len(args) >= 1:
             if args[0] in ("yes", "on"):
                 sql.set_user_setting(chat.id, True)
-                msg.reply_text(
+                await msg.reply_text(
                     "Turned on reporting! You'll be notified whenever anyone reports something.",
                 )
 
             elif args[0] in ("no", "off"):
                 sql.set_user_setting(chat.id, False)
-                msg.reply_text("Turned off reporting! You wont get any reports.")
+                await msg.reply_text("Turned off reporting! You wont get any reports.")
         else:
-            msg.reply_text(
+            await msg.reply_text(
                 f"Your current report preference is: `{sql.user_should_report(chat.id)}`",
                 parse_mode=ParseMode.MARKDOWN,
             )
@@ -46,25 +46,25 @@ async def report_setting(update: Update, context: CallbackContext):
         if len(args) >= 1:
             if args[0] in ("yes", "on"):
                 sql.set_chat_setting(chat.id, True)
-                msg.reply_text(
+                await msg.reply_text(
                     "Turned on reporting! Admins who have turned on reports will be notified when /report "
                     "or @admin is called.",
                 )
 
             elif args[0] in ("no", "off"):
                 sql.set_chat_setting(chat.id, False)
-                msg.reply_text(
+                await msg.reply_text(
                     "Turned off reporting! No admins will be notified on /report or @admin.",
                 )
         else:
-            msg.reply_text(
+            await msg.reply_text(
                 f"This group's current setting is: `{sql.chat_should_report(chat.id)}`",
                 parse_mode=ParseMode.MARKDOWN,
             )
 
 @user_not_admin
 @loggable
-async def report(update: Update, context: CallbackContext) -> str:
+async def report(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     bot = context.bot
     args = context.args
     message = update.effective_message
@@ -74,7 +74,7 @@ async def report(update: Update, context: CallbackContext) -> str:
     if chat and message.reply_to_message and sql.chat_should_report(chat.id):
         reported_user = message.reply_to_message.from_user
         chat_name = chat.title or chat.first or chat.username
-        admin_list = chat.get_administrators()
+        admin_list = await chat.get_administrators()
         message = update.effective_message
 
         if not args:
@@ -216,7 +216,7 @@ def __user_settings__(user_id):
     return text
 
 
-async def buttons(update: Update, context: CallbackContext):
+async def buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
     query = update.callback_query
     splitter = await query.data.replace("report_", "").split("=")

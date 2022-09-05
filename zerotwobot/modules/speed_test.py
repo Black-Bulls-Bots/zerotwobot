@@ -4,7 +4,7 @@ from zerotwobot.modules.disable import DisableAbleCommandHandler
 from zerotwobot.modules.helper_funcs.chat_status import dev_plus
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.constants import ParseMode
-from telegram.ext import CallbackContext, CallbackQueryHandler
+from telegram.ext import ContextTypes, CallbackQueryHandler
 
 
 def convert(speed):
@@ -12,7 +12,7 @@ def convert(speed):
 
 
 @dev_plus
-async def speedtestxyz(update: Update, context: CallbackContext):
+async def speedtestxyz(update: Update, context: ContextTypes.DEFAULT_TYPE):
     buttons = [
         [
             InlineKeyboardButton("Image", callback_data="speedtest_image"),
@@ -24,7 +24,7 @@ async def speedtestxyz(update: Update, context: CallbackContext):
     )
 
 
-async def speedtestxyz_callback(update: Update, context: CallbackContext):
+async def speedtestxyz_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
 
     if query.from_user.id in DEV_USERS:

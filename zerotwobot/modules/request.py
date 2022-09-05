@@ -3,7 +3,7 @@ import html
 from telegram import Update
 from telegram.constants import ParseMode
 from telegram.error import BadRequest, Forbidden
-from telegram.ext import CallbackContext, CommandHandler, MessageHandler, filters
+from telegram.ext import ContextTypes, CommandHandler, MessageHandler, filters
 from telegram.helpers import mention_html
 from zerotwobot.modules.helper_funcs.chat_status import user_admin, user_not_admin
 from zerotwobot.modules.log_channel import loggable
@@ -14,7 +14,7 @@ from zerotwobot.modules.sql import request_sql as sql
 REQUEST_GROUP = 12
 
 @user_admin
-async def settings(update: Update, context: CallbackContext):
+async def settings(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
     chat = update.effective_chat
     user = update.effective_user
@@ -52,7 +52,7 @@ async def settings(update: Update, context: CallbackContext):
 
 @loggable
 @user_not_admin
-async def request(update: Update, context: CallbackContext):
+async def request(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
     chat = update.effective_chat
     user = update.effective_user
@@ -61,7 +61,7 @@ async def request(update: Update, context: CallbackContext):
 
     if chat and sql.chat_should_request(chat.id):
         chat_name = chat.title or chat.username or chat.first_name
-        admin_list = chat.get_administrators()
+        admin_list = await chat.get_administrators()
 
         if not args:
             await message.reply_text("Please give something to request")
@@ -142,7 +142,7 @@ def __user_settings__(user_id):
 
 
 SETTINGS_HANDLER = CommandHandler("requests", settings, block=False)
-REQUEST_HANDLER = CommandHandler("request", request, filters.ChatType.GROUPS , block=False)
+REQUEST_HANDLER = CommandHandler("request", request, filters=filters.ChatType.GROUPS , block=False)
 HASH_REQUEST_HANDLER = MessageHandler(filters.Regex(r"(?i)#request(s)?"), request, block=False)
 
 

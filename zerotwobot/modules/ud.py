@@ -3,10 +3,10 @@ from zerotwobot import application
 from zerotwobot.modules.disable import DisableAbleCommandHandler
 from telegram import Update
 from telegram.constants import ParseMode
-from telegram.ext import CallbackContext
+from telegram.ext import ContextTypes
 
 
-async def ud(update: Update, context: CallbackContext):
+async def ud(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
     text = message.text[len("/ud ") :]
     results = requests.get(

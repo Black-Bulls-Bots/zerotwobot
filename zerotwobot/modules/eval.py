@@ -10,7 +10,7 @@ from zerotwobot import LOGGER, application
 from zerotwobot.modules.helper_funcs.chat_status import dev_plus
 from telegram import Update
 from telegram.constants import ParseMode
-from telegram.ext import CallbackContext, CommandHandler
+from telegram.ext import ContextTypes, CommandHandler
 
 namespaces = {}
 
@@ -50,15 +50,15 @@ async def send(msg, bot, update):
 
 
 @dev_plus
-async def evaluate(update: Update, context: CallbackContext):
+async def evaluate(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
-    send(do(eval, bot, update), bot, update)
+    await send(do(eval, bot, update), bot, update)
 
 
 @dev_plus
-async def execute(update: Update, context: CallbackContext):
+async def execute(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
-    send(do(exec, bot, update), bot, update)
+    await send(do(exec, bot, update), bot, update)
 
 
 def cleanup_code(code):
@@ -114,13 +114,13 @@ async def do(func, bot, update):
 
 
 @dev_plus
-async def clear(update: Update, context: CallbackContext):
+async def clear(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
     log_input(update)
     global namespaces
     if update.message.chat_id in namespaces:
         del namespaces[update.message.chat_id]
-    send("Cleared locals.", bot, update)
+    await send("Cleared locals.", bot, update)
 
 
 EVAL_HANDLER = CommandHandler(("e", "ev", "eva", "eval"), evaluate, block=False)

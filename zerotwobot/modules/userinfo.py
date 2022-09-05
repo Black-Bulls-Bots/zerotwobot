@@ -4,12 +4,12 @@ import os
 import requests
 
 from telethon.tl.functions.channels import GetFullChannelRequest
-from telethon.tl.types import ChannelParticipantsAdmins
+from telethon.tl.types import ChannelParticipantsAdmins, updates
 from telethon import events
 
 from telegram import Update, MessageEntity
 from telegram.constants import ParseMode
-from telegram.ext import CallbackContext, CommandHandler
+from telegram.ext import ContextTypes, CommandHandler
 from telegram.error import BadRequest
 from telegram.helpers import escape_markdown, mention_html
 
@@ -22,7 +22,6 @@ from zerotwobot import (
     WOLVES,
     INFOPIC,
     application,
-    sw,
 )
 from zerotwobot.__main__ import STATS, TOKEN, USER_INFO
 from zerotwobot.modules.disable import DisableAbleCommandHandler
@@ -35,12 +34,12 @@ from zerotwobot import telethn as ZerotwoTelethonClient
 
 
 
-async def get_id(update: Update, context: CallbackContext):
+async def get_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, args = context.bot, context.args
     message = update.effective_message
     chat = update.effective_chat
     msg = update.effective_message
-    user_id = extract_user(msg, args)
+    user_id = await extract_user(msg, context,  args)
 
     if user_id:
 
@@ -49,7 +48,7 @@ async def get_id(update: Update, context: CallbackContext):
             user1 = message.reply_to_message.from_user
             user2 = message.reply_to_message.forward_from
 
-            msg.reply_text(
+            await msg.reply_text(
                 f"<b>Telegram ID:</b>,"
                 f"• {html.escape(user2.first_name)} - <code>{user2.id}</code>.\n"
                 f"• {html.escape(user1.first_name)} - <code>{user1.id}</code>.",
@@ -59,7 +58,7 @@ async def get_id(update: Update, context: CallbackContext):
         else:
 
             user = await bot.get_chat(user_id)
-            msg.reply_text(
+            await msg.reply_text(
                 f"{html.escape(user.first_name)}'s id is <code>{user.id}</code>.",
                 parse_mode=ParseMode.HTML,
             )
@@ -67,12 +66,12 @@ async def get_id(update: Update, context: CallbackContext):
     else:
 
         if chat.type == "private":
-            msg.reply_text(
+            await msg.reply_text(
                 f"Your id is <code>{chat.id}</code>.", parse_mode=ParseMode.HTML,
             )
 
         else:
-            msg.reply_text(
+            await msg.reply_text(
                 f"This group's id is <code>{chat.id}</code>.", parse_mode=ParseMode.HTML,
             )
 
@@ -97,8 +96,11 @@ async def group_info(event) -> None:
         return
     msg = f"**ID**: `{entity.id}`"
     msg += f"\n**Title**: `{entity.title}`"
-    msg += f"\n**Datacenter**: `{entity.photo.dc_id}`"
-    msg += f"\n**Video PFP**: `{entity.photo.has_video}`"
+    try:
+        msg += f"\n**Datacenter**: `{entity.photo.dc_id}`"
+        msg += f"\n**Video PFP**: `{entity.photo.has_video}`"
+    except:
+        pass
     msg += f"\n**Supergroup**: `{entity.megagroup}`"
     msg += f"\n**Restricted**: `{entity.restricted}`"
     msg += f"\n**Scam**: `{entity.scam}`"
@@ -116,7 +118,7 @@ async def group_info(event) -> None:
 
 
 
-async def gifid(update: Update, context: CallbackContext):
+async def gifid(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.effective_message
     if msg.reply_to_message and msg.reply_to_message.animation:
         await update.effective_message.reply_text(
@@ -128,11 +130,11 @@ async def gifid(update: Update, context: CallbackContext):
 
 
 
-async def info(update: Update, context: CallbackContext):
+async def info(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, args = context.bot, context.args
     message = update.effective_message
     chat = update.effective_chat
-    user_id = extract_user(update.effective_message, args)
+    user_id = await extract_user(update.effective_message, args)
 
     if user_id:
         user = await bot.get_chat(user_id)
@@ -191,23 +193,12 @@ async def info(update: Update, context: CallbackContext):
                 elif status == "restricted":
                     text += _stext.format("Restricted")
     try:
-        user_member = chat.get_member(user.id)
+        user_member = await chat.get_member(user.id)
         if user_member.status in {"administrator", "creator"}:
             custom_title = user_member.custom_title
             text += f"\n\nTitle:\n<b>{custom_title}</b>"
     except BadRequest:
         pass
-
-    try:
-        spamwtc = sw.get_ban(int(user.id))
-        if spamwtc:
-            text += "\n\n<b>This person is Spamwatched!</b>"
-            text += f"\nReason: <pre>{spamwtc.reason}</pre>"
-            text += "\nAppeal at @SpamWatchSupport"
-        else:
-            pass
-    except:
-        pass  # don't crash if api is down somehow...
 
     disaster_level_present = False
 
@@ -275,7 +266,7 @@ async def info(update: Update, context: CallbackContext):
 
 
 @sudo_plus
-async def stats(update: Update, context: CallbackContext):
+async def stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     stats = "<b>📊 Current stats:</b>\n" + "\n".join([mod.__stats__() for mod in STATS])
     result = re.sub(r"(\d+)", r"<code>\1</code>", stats)
     await update.effective_message.reply_text(result, parse_mode=ParseMode.HTML)

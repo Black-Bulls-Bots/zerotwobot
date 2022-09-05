@@ -4,7 +4,7 @@ from io import BytesIO
 from telegram import Message, Update
 from telegram.constants import ParseMode
 from telegram.error import BadRequest
-from telegram.ext import CommandHandler, CallbackContext
+from telegram.ext import CommandHandler, ContextTypes
 
 import zerotwobot.modules.sql.notes_sql as sql
 from zerotwobot import application, LOGGER, OWNER_ID, JOIN_LOGGER, SUPPORT_CHAT
@@ -28,14 +28,14 @@ from zerotwobot.modules.connection import connected
 
 @user_admin
 @typing_action
-async def import_data(update: Update, context: CallbackContext):
+async def import_data(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.effective_message
     chat = update.effective_chat
     user = update.effective_user
     # TODO: allow uploading doc with command, not just as reply
     # only work with a doc
 
-    conn = connected(context.bot, update, chat, user.id, need_admin=True)
+    conn = await connected(context.bot, update, chat, user.id, need_admin=True)
     if conn:
         chat = await application.bot.getChat(conn)
         chat_name = await application.bot.getChat(conn).title
@@ -51,19 +51,19 @@ async def import_data(update: Update, context: CallbackContext):
         try:
             file_info = await context.bot.get_file(msg.reply_to_message.document.file_id)
         except BadRequest:
-            msg.reply_text(
+            await msg.reply_text(
                 "Try downloading and uploading the file yourself again, This one seem broken to me!",
             )
             return
 
         with BytesIO() as file:
-            file_info.download(out=file)
+            await file_info.download(out=file)
             file.seek(0)
             data = json.load(file)
 
         # only import one group
         if len(data) > 1 and str(chat.id) not in data:
-            msg.reply_text(
+            await msg.reply_text(
                 "There are more than one group in this file and the chat.id is not same! How am i supposed to import it?",
             )
             return
@@ -96,9 +96,9 @@ async def import_data(update: Update, context: CallbackContext):
 
         try:
             for mod in DATA_IMPORT:
-                mod.__import_data__(str(chat.id), data)
+                await mod.__import_data__(str(chat.id), data)
         except Exception:
-            msg.reply_text(
+            await msg.reply_text(
                 f"An error occurred while recovering your data. The process failed. If you experience a problem with this, please take it to @{SUPPORT_CHAT}",
             )
 
@@ -116,19 +116,21 @@ async def import_data(update: Update, context: CallbackContext):
             text = "Backup fully restored on *{}*.".format(chat_name)
         else:
             text = "Backup fully restored"
-        msg.reply_text(text, parse_mode="markdown")
-
+        await msg.reply_text(text, parse_mode="markdown")
+    else:
+        await msg.reply_text("You have to reply to exported backup document.")
+        return
 
 
 @user_admin
-async def export_data(update: Update, context: CallbackContext):
+async def export_data(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_data = context.chat_data
     msg = update.effective_message  # type: Optional[Message]
     user = update.effective_user  # type: Optional[User]
     chat_id = update.effective_chat.id
     chat = update.effective_chat
     current_chat_id = update.effective_chat.id
-    conn = connected(context.bot, update, chat, user.id, need_admin=True)
+    conn = await connected(context.bot, update, chat, user.id, need_admin=True)
     if conn:
         chat = await application.bot.getChat(conn)
         chat_id = conn
@@ -346,7 +348,6 @@ async def export_data(update: Update, context: CallbackContext):
         caption="*Successfully Exported backup:*\nChat: `{}`\nChat ID: `{}`\nOn: `{}`\n\nNote: This `zerotwobot-Backup` was specially made for notes.".format(
             chat.title, chat_id, tgl,
         ),
-        timeout=360,
         reply_to_message_id=msg.message_id,
         parse_mode=ParseMode.MARKDOWN,
     )

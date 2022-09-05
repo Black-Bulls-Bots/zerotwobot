@@ -2,10 +2,10 @@ import requests
 from zerotwobot import CASH_API_KEY, application
 from telegram import Update
 from telegram.constants import ParseMode
-from telegram.ext import CallbackContext, CommandHandler
+from telegram.ext import ContextTypes, CommandHandler
 
 
-async def convert(update: Update, context: CallbackContext):
+async def convert(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = update.effective_message.text.split(" ")
 
     if len(args) == 4:

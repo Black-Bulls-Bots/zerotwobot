@@ -1,8 +1,9 @@
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from zerotwobot import LOGGER
 from zerotwobot.modules.users import get_user_id
 from telegram import Message, MessageEntity
+from telegram.ext import ContextTypes
 from telegram.error import BadRequest
 
 
@@ -14,24 +15,24 @@ async def id_from_reply(message):
     #if user id is from channel bot, then fetch channel id from sender_chat 
     if user_id == 136817688:
         user_id = message.reply_to_message.sender_chat.id
-    res = await message.text.split(None, 1)
+    res = message.text.split(None, 1)
     if len(res) < 2:
         return user_id, ""
     return user_id, res[1]
 
 
-async def extract_user(message: Message, args: List[str]) -> Optional[int]:
-    return extract_user_and_text(message, args)[0]
+async def extract_user(message: Message, context: ContextTypes.DEFAULT_TYPE, args: List[str],) -> Optional[int]:
+    return (await extract_user_and_text(message, context, args))[0]
 
 
 async def extract_user_and_text(
-    message: Message, args: List[str],
-) -> (Optional[int], Optional[str]):
+    message: Message, context: ContextTypes.DEFAULT_TYPE, args: List[str],
+) -> Union[(Optional[int], Optional[str])]:
     prev_message = message.reply_to_message
-    split_text = await message.text.split(None, 1)
+    split_text = message.text.split(None, 1)
 
     if len(split_text) < 2:
-        return id_from_reply(message)  # only option possible
+        return await id_from_reply(message)  # only option possible
 
     text_to_parse = split_text[1]
 
@@ -47,7 +48,7 @@ async def extract_user_and_text(
 
     elif len(args) >= 1 and args[0][0] == "@":
         user = args[0]
-        user_id = get_user_id(user)
+        user_id = await get_user_id(user)
         if not user_id:
             await message.reply_text(
                 "No idea who this user is. You'll be able to interact with them if "
@@ -57,24 +58,24 @@ async def extract_user_and_text(
 
         else:
             user_id = user_id
-            res = await message.text.split(None, 2)
+            res = message.text.split(None, 2)
             if len(res) >= 3:
                 text = res[2]
 
     elif len(args) >= 1 and args[0].isdigit():
         user_id = int(args[0])
-        res = await message.text.split(None, 2)
+        res = message.text.split(None, 2)
         if len(res) >= 3:
             text = res[2]
 
     elif prev_message:
-        user_id, text = id_from_reply(message)
+        user_id, text = await id_from_reply(message)
 
     else:
         return None, None
 
     try:
-        await message.bot.get_chat(user_id)
+        await context.bot.get_chat(user_id)
     except BadRequest as excp:
         if excp.message in ("User_id_invalid", "Chat not found"):
             await message.reply_text(
@@ -99,13 +100,13 @@ async def extract_text(message) -> str:
 
 
 async def extract_unt_fedban(
-    message: Message, args: List[str],
-) -> (Optional[int], Optional[str]):
+    message: Message, context: ContextTypes.DEFAULT_TYPE, args: List[str]
+) -> Union[(Optional[int], Optional[str])]:
     prev_message = message.reply_to_message
-    split_text = await message.text.split(None, 1)
+    split_text = message.text.split(None, 1)
 
     if len(split_text) < 2:
-        return id_from_reply(message)  # only option possible
+        return await id_from_reply(message)  # only option possible
 
     text_to_parse = split_text[1]
 
@@ -121,7 +122,7 @@ async def extract_unt_fedban(
 
     elif len(args) >= 1 and args[0][0] == "@":
         user = args[0]
-        user_id = get_user_id(user)
+        user_id = await get_user_id(user)
         if not user_id and not isinstance(user_id, int):
             await message.reply_text(
                 "I don't have that user in my db.  "
@@ -131,24 +132,24 @@ async def extract_unt_fedban(
 
         else:
             user_id = user_id
-            res = await message.text.split(None, 2)
+            res = message.text.split(None, 2)
             if len(res) >= 3:
                 text = res[2]
 
     elif len(args) >= 1 and args[0].isdigit():
         user_id = int(args[0])
-        res = await message.text.split(None, 2)
+        res = message.text.split(None, 2)
         if len(res) >= 3:
             text = res[2]
 
     elif prev_message:
-        user_id, text = id_from_reply(message)
+        user_id, text = await id_from_reply(message)
 
     else:
         return None, None
 
     try:
-        await message.bot.get_chat(user_id)
+        await context.bot.get_chat(user_id)
     except BadRequest as excp:
         if excp.message in ("User_id_invalid", "Chat not found") and not isinstance(
             user_id, int,
@@ -168,5 +169,5 @@ async def extract_unt_fedban(
     return user_id, text
 
 
-async def extract_user_fban(message: Message, args: List[str]) -> Optional[int]:
-    return extract_unt_fedban(message, args)[0]
+async def extract_user_fban(message: Message, context: ContextTypes.DEFAULT_TYPE, args: List[str]) -> Optional[int]:
+    return (await extract_unt_fedban(message, context, args))[0]

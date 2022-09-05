@@ -3,10 +3,10 @@ from zerotwobot import application
 from zerotwobot.modules.disable import DisableAbleCommandHandler
 from telegram import Update
 from telegram.constants import ParseMode
-from telegram.ext import CallbackContext
+from telegram.ext import ContextTypes
 
 
-async def paste(update: Update, context: CallbackContext):
+async def paste(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = context.args
     message = update.effective_message
 
@@ -14,7 +14,7 @@ async def paste(update: Update, context: CallbackContext):
         data = message.reply_to_message.text
 
     elif len(args) >= 1:
-        data = await message.text.split(None, 1)[1]
+        data = message.text.split(None, 1)[1]
 
     else:
         await message.reply_text("What am I supposed to do with this?")

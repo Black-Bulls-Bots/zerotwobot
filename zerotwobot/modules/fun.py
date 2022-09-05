@@ -10,17 +10,17 @@ from zerotwobot.modules.helper_funcs.extraction import extract_user
 from telegram import ChatPermissions, Update
 from telegram.constants import ParseMode
 from telegram.error import BadRequest
-from telegram.ext import CallbackContext
+from telegram.ext import ContextTypes
 
 
-async def runs(update: Update, context: CallbackContext):
+async def runs(update: Update, context: ContextTypes.DEFAULT_TYPE):
     temp = random.choice(fun_strings.RUN_STRINGS)
     if update.effective_user.id == 1170714920:
         temp = "Run everyone, they just dropped a bomb 💣💣"
     await update.effective_message.reply_text(temp)
 
 
-async def sanitize(update: Update, context: CallbackContext):
+async def sanitize(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
     name = (
         message.reply_to_message.from_user.first_name
@@ -36,7 +36,7 @@ async def sanitize(update: Update, context: CallbackContext):
 
 
 
-async def slap(update: Update, context: CallbackContext):
+async def slap(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, args = context.bot, context.args
     message = update.effective_message
     chat = update.effective_chat
@@ -48,14 +48,14 @@ async def slap(update: Update, context: CallbackContext):
     )
 
     curr_user = html.escape(message.from_user.first_name)
-    user_id = extract_user(message, args)
+    user_id = await extract_user(message, context, args)
 
     if user_id == bot.id:
         temp = random.choice(fun_strings.SLAP_ZEROTWO_TEMPLATES)
 
         if isinstance(temp, list):
             if temp[2] == "tmute":
-                if is_user_admin(chat, message.from_user.id):
+                if await is_user_admin(chat, message.from_user.id):
                     reply_text(temp[1])
                     return
 
@@ -95,7 +95,7 @@ async def slap(update: Update, context: CallbackContext):
 
 
 
-async def pat(update: Update, context: CallbackContext):
+async def pat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
     args = context.args
     message = update.effective_message
@@ -103,7 +103,7 @@ async def pat(update: Update, context: CallbackContext):
     reply_to = message.reply_to_message if message.reply_to_message else message
 
     curr_user = html.escape(message.from_user.first_name)
-    user_id = extract_user(message, args)
+    user_id = await extract_user(message, context, args)
 
     if user_id:
         patted_user = await bot.get_chat(user_id)
@@ -136,12 +136,12 @@ async def pat(update: Update, context: CallbackContext):
 
 
 
-async def roll(update: Update, context: CallbackContext):
+async def roll(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(random.choice(range(1, 7)))
 
 
 
-async def shout(update: Update, context: CallbackContext):
+async def shout(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = context.args
     text = " ".join(args)
     result = []
@@ -156,12 +156,12 @@ async def shout(update: Update, context: CallbackContext):
 
 
 
-async def toss(update: Update, context: CallbackContext):
+async def toss(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(random.choice(fun_strings.TOSS))
 
 
 
-async def shrug(update: Update, context: CallbackContext):
+async def shrug(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.effective_message
     reply_text = (
         msg.reply_to_message.reply_text if msg.reply_to_message else msg.reply_text
@@ -170,7 +170,7 @@ async def shrug(update: Update, context: CallbackContext):
 
 
 
-async def bluetext(update: Update, context: CallbackContext):
+async def bluetext(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.effective_message
     reply_text = (
         msg.reply_to_message.reply_text if msg.reply_to_message else msg.reply_text
@@ -181,7 +181,7 @@ async def bluetext(update: Update, context: CallbackContext):
 
 
 
-async def rlg(update: Update, context: CallbackContext):
+async def rlg(update: Update, context: ContextTypes.DEFAULT_TYPE):
     eyes = random.choice(fun_strings.EYES)
     mouth = random.choice(fun_strings.MOUTHS)
     ears = random.choice(fun_strings.EARS)
@@ -194,7 +194,7 @@ async def rlg(update: Update, context: CallbackContext):
 
 
 
-async def decide(update: Update, context: CallbackContext):
+async def decide(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply_text = (
         update.effective_message.reply_to_message.reply_text
         if update.effective_message.reply_to_message
@@ -204,7 +204,7 @@ async def decide(update: Update, context: CallbackContext):
 
 
 
-async def eightball(update: Update, context: CallbackContext):
+async def eightball(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply_text = (
         update.effective_message.reply_to_message.reply_text
         if update.effective_message.reply_to_message
@@ -214,7 +214,7 @@ async def eightball(update: Update, context: CallbackContext):
 
 
 
-async def table(update: Update, context: CallbackContext):
+async def table(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply_text = (
         update.effective_message.reply_to_message.reply_text
         if update.effective_message.reply_to_message
@@ -282,7 +282,7 @@ weebyfont = [
 
 
 
-async def weebify(update: Update, context: CallbackContext):
+async def weebify(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = context.args
     message = update.effective_message
     string = ""

@@ -1,4 +1,4 @@
-from time import sleep
+import asyncio
 
 import zerotwobot.modules.sql.global_bans_sql as gban_sql
 import zerotwobot.modules.sql.users_sql as user_sql
@@ -7,13 +7,13 @@ from zerotwobot.modules.helper_funcs.chat_status import dev_plus
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.error import BadRequest, Forbidden
 from telegram.ext import (
-    CallbackContext,
+    ContextTypes,
     CallbackQueryHandler,
     CommandHandler,
 )
 
 
-async def get_invalid_chats(update: Update, context: CallbackContext, remove: bool = False):
+async def get_invalid_chats(update: Update, context: ContextTypes.DEFAULT_TYPE, remove: bool = False):
     bot = context.bot
     chat_id = update.effective_chat.id
     chats = user_sql.get_all_chats()
@@ -37,7 +37,7 @@ async def get_invalid_chats(update: Update, context: CallbackContext, remove: bo
             progress += 5
 
         cid = chat.chat_id
-        sleep(0.1)
+        await asyncio.sleep(0.1)
         try:
             await bot.get_chat(cid, timeout=60)
         except (BadRequest, Forbidden):
@@ -55,12 +55,12 @@ async def get_invalid_chats(update: Update, context: CallbackContext, remove: bo
         return kicked_chats
     else:
         for muted_chat in chat_list:
-            sleep(0.1)
+            await asyncio.sleep(0.1)
             user_sql.rem_chat(muted_chat)
         return kicked_chats
 
 
-async def get_invalid_gban(update: Update, context: CallbackContext, remove: bool = False):
+async def get_invalid_gban(update: Update, context: ContextTypes.DEFAULT_TYPE, remove: bool = False):
     bot = context.bot
     banned = gban_sql.get_gban_list()
     ungbanned_users = 0
@@ -68,7 +68,7 @@ async def get_invalid_gban(update: Update, context: CallbackContext, remove: boo
 
     for user in banned:
         user_id = user["user_id"]
-        sleep(0.1)
+        await asyncio.sleep(0.1)
         try:
             await bot.get_chat(user_id)
         except BadRequest:
@@ -81,20 +81,20 @@ async def get_invalid_gban(update: Update, context: CallbackContext, remove: boo
         return ungbanned_users
     else:
         for user_id in ungban_list:
-            sleep(0.1)
+            await asyncio.sleep(0.1)
             gban_sql.ungban_user(user_id)
         return ungbanned_users
 
 
 
 @dev_plus
-async def dbcleanup(update: Update, context: CallbackContext):
+async def dbcleanup(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.effective_message
 
-    msg.reply_text("Getting invalid chat count ...")
+    await msg.reply_text("Getting invalid chat count ...")
     invalid_chat_count = get_invalid_chats(update, context)
 
-    msg.reply_text("Getting invalid gbanned count ...")
+    await msg.reply_text("Getting invalid gbanned count ...")
     invalid_gban_count = get_invalid_gban(update, context)
 
     reply = f"Total invalid chats - {invalid_chat_count}\n"
@@ -108,7 +108,7 @@ async def dbcleanup(update: Update, context: CallbackContext):
 
 
 
-async def callback_button(update: Update, context: CallbackContext):
+async def callback_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
     query = update.callback_query
     message = query.message

@@ -5,7 +5,7 @@ from zerotwobot import application
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram import Update
 from telegram.constants import ParseMode
-from telegram.ext import CallbackContext, filters, CommandHandler
+from telegram.ext import ContextTypes, filters, CommandHandler
 
 MARKDOWN_HELP = f"""
 Markdown is a very powerful formatting tool supported by telegram. {application.bot.first_name} has some enhancements, to make sure that \
@@ -34,7 +34,7 @@ Keep in mind that your message <b>MUST</b> contain some text other than just a b
 
 
 @user_admin
-async def echo(update: Update, context: CallbackContext):
+async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = update.effective_message.text.split(None, 1)
     message = update.effective_message
 
@@ -62,7 +62,7 @@ async def markdown_help_sender(update: Update):
 
 
 
-async def markdown_help(update: Update, context: CallbackContext):
+async def markdown_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_chat.type != "private":
         await update.effective_message.reply_text(
             "Contact me in pm",
@@ -78,7 +78,7 @@ async def markdown_help(update: Update, context: CallbackContext):
             ),
         )
         return
-    markdown_help_sender(update)
+    await markdown_help_sender(update)
 
 
 __help__ = """

@@ -23,13 +23,13 @@ from zerotwobot.modules.log_channel import gloggable
 from telegram import Update
 from telegram.error import TelegramError
 from telegram.constants import ParseMode
-from telegram.ext import CallbackContext, CommandHandler
+from telegram.ext import ContextTypes, CommandHandler
 from telegram.helpers import mention_html
 
 ELEVATED_USERS_FILE = os.path.join(os.getcwd(), "zerotwobot/elevated_users.json")
 
 
-def check_user_id(user_id: int, context: CallbackContext) -> Optional[str]:
+def check_user_id(user_id: int, context: ContextTypes.DEFAULT_TYPE) -> Optional[str]:
     bot = context.bot
     if not user_id:
         reply = "That...is a chat! baka ka omae?"
@@ -46,12 +46,12 @@ def check_user_id(user_id: int, context: CallbackContext) -> Optional[str]:
 
 @dev_plus
 @gloggable
-async def addsudo(update: Update, context: CallbackContext) -> str:
+async def addsudo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     message = update.effective_message
     user = update.effective_user
     chat = update.effective_chat
     bot, args = context.bot, context.args
-    user_id = extract_user(message, args)
+    user_id = await extract_user(message, context, args)
     user_member = await bot.getChat(user_id)
     rt = ""
 
@@ -107,13 +107,13 @@ async def addsudo(update: Update, context: CallbackContext) -> str:
 @gloggable
 async def addsupport(
     update: Update,
-    context: CallbackContext,
+    context: ContextTypes.DEFAULT_TYPE,
 ) -> str:
     message = update.effective_message
     user = update.effective_user
     chat = update.effective_chat
     bot, args = context.bot, context.args
-    user_id = extract_user(message, args)
+    user_id = await extract_user(message, context, args)
     user_member = await bot.getChat(user_id)
     rt = ""
 
@@ -164,12 +164,12 @@ async def addsupport(
 
 @sudo_plus
 @gloggable
-async def addwhitelist(update: Update, context: CallbackContext) -> str:
+async def addwhitelist(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     message = update.effective_message
     user = update.effective_user
     chat = update.effective_chat
     bot, args = context.bot, context.args
-    user_id = extract_user(message, args)
+    user_id = await extract_user(message, context, args)
     user_member = await bot.getChat(user_id)
     rt = ""
 
@@ -220,12 +220,12 @@ async def addwhitelist(update: Update, context: CallbackContext) -> str:
 
 @sudo_plus
 @gloggable
-async def addtiger(update: Update, context: CallbackContext) -> str:
+async def addtiger(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     message = update.effective_message
     user = update.effective_user
     chat = update.effective_chat
     bot, args = context.bot, context.args
-    user_id = extract_user(message, args)
+    user_id = await extract_user(message, context, args)
     user_member = await bot.getChat(user_id)
     rt = ""
 
@@ -281,12 +281,12 @@ async def addtiger(update: Update, context: CallbackContext) -> str:
 
 @dev_plus
 @gloggable
-async def removesudo(update: Update, context: CallbackContext) -> str:
+async def removesudo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     message = update.effective_message
     user = update.effective_user
     chat = update.effective_chat
     bot, args = context.bot, context.args
-    user_id = extract_user(message, args)
+    user_id = await extract_user(message, context, args)
     user_member = await bot.getChat(user_id)
 
     reply = check_user_id(user_id, bot)
@@ -324,12 +324,12 @@ async def removesudo(update: Update, context: CallbackContext) -> str:
 
 @sudo_plus
 @gloggable
-async def removesupport(update: Update, context: CallbackContext) -> str:
+async def removesupport(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     message = update.effective_message
     user = update.effective_user
     chat = update.effective_chat
     bot, args = context.bot, context.args
-    user_id = extract_user(message, args)
+    user_id = await extract_user(message, context, args)
     user_member = await bot.getChat(user_id)
 
     reply = check_user_id(user_id, bot)
@@ -367,12 +367,12 @@ async def removesupport(update: Update, context: CallbackContext) -> str:
 
 @sudo_plus
 @gloggable
-async def removewhitelist(update: Update, context: CallbackContext) -> str:
+async def removewhitelist(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     message = update.effective_message
     user = update.effective_user
     chat = update.effective_chat
     bot, args = context.bot, context.args
-    user_id = extract_user(message, args)
+    user_id = await extract_user(message, context, args)
     user_member = await bot.getChat(user_id)
 
     reply = check_user_id(user_id, bot)
@@ -409,12 +409,12 @@ async def removewhitelist(update: Update, context: CallbackContext) -> str:
 
 @sudo_plus
 @gloggable
-async def removetiger(update: Update, context: CallbackContext) -> str:
+async def removetiger(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     message = update.effective_message
     user = update.effective_user
     chat = update.effective_chat
     bot, args = context.bot, context.args
-    user_id = extract_user(message, args)
+    user_id = await extract_user(message, context, args)
     user_member = await bot.getChat(user_id)
 
     reply = check_user_id(user_id, bot)
@@ -450,7 +450,7 @@ async def removetiger(update: Update, context: CallbackContext) -> str:
 
 
 @whitelist_plus
-async def whitelistlist(update: Update, context: CallbackContext):
+async def whitelistlist(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply = "<b>Known Wolf Disasters 🐺:</b>\n"
     m = await update.effective_message.reply_text(
         "<code>Gathering intel..</code>", parse_mode=ParseMode.HTML,
@@ -464,12 +464,12 @@ async def whitelistlist(update: Update, context: CallbackContext):
             reply += f"• {mention_html(user_id, html.escape(user.first_name))}\n"
         except TelegramError:
             pass
-    m.edit_text(reply, parse_mode=ParseMode.HTML)
+    await m.edit_text(reply, parse_mode=ParseMode.HTML)
 
 
 
 @whitelist_plus
-async def tigerlist(update: Update, context: CallbackContext):
+async def tigerlist(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply = "<b>Known Tiger Disasters 🐯:</b>\n"
     m = await update.effective_message.reply_text(
         "<code>Gathering intel..</code>", parse_mode=ParseMode.HTML,
@@ -482,12 +482,12 @@ async def tigerlist(update: Update, context: CallbackContext):
             reply += f"• {mention_html(user_id, html.escape(user.first_name))}\n"
         except TelegramError:
             pass
-    m.edit_text(reply, parse_mode=ParseMode.HTML)
+    await m.edit_text(reply, parse_mode=ParseMode.HTML)
 
 
 
 @whitelist_plus
-async def supportlist(update: Update, context: CallbackContext):
+async def supportlist(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
     m = await update.effective_message.reply_text(
         "<code>Gathering intel..</code>", parse_mode=ParseMode.HTML,
@@ -500,12 +500,12 @@ async def supportlist(update: Update, context: CallbackContext):
             reply += f"• {mention_html(user_id, html.escape(user.first_name))}\n"
         except TelegramError:
             pass
-    m.edit_text(reply, parse_mode=ParseMode.HTML)
+    await m.edit_text(reply, parse_mode=ParseMode.HTML)
 
 
 
 @whitelist_plus
-async def sudolist(update: Update, context: CallbackContext):
+async def sudolist(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
     m = await update.effective_message.reply_text(
         "<code>Gathering intel..</code>", parse_mode=ParseMode.HTML,
@@ -519,12 +519,12 @@ async def sudolist(update: Update, context: CallbackContext):
             reply += f"• {mention_html(user_id, html.escape(user.first_name))}\n"
         except TelegramError:
             pass
-    m.edit_text(reply, parse_mode=ParseMode.HTML)
+    await m.edit_text(reply, parse_mode=ParseMode.HTML)
 
 
 
 @whitelist_plus
-async def devlist(update: Update, context: CallbackContext):
+async def devlist(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
     m = await update.effective_message.reply_text(
         "<code>Gathering intel..</code>", parse_mode=ParseMode.HTML,
@@ -538,7 +538,7 @@ async def devlist(update: Update, context: CallbackContext):
             reply += f"• {mention_html(user_id, html.escape(user.first_name))}\n"
         except TelegramError:
             pass
-    m.edit_text(reply, parse_mode=ParseMode.HTML)
+    await m.edit_text(reply, parse_mode=ParseMode.HTML)
 
 
 __help__ = f"""

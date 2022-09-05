@@ -3,7 +3,7 @@ import random
 from zerotwobot import application
 from zerotwobot.modules.disable import DisableAbleCommandHandler
 from telegram import Update
-from telegram.ext import CallbackContext
+from telegram.ext import ContextTypes
 
 reactions = [
     "( ͡° ͜ʖ ͡°)",
@@ -211,7 +211,7 @@ reactions = [
 ]
 
 
-async def react(update: Update, context: CallbackContext):
+async def react(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
     react = random.choice(reactions)
     if message.reply_to_message:

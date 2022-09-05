@@ -3,7 +3,7 @@ import datetime
 
 from telethon import events
 from telegram import Update
-from telegram.ext import CallbackContext, CommandHandler
+from telegram.ext import ContextTypes, CommandHandler
 
 from zerotwobot import LOGGER, telethn, application
 from zerotwobot.modules.helper_funcs.chat_status import dev_plus
@@ -13,7 +13,7 @@ DEBUG_MODE = False
 
 
 @dev_plus
-async def debug(update: Update, context: CallbackContext):
+async def debug(update: Update, context: ContextTypes.DEFAULT_TYPE):
     global DEBUG_MODE
     args = update.effective_message.text.split(None, 1)
     message = update.effective_message
@@ -54,13 +54,13 @@ support_chat = os.getenv("SUPPORT_CHAT")
 
 
 @dev_plus
-async def logs(update: Update, context: CallbackContext):
+async def logs(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     with open("log.txt", "rb") as f:
         await context.bot.send_document(document=f, filename=f.name, chat_id=user.id)
 
 @dev_plus
-async def debug_log(update: Update, context: CallbackContext):
+async def debug_log(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     message = update.effective_message
     try:

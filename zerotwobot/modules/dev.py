@@ -1,9 +1,4 @@
-import os
-import subprocess
-import sys
-
 from contextlib import suppress
-from time import sleep
 
 import zerotwobot
 
@@ -11,11 +6,11 @@ from zerotwobot import application
 from zerotwobot.modules.helper_funcs.chat_status import dev_plus
 from telegram import Update
 from telegram.error import Forbidden, TelegramError
-from telegram.ext import CallbackContext, CommandHandler
+from telegram.ext import ContextTypes, CommandHandler
 
 
 @dev_plus
-async def allow_groups(update: Update, context: CallbackContext):
+async def allow_groups(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = context.args
     if not args:
         state = "Lockdown is " + "on" if not zerotwobot.ALLOW_CHATS else "off"
@@ -32,7 +27,7 @@ async def allow_groups(update: Update, context: CallbackContext):
 
 
 @dev_plus
-async def leave(update: Update, context: CallbackContext):
+async def leave(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
     args = context.args
     if args:

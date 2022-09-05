@@ -15,7 +15,6 @@ from zerotwobot import (
     DEMONS,
     TIGERS,
     WOLVES,
-    sw,
     application,
     JOIN_LOGGER,
 )
@@ -40,7 +39,7 @@ from telegram import (
 from telegram.constants import ParseMode
 from telegram.error import BadRequest
 from telegram.ext import (
-    CallbackContext,
+    ContextTypes,
     CallbackQueryHandler,
     CommandHandler,
     filters,
@@ -148,7 +147,7 @@ async def send(update, message, keyboard, backup_message):
 
 
 @loggable
-async def new_member(update: Update, context: CallbackContext):
+async def new_member(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, job_queue = context.bot, context.job_queue
     chat = update.effective_chat
     user = update.effective_user
@@ -174,11 +173,6 @@ async def new_member(update: Update, context: CallbackContext):
         should_mute = True
         welcome_bool = True
         media_wel = False
-
-        if sw is not None:
-            sw_ban = sw.get_ban(new_mem.id)
-            if sw_ban:
-                return
 
         if is_user_gbanned(new_mem.id):
             return
@@ -324,7 +318,7 @@ async def new_member(update: Update, context: CallbackContext):
                         fullname = escape_markdown(f"{first_name} {new_mem.last_name}")
                     else:
                         fullname = escape_markdown(first_name)
-                    count = chat.get_member_count()
+                    count = await chat.get_member_count()
                     mention = mention_markdown(new_mem.id, escape_markdown(first_name))
                     if new_mem.username:
                         username = "@" + escape_markdown(new_mem.username)
@@ -365,7 +359,7 @@ async def new_member(update: Update, context: CallbackContext):
 
         # User exceptions from welcomemutes
         if (
-            is_user_ban_protected(chat, new_mem.id, chat.get_member(new_mem.id))
+            await is_user_ban_protected(chat, new_mem.id, await chat.get_member(new_mem.id))
             or human_checks
         ):
             should_mute = False
@@ -423,16 +417,16 @@ async def new_member(update: Update, context: CallbackContext):
                             },
                         )
                     new_join_mem = f'<a href="tg://user?id={user.id}">{html.escape(new_mem.first_name)}</a>'
-                    message = msg.reply_text(
+                    message = await msg.reply_text(
                         f"{new_join_mem}, click the button below to prove you're human.\nYou have 120 seconds.",
                         reply_markup=InlineKeyboardMarkup(
                             [
-                                {
+                                [
                                     InlineKeyboardButton(
                                         text="Yes, I'm human.",
                                         callback_data=f"user_join_({new_mem.id})",
                                     ),
-                                },
+                                ],
                             ],
                         ),
                         parse_mode=ParseMode.HTML,
@@ -469,7 +463,7 @@ async def new_member(update: Update, context: CallbackContext):
                     parse_mode="markdown",
                 )
             else:
-                sent = send(update, res, keyboard, backup_message)
+                sent = await send(update, res, keyboard, backup_message)
             prev_welc = sql.get_clean_pref(chat.id)
             if prev_welc:
                 try:
@@ -530,7 +524,7 @@ async def check_not_bot(member, chat_id, message_id, context):
 
 
 
-async def left_member(update: Update, context: CallbackContext):
+async def left_member(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
     chat = update.effective_chat
     user = update.effective_user
@@ -552,12 +546,6 @@ async def left_member(update: Update, context: CallbackContext):
 
         left_mem = update.effective_message.left_chat_member
         if left_mem:
-
-            # Thingy for spamwatched users
-            if sw is not None:
-                sw_ban = sw.get_ban(left_mem.id)
-                if sw_ban:
-                    return
 
             # Dont say goodbyes to gbanned users
             if is_user_gbanned(left_mem.id):
@@ -599,7 +587,7 @@ async def left_member(update: Update, context: CallbackContext):
                     fullname = escape_markdown(f"{first_name} {left_mem.last_name}")
                 else:
                     fullname = escape_markdown(first_name)
-                count = chat.get_member_count()
+                count = await chat.get_member_count()
                 mention = mention_markdown(left_mem.id, first_name)
                 if left_mem.username:
                     username = "@" + escape_markdown(left_mem.username)
@@ -630,7 +618,7 @@ async def left_member(update: Update, context: CallbackContext):
 
             keyboard = InlineKeyboardMarkup(keyb)
 
-            send(
+            await send(
                 update,
                 res,
                 keyboard,
@@ -640,7 +628,7 @@ async def left_member(update: Update, context: CallbackContext):
 
 
 @user_admin
-async def welcome(update: Update, context: CallbackContext):
+async def welcome(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = context.args
     chat = update.effective_chat
     # if no args, show current replies.
@@ -663,7 +651,7 @@ async def welcome(update: Update, context: CallbackContext):
                 keyb = build_keyboard(buttons)
                 keyboard = InlineKeyboardMarkup(keyb)
 
-                send(update, welcome_m, keyboard, sql.DEFAULT_WELCOME)
+                await send(update, welcome_m, keyboard, sql.DEFAULT_WELCOME)
         else:
             buttons = sql.get_welc_buttons(chat.id)
             if noformat:
@@ -703,7 +691,7 @@ async def welcome(update: Update, context: CallbackContext):
 
 
 @user_admin
-async def goodbye(update: Update, context: CallbackContext):
+async def goodbye(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = context.args
     chat = update.effective_chat
 
@@ -726,7 +714,7 @@ async def goodbye(update: Update, context: CallbackContext):
                 keyb = build_keyboard(buttons)
                 keyboard = InlineKeyboardMarkup(keyb)
 
-                send(update, goodbye_m, keyboard, sql.DEFAULT_GOODBYE)
+                await send(update, goodbye_m, keyboard, sql.DEFAULT_GOODBYE)
 
         else:
             if noformat:
@@ -756,7 +744,7 @@ async def goodbye(update: Update, context: CallbackContext):
 
 @user_admin
 @loggable
-async def set_welcome(update: Update, context: CallbackContext) -> str:
+async def set_welcome(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     chat = update.effective_chat
     user = update.effective_user
     msg = update.effective_message
@@ -764,11 +752,11 @@ async def set_welcome(update: Update, context: CallbackContext) -> str:
     text, data_type, content, buttons = get_welcome_type(msg)
 
     if data_type is None:
-        msg.reply_text("You didn't specify what to reply with!")
+        await msg.reply_text("You didn't specify what to reply with!")
         return ""
 
     sql.set_custom_welcome(chat.id, content, text, data_type, buttons)
-    msg.reply_text("Successfully set custom welcome message!")
+    await msg.reply_text("Successfully set custom welcome message!")
 
     return (
         f"<b>{html.escape(chat.title)}:</b>\n"
@@ -781,7 +769,7 @@ async def set_welcome(update: Update, context: CallbackContext) -> str:
 
 @user_admin
 @loggable
-async def reset_welcome(update: Update, context: CallbackContext) -> str:
+async def reset_welcome(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     chat = update.effective_chat
     user = update.effective_user
 
@@ -801,18 +789,18 @@ async def reset_welcome(update: Update, context: CallbackContext) -> str:
 
 @user_admin
 @loggable
-async def set_goodbye(update: Update, context: CallbackContext) -> str:
+async def set_goodbye(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     chat = update.effective_chat
     user = update.effective_user
     msg = update.effective_message
     text, data_type, content, buttons = get_welcome_type(msg)
 
     if data_type is None:
-        msg.reply_text("You didn't specify what to reply with!")
+        await msg.reply_text("You didn't specify what to reply with!")
         return ""
 
     sql.set_custom_gdbye(chat.id, content or text, data_type, buttons)
-    msg.reply_text("Successfully set custom goodbye message!")
+    await msg.reply_text("Successfully set custom goodbye message!")
     return (
         f"<b>{html.escape(chat.title)}:</b>\n"
         f"#SET_GOODBYE\n"
@@ -824,7 +812,7 @@ async def set_goodbye(update: Update, context: CallbackContext) -> str:
 
 @user_admin
 @loggable
-async def reset_goodbye(update: Update, context: CallbackContext) -> str:
+async def reset_goodbye(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     chat = update.effective_chat
     user = update.effective_user
 
@@ -844,7 +832,7 @@ async def reset_goodbye(update: Update, context: CallbackContext) -> str:
 
 @user_admin
 @loggable
-async def welcomemute(update: Update, context: CallbackContext) -> str:
+async def welcomemute(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     args = context.args
     chat = update.effective_chat
     user = update.effective_user
@@ -853,7 +841,7 @@ async def welcomemute(update: Update, context: CallbackContext) -> str:
     if len(args) >= 1:
         if args[0].lower() in ("off", "no"):
             sql.set_welcome_mutes(chat.id, False)
-            msg.reply_text("I will no longer mute people on joining!")
+            await msg.reply_text("I will no longer mute people on joining!")
             return (
                 f"<b>{html.escape(chat.title)}:</b>\n"
                 f"#WELCOME_MUTE\n"
@@ -862,7 +850,7 @@ async def welcomemute(update: Update, context: CallbackContext) -> str:
             )
         elif args[0].lower() in ["soft"]:
             sql.set_welcome_mutes(chat.id, "soft")
-            msg.reply_text(
+            await msg.reply_text(
                 "I will restrict users' permission to send media for 24 hours.",
             )
             return (
@@ -873,7 +861,7 @@ async def welcomemute(update: Update, context: CallbackContext) -> str:
             )
         elif args[0].lower() in ["strong"]:
             sql.set_welcome_mutes(chat.id, "strong")
-            msg.reply_text(
+            await msg.reply_text(
                 "I will now mute people when they join until they prove they're not a bot.\nThey will have 120seconds before they get kicked.",
             )
             return (
@@ -883,7 +871,7 @@ async def welcomemute(update: Update, context: CallbackContext) -> str:
                 f"Has toggled welcome mute to <b>STRONG</b>."
             )
         else:
-            msg.reply_text(
+            await msg.reply_text(
                 "Please enter <code>off</code>/<code>no</code>/<code>soft</code>/<code>strong</code>!",
                 parse_mode=ParseMode.HTML,
             )
@@ -894,14 +882,14 @@ async def welcomemute(update: Update, context: CallbackContext) -> str:
             f"\n Give me a setting!\nChoose one out of: <code>off</code>/<code>no</code> or <code>soft</code> or <code>strong</code> only! \n"
             f"Current setting: <code>{curr_setting}</code>"
         )
-        msg.reply_text(reply, parse_mode=ParseMode.HTML)
+        await msg.reply_text(reply, parse_mode=ParseMode.HTML)
         return ""
 
 
 
 @user_admin
 @loggable
-async def clean_welcome(update: Update, context: CallbackContext) -> str:
+async def clean_welcome(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     args = context.args
     chat = update.effective_chat
     user = update.effective_user
@@ -943,7 +931,7 @@ async def clean_welcome(update: Update, context: CallbackContext) -> str:
 
 
 @user_admin
-async def cleanservice(update: Update, context: CallbackContext) -> str:
+async def cleanservice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     args = context.args
     chat = update.effective_chat  # type: Optional[Chat]
     if chat.type != chat.PRIVATE:
@@ -977,7 +965,7 @@ async def cleanservice(update: Update, context: CallbackContext) -> str:
 
 
 
-async def user_button(update: Update, context: CallbackContext):
+async def user_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat = update.effective_chat
     user = update.effective_user
     query = update.callback_query
@@ -1020,7 +1008,7 @@ async def user_button(update: Update, context: CallbackContext):
                     parse_mode="markdown",
                 )
             else:
-                sent = send(
+                sent = await send(
                     member_dict["update"],
                     member_dict["res"],
                     member_dict["keyboard"],
@@ -1054,7 +1042,7 @@ WELC_MUTE_HELP_TXT = (
 
 
 @user_admin
-async def welcome_help(update: Update, context: CallbackContext):
+async def welcome_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     WELC_HELP_TXT = (
     "Your group's welcome/goodbye messages can be personalised in multiple ways. If you want the messages"
     " to be individually generated, like the default welcome message is, you can use *these* variables:\n"
@@ -1086,7 +1074,7 @@ async def welcome_help(update: Update, context: CallbackContext):
 
 
 @user_admin
-async def welcome_mute_help(update: Update, context: CallbackContext):
+async def welcome_mute_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.effective_message.reply_text(
         WELC_MUTE_HELP_TXT, parse_mode=ParseMode.MARKDOWN,
     )

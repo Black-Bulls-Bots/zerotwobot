@@ -1,5 +1,5 @@
 import html
-from typing import Optional
+from typing import Optional, Union
 
 from zerotwobot import LOGGER, TIGERS, application
 from zerotwobot.modules.helper_funcs.chat_status import (
@@ -15,20 +15,20 @@ from zerotwobot.modules.helper_funcs.extraction import (
 )
 from zerotwobot.modules.helper_funcs.string_handling import extract_time
 from zerotwobot.modules.log_channel import loggable
-from telegram import Bot, Chat, ChatPermissions, Update
+from telegram import Bot, Chat, ChatPermissions, Update, ChatMemberRestricted
 from telegram.constants import ParseMode
 from telegram.error import BadRequest
-from telegram.ext import CallbackContext, CommandHandler
+from telegram.ext import ContextTypes, CommandHandler
 from telegram.helpers import mention_html
 
 
-def check_user(user_id: int, bot: Bot, chat: Chat) -> Optional[str]:
+async def check_user(user_id: int, bot: Bot, chat: Chat) -> Union[str, None]:
     if not user_id:
         reply = "You don't seem to be referring to a user or the ID specified is incorrect.."
         return reply
 
     try:
-        member = chat.get_member(user_id)
+        member = await chat.get_member(user_id)
     except BadRequest as excp:
         if excp.message == "User not found":
             reply = "I can't seem to find this user"
@@ -40,7 +40,7 @@ def check_user(user_id: int, bot: Bot, chat: Chat) -> Optional[str]:
         reply = "I'm not gonna MUTE myself, How high are you?"
         return reply
 
-    if is_user_admin(chat, user_id, member) or user_id in TIGERS:
+    if await is_user_admin(chat, user_id, member) or user_id in TIGERS:
         reply = "Can't. Find someone else to mute but not this one."
         return reply
 
@@ -52,7 +52,7 @@ def check_user(user_id: int, bot: Bot, chat: Chat) -> Optional[str]:
 @bot_admin
 @user_admin
 @loggable
-async def mute(update: Update, context: CallbackContext) -> str:
+async def mute(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     bot = context.bot
     args = context.args
 
@@ -60,14 +60,14 @@ async def mute(update: Update, context: CallbackContext) -> str:
     user = update.effective_user
     message = update.effective_message
 
-    user_id, reason = extract_user_and_text(message, args)
-    reply = check_user(user_id, bot, chat)
+    user_id, reason = await extract_user_and_text(message, context, args)
+    reply = await check_user(user_id, bot, chat)
 
     if reply:
         await message.reply_text(reply)
         return ""
 
-    member = chat.get_member(user_id)
+    member = await chat.get_member(user_id)
 
     log = (
         f"<b>{html.escape(chat.title)}:</b>\n"
@@ -79,7 +79,7 @@ async def mute(update: Update, context: CallbackContext) -> str:
     if reason:
         log += f"\n<b>Reason:</b> {reason}"
 
-    if member.can_send_messages is None or member.can_send_messages:
+    if not isinstance(member, ChatMemberRestricted) and (member.can_send_messages if isinstance(member, ChatMemberRestricted) else None):
         chat_permissions = ChatPermissions(can_send_messages=False)
         await bot.restrict_chat_member(chat.id, user_id, chat_permissions)
         await bot.sendMessage(
@@ -100,28 +100,23 @@ async def mute(update: Update, context: CallbackContext) -> str:
 @bot_admin
 @user_admin
 @loggable
-async def unmute(update: Update, context: CallbackContext) -> str:
+async def unmute(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     bot, args = context.bot, context.args
     chat = update.effective_chat
     user = update.effective_user
     message = update.effective_message
 
-    user_id = extract_user(message, args)
+    user_id = await extract_user(message, context, args)
     if not user_id:
         await message.reply_text(
             "You'll need to either give me a username to unmute, or reply to someone to be unmuted.",
         )
         return ""
 
-    member = chat.get_member(int(user_id))
+    member = await chat.get_member(int(user_id))
 
     if member.status != "kicked" and member.status != "left":
-        if (
-            member.can_send_messages
-            and member.can_send_media_messages
-            and member.can_send_other_messages
-            and member.can_add_web_page_previews
-        ):
+        if not isinstance(member, ChatMemberRestricted):
             await message.reply_text("This user already has the right to speak.")
         else:
             chat_permissions = ChatPermissions(
@@ -164,20 +159,20 @@ async def unmute(update: Update, context: CallbackContext) -> str:
 @can_restrict
 @user_admin
 @loggable
-async def temp_mute(update: Update, context: CallbackContext) -> str:
+async def temp_mute(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     bot, args = context.bot, context.args
     chat = update.effective_chat
     user = update.effective_user
     message = update.effective_message
 
-    user_id, reason = extract_user_and_text(message, args)
-    reply = check_user(user_id, bot, chat)
+    user_id, reason = await extract_user_and_text(message, context, args)
+    reply = await check_user(user_id, bot, chat)
 
     if reply:
         await message.reply_text(reply)
         return ""
 
-    member = chat.get_member(user_id)
+    member = await chat.get_member(user_id)
 
     if not reason:
         await message.reply_text("You haven't specified a time to mute this user for!")
@@ -191,7 +186,7 @@ async def temp_mute(update: Update, context: CallbackContext) -> str:
     else:
         reason = ""
 
-    mutetime = extract_time(message, time_val)
+    mutetime = await extract_time(message, time_val)
 
     if not mutetime:
         return ""
@@ -207,7 +202,7 @@ async def temp_mute(update: Update, context: CallbackContext) -> str:
         log += f"\n<b>Reason:</b> {reason}"
 
     try:
-        if member.can_send_messages is None or member.can_send_messages:
+        if not isinstance(member, ChatMemberRestricted) and (member.can_send_messages if isinstance(member, ChatMemberRestricted) else None):
             chat_permissions = ChatPermissions(can_send_messages=False)
             await bot.restrict_chat_member(
                 chat.id, user_id, chat_permissions, until_date=mutetime,

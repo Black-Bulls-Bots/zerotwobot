@@ -5,12 +5,12 @@ import os
 from GoogleSearch import Search
 from telegram import (InlineKeyboardButton, InlineKeyboardMarkup,
                       MessageEntity, Update)
-from telegram.ext import CallbackContext
+from telegram.ext import ContextTypes
 from zerotwobot import application
 from zerotwobot.modules.disable import DisableAbleCommandHandler
 
 
-async def reverse(update: Update, context: CallbackContext):
+async def reverse(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
     args = context.args
     
@@ -24,8 +24,8 @@ async def reverse(update: Update, context: CallbackContext):
                 name = result["output"]
                 link = result["similar"]
                 
-                msg.edit_text("Uploaded to google, fetching results...")
-                msg.edit_text(
+                await msg.edit_text("Uploaded to google, fetching results...")
+                await msg.edit_text(
                 text=f"{name}",
                 reply_markup=InlineKeyboardMarkup(
                         [
@@ -47,16 +47,16 @@ async def reverse(update: Update, context: CallbackContext):
 
         photo = message.reply_to_message.photo[-1]
         file = await context.bot.get_file(photo.file_id)
-        file.download("reverse.jpg")
+        await file.download("reverse.jpg")
 
-        edit.edit_text("Downloaded Image, uploading to google...")
+        await edit.edit_text("Downloaded Image, uploading to google...")
 
         result = Search(file_path="reverse.jpg")
-        edit.edit_text("Uploaded to google, fetching results...")
+        await edit.edit_text("Uploaded to google, fetching results...")
         name = result["output"]
         link = result["similar"]
 
-        edit.edit_text(
+        await edit.edit_text(
             text=f"{name}",
             reply_markup=InlineKeyboardMarkup(
                 [

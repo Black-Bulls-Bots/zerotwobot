@@ -2,12 +2,12 @@ from emoji import UNICODE_EMOJI
 from google_trans_new_that_works import LANGUAGES, google_translator
 from telegram import Update
 from telegram.constants import ParseMode
-from telegram.ext import CallbackContext
+from telegram.ext import ContextTypes
 
 from zerotwobot import application
 from zerotwobot.modules.disable import DisableAbleCommandHandler
 
-async def totranslate(update: Update, context: CallbackContext):
+async def totranslate(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
     problem_lang_code = []
     for key in LANGUAGES:

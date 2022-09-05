@@ -8,7 +8,7 @@ import requests
 from zerotwobot import application
 from zerotwobot.modules.disable import DisableAbleCommandHandler
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, Message
-from telegram.ext import CallbackContext
+from telegram.ext import ContextTypes
 from telegram.constants import ParseMode
 
 info_btn = "More Information"
@@ -161,7 +161,7 @@ query ($id: Int,$search: String) {
 url = "https://graphql.anilist.co"
 
 async def extract_arg(message: Message):
-    split = await message.text.split(" ", 1)
+    split = message.text.split(" ", 1)
     if len(split) > 1:
         return split[1]
     reply = message.reply_to_message
@@ -170,9 +170,9 @@ async def extract_arg(message: Message):
     return None
 
 
-async def airing(update: Update, context: CallbackContext):
+async def airing(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
-    search_str = extract_arg(message)
+    search_str = await extract_arg(message)
     if not search_str:
         await update.effective_message.reply_text(
             "Tell Anime Name :) ( /airing <anime name>)",
@@ -193,9 +193,9 @@ async def airing(update: Update, context: CallbackContext):
 
 
 
-async def anime(update: Update, context: CallbackContext):
+async def anime(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
-    search = extract_arg(message)
+    search = await extract_arg(message)
     if not search:
         await update.effective_message.reply_text("Format : /anime < anime name >")
         return
@@ -265,9 +265,9 @@ async def anime(update: Update, context: CallbackContext):
 
 
 
-async def character(update: Update, context: CallbackContext):
+async def character(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
-    search = extract_arg(message)
+    search = await extract_arg(message)
     if not search:
         await update.effective_message.reply_text("Format : /character < character name >")
         return
@@ -299,9 +299,9 @@ async def character(update: Update, context: CallbackContext):
 
 
 
-async def manga(update: Update, context: CallbackContext):
+async def manga(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
-    search = extract_arg(message)
+    search = await extract_arg(message)
     if not search:
         await update.effective_message.reply_text("Format : /manga < manga name >")
         return
@@ -365,9 +365,9 @@ async def manga(update: Update, context: CallbackContext):
 
 
 
-async def user(update: Update, context: CallbackContext):
+async def user(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
-    search_query = extract_arg(message)
+    search_query = await extract_arg(message)
 
     if not search_query:
         await update.effective_message.reply_text("Format : /user <username>")
@@ -449,7 +449,7 @@ async def user(update: Update, context: CallbackContext):
 
 
 
-async def upcoming(update: Update, context: CallbackContext):
+async def upcoming(update: Update, context: ContextTypes.DEFAULT_TYPE):
     jikan = jikanpy.jikan.Jikan()
     upcomin = jikan.top("anime", page=1, subtype="upcoming")
 
@@ -464,9 +464,9 @@ async def upcoming(update: Update, context: CallbackContext):
     await update.effective_message.reply_text(upcoming_message)
 
 
-async def site_search(update: Update, context: CallbackContext, site: str):
+async def site_search(update: Update, context: ContextTypes.DEFAULT_TYPE, site: str):
     message = update.effective_message
-    search_query = extract_arg(message)
+    search_query = await extract_arg(message)
     more_results = True
 
     if not search_query:
@@ -523,13 +523,13 @@ async def site_search(update: Update, context: CallbackContext, site: str):
 
 
 
-async def kaizoku(update: Update, context: CallbackContext):
-    site_search(update, context, "kaizoku")
+async def kaizoku(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await site_search(update, context, "kaizoku")
 
 
 
-async def kayo(update: Update, context: CallbackContext):
-    site_search(update, context, "kayo")
+async def kayo(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await site_search(update, context, "kayo")
 
 
 __help__ = """

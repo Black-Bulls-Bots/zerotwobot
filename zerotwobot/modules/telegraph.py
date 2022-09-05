@@ -12,10 +12,10 @@ from telegraph.aio import Telegraph
 
 from zerotwobot import TEMP_DOWNLOAD_LOC, application
 from telegram import Update
-from telegram.ext import CallbackContext, CommandHandler
+from telegram.ext import ContextTypes, CommandHandler
 
 
-async def telegraph(update: Update, context: CallbackContext):
+async def telegraph(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     telegrph = Telegraph()
 
@@ -53,14 +53,14 @@ async def telegraph(update: Update, context: CallbackContext):
                     file_name = reply_msg.video.file_name
 
                 downloaded_file = file.download(TEMP_DOWNLOAD_LOC + "/" + file_name)
-                msg.edit_text("<code>Downloaded image/video</code>", parse_mode="html")
+                await msg.edit_text("<code>Downloaded image/video</code>", parse_mode="html")
 
                 try:
                     media_url = telegrph.upload.upload_file(downloaded_file)
                 except telegrph.exceptions.TelegraphException as exc:
-                    msg.edit_text(f"ERROR: {exc}")
+                    await msg.edit_text(f"ERROR: {exc}")
                 else:
-                    msg.edit_text(
+                    await msg.edit_text(
                         f"Succesfully uploaded to [telegra.ph](https://telegra.ph{media_url[0]})",
                         parse_mode="markdown",
                     )
@@ -77,14 +77,14 @@ async def telegraph(update: Update, context: CallbackContext):
                     page_title, html_content=text
                 )
 
-                msg.edit_text(
+                await msg.edit_text(
                     f"Successfully uploaded the Text to [telegra.ph](https://telegra.ph/{response['path']})",
                     parse_mode="markdown"
                 )
                 
 
         elif not message.reply_to_message:
-            msg.edit_text("Haha! I know this trick so tag any image/video/text")
+            await msg.edit_text("Haha! I know this trick so tag any image/video/text")
 
 
 TELEGRAPH_HANDLER = CommandHandler("telegraph", telegraph, block=False)

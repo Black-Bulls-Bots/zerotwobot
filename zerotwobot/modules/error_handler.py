@@ -7,7 +7,7 @@ import sys
 import pretty_errors
 import io
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
-from telegram.ext import CallbackContext, CommandHandler
+from telegram.ext import ContextTypes, CommandHandler
 from zerotwobot import application, DEV_USERS, OWNER_ID
 
 pretty_errors.mono()
@@ -37,7 +37,7 @@ class ErrorsDict(dict):
 errors = ErrorsDict()
 
 
-async def error_callback(update: Update, context: CallbackContext):
+async def error_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update:
         return
     if context.error in errors:
@@ -101,7 +101,7 @@ async def error_callback(update: Update, context: CallbackContext):
     )
 
 
-async def list_errors(update: Update, context: CallbackContext):
+async def list_errors(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id not in DEV_USERS:
         return
     e = {

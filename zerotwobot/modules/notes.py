@@ -23,7 +23,7 @@ from telegram.constants import ParseMode, MessageLimit
 from telegram.error import BadRequest
 from telegram.helpers import escape_markdown, mention_markdown
 from telegram.ext import (
-    CallbackContext,
+    ContextTypes,
     CommandHandler,
     CallbackQueryHandler,
     filters,
@@ -53,7 +53,7 @@ ENUM_FUNC_MAP = {
 
 
 # Do not async
-async def get(update: Update, context: CallbackContext, notename, show_none=True, no_format=False):
+async def get(update: Update, context: ContextTypes.DEFAULT_TYPE, notename, show_none=True, no_format=False):
     bot = context.bot
     chat_id = update.effective_message.chat.id
     note_chat_id = update.effective_chat.id
@@ -218,7 +218,7 @@ async def get(update: Update, context: CallbackContext, notename, show_none=True
 
 
 @connection_status
-async def cmd_get(update: Update, context: CallbackContext):
+async def cmd_get(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, args = context.bot, context.args
     if len(args) >= 2 and args[1].lower() == "noformat":
         get(update, context, args[0].lower(), show_none=True, no_format=True)
@@ -230,7 +230,7 @@ async def cmd_get(update: Update, context: CallbackContext):
 
 
 @connection_status
-async def hash_get(update: Update, context: CallbackContext):
+async def hash_get(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message.text
     fst_word = await message.split()[0]
     no_hash = fst_word[1:].lower()
@@ -239,7 +239,7 @@ async def hash_get(update: Update, context: CallbackContext):
 
 
 @connection_status
-async def slash_get(update: Update, context: CallbackContext):
+async def slash_get(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message, chat_id = update.effective_message.text, update.effective_chat.id
     no_slash = message[1:]
     note_list = sql.get_all_chat_notes(chat_id)
@@ -255,35 +255,35 @@ async def slash_get(update: Update, context: CallbackContext):
 
 @user_admin
 @connection_status
-async def save(update: Update, context: CallbackContext):
+async def save(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     msg = update.effective_message  # type: Optional[Message]
 
     note_name, text, data_type, content, buttons = get_note_type(msg)
     note_name = note_name.lower()
     if data_type is None:
-        msg.reply_text("Dude, there's no note")
+        await msg.reply_text("Dude, there's no note")
         return
 
     sql.add_note_to_db(
         chat_id, note_name, text, data_type, buttons=buttons, file=content,
     )
 
-    msg.reply_text(
+    await msg.reply_text(
         f"Yas! Added `{note_name}`.\nGet it with /get `{note_name}`, or `#{note_name}`",
         parse_mode=ParseMode.MARKDOWN,
     )
 
     if msg.reply_to_message and msg.reply_to_message.from_user.is_bot:
         if text:
-            msg.reply_text(
+            await msg.reply_text(
                 "Seems like you're trying to save a message from a bot. Unfortunately, "
                 "bots can't forward bot messages, so I can't save the exact message. "
                 "\nI'll save all the text I can, but if you want more, you'll have to "
                 "forward the message yourself, and then save it.",
             )
         else:
-            msg.reply_text(
+            await msg.reply_text(
                 "Bots are kinda handicapped by telegram, making it hard for bots to "
                 "interact with other bots, so I can't save this message "
                 "like I usually would - do you mind forwarding it and "
@@ -295,7 +295,7 @@ async def save(update: Update, context: CallbackContext):
 
 @user_admin
 @connection_status
-async def clear(update: Update, context: CallbackContext):
+async def clear(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = context.args
     chat_id = update.effective_chat.id
     if len(args) >= 1:
@@ -308,10 +308,10 @@ async def clear(update: Update, context: CallbackContext):
 
 
 
-async def clearall(update: Update, context: CallbackContext):
+async def clearall(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat = update.effective_chat
     user = update.effective_user
-    member = chat.get_member(user.id)
+    member = await chat.get_member(user.id)
     if member.status != "creator" and user.id not in DRAGONS:
         await update.effective_message.reply_text(
             "Only the chat owner can clear all notes at once.",
@@ -335,11 +335,11 @@ async def clearall(update: Update, context: CallbackContext):
 
 
 
-async def clearall_btn(update: Update, context: CallbackContext):
+async def clearall_btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     chat = update.effective_chat
     message = update.effective_message
-    member = chat.get_member(query.from_user.id)
+    member = await chat.get_member(query.from_user.id)
     if query.data == "notes_rmall":
         if member.status == "creator" or query.from_user.id in DRAGONS:
             note_list = sql.get_all_chat_notes(chat.id)
@@ -368,7 +368,7 @@ async def clearall_btn(update: Update, context: CallbackContext):
 
 
 @connection_status
-async def list_notes(update: Update, context: CallbackContext):
+async def list_notes(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     note_list = sql.get_all_chat_notes(chat_id)
     notes = len(note_list) + 1
