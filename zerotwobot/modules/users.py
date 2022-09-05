@@ -1,11 +1,11 @@
+import asyncio
 from io import BytesIO
-from time import sleep
 
-from telegram import Update
+from telegram import Update, ChatMemberAdministrator
 from telegram.constants import ParseMode
 from telegram.error import BadRequest, Forbidden, TelegramError
 from telegram.ext import (
-    CallbackContext,
+    ContextTypes,
     CommandHandler,
     filters,
     MessageHandler,
@@ -56,7 +56,7 @@ async def get_user_id(username):
 
 
 @dev_plus
-async def broadcast(update: Update, context: CallbackContext):
+async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
     to_send = update.effective_message.text.split(None, 1)
 
     if len(to_send) >= 2:
@@ -81,7 +81,7 @@ async def broadcast(update: Update, context: CallbackContext):
                         parse_mode=ParseMode.MARKDOWN_V2,
                         disable_web_page_preview=True,
                     )
-                    sleep(1)
+                    await asyncio.sleep(1)
                 except TelegramError as e:
                     failed += 1
         if to_user:
@@ -93,7 +93,7 @@ async def broadcast(update: Update, context: CallbackContext):
                         parse_mode=ParseMode.MARKDOWN_V2,
                         disable_web_page_preview=True,
                     )
-                    sleep(1)
+                    await asyncio.sleep(1)
                 except TelegramError as e:
                     failed_user += 1
         await update.effective_message.reply_text(
@@ -102,7 +102,7 @@ async def broadcast(update: Update, context: CallbackContext):
 
 
 
-async def log_user(update: Update, context: CallbackContext):
+async def log_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat = update.effective_chat
     msg = update.effective_message
 
@@ -122,15 +122,15 @@ async def log_user(update: Update, context: CallbackContext):
 
 
 @sudo_plus
-async def chats(update: Update, context: CallbackContext):
+async def chats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     all_chats = sql.get_all_chats() or []
     chatfile = "List of chats.\n0. Chat name | Chat ID | Members count\n"
     P = 1
     for chat in all_chats:
         try:
             curr_chat = await context.bot.getChat(chat.chat_id)
-            bot_member = curr_chat.get_member(context.bot.id)
-            chat_members = curr_chat.get_member_count(context.bot.id)
+            bot_member = await curr_chat.get_member(context.bot.id)
+            chat_members = await curr_chat.get_member_count(context.bot.id)
             chatfile += "{}. {} | {} | {}\n".format(
                 P, chat.chat_name, chat.chat_id, chat_members,
             )
@@ -148,11 +148,13 @@ async def chats(update: Update, context: CallbackContext):
 
 
 
-async def chat_checker(update: Update, context: CallbackContext):
+async def chat_checker(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
     try:
-        if await update.effective_message.chat.get_member(bot.id).can_send_messages is False:
-            await bot.leaveChat(update.effective_message.chat.id)
+        bot_admin = await update.effective_message.chat.get_member(bot.id)
+        if isinstance(bot_admin, ChatMemberAdministrator):
+            if bot_admin.can_post_messages is False:
+                await bot.leaveChat(update.effective_message.chat.id)
     except Forbidden:
         pass
 

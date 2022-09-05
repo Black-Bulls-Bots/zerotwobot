@@ -9,10 +9,10 @@ from zerotwobot.modules.helper_funcs.chat_status import (
     user_admin,
 )
 from zerotwobot.modules.sql import cleaner_sql as sql
-from telegram import Update
+from telegram import Update, ChatMemberAdministrator
 from telegram.constants import ParseMode
 from telegram.ext import (
-    CallbackContext,
+    ContextTypes,
     CommandHandler,
     filters,
     MessageHandler,
@@ -43,33 +43,39 @@ for handler_list in application.handlers:
 
 
 
-async def clean_blue_text_must_click(update: Update, context: CallbackContext):
+async def clean_blue_text_must_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
     chat = update.effective_chat
     message = update.effective_message
-    if chat.get_member(bot.id).can_delete_messages and sql.is_enabled(chat.id):
-        fst_word = await message.text.strip().split(None, 1)[0]
-
-        if len(fst_word) > 1 and any(
-            fst_word.startswith(start) for start in CMD_STARTERS
+    member = await chat.get_member(bot.id)
+    
+    if isinstance(member, ChatMemberAdministrator):
+        if (
+            (member.can_delete_messages if isinstance(member, ChatMemberAdministrator) else None)
+            and sql.is_enabled(chat.id)
         ):
+            fst_word = await message.text.strip().split(None, 1)[0]
 
-            command = fst_word[1:].split("@")
-            chat = update.effective_chat
+            if len(fst_word) > 1 and any(
+                fst_word.startswith(start) for start in CMD_STARTERS
+            ):
 
-            ignored = sql.is_command_ignored(chat.id, command[0])
-            if ignored:
-                return
+                command = fst_word[1:].split("@")
+                chat = update.effective_chat
 
-            if command[0] not in command_list:
-                await message.delete()
+                ignored = sql.is_command_ignored(chat.id, command[0])
+                if ignored:
+                    return
+
+                if command[0] not in command_list:
+                    await message.delete()
 
 
 
 @connection_status
 @bot_can_delete
 @user_admin
-async def set_blue_text_must_click(update: Update, context: CallbackContext):
+async def set_blue_text_must_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat = update.effective_chat
     message = update.effective_message
     bot, args = context.bot, context.args
@@ -103,7 +109,7 @@ async def set_blue_text_must_click(update: Update, context: CallbackContext):
 
 
 @user_admin
-async def add_bluetext_ignore(update: Update, context: CallbackContext):
+async def add_bluetext_ignore(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
     chat = update.effective_chat
     args = context.args
@@ -125,7 +131,7 @@ async def add_bluetext_ignore(update: Update, context: CallbackContext):
 
 
 @user_admin
-async def remove_bluetext_ignore(update: Update, context: CallbackContext):
+async def remove_bluetext_ignore(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
     chat = update.effective_chat
     args = context.args
@@ -149,7 +155,7 @@ async def remove_bluetext_ignore(update: Update, context: CallbackContext):
 
 
 @user_admin
-async def add_bluetext_ignore_global(update: Update, context: CallbackContext):
+async def add_bluetext_ignore_global(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
     args = context.args
     if len(args) >= 1:
@@ -170,7 +176,7 @@ async def add_bluetext_ignore_global(update: Update, context: CallbackContext):
 
 
 @dev_plus
-async def remove_bluetext_ignore_global(update: Update, context: CallbackContext):
+async def remove_bluetext_ignore_global(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
     args = context.args
     if len(args) >= 1:
@@ -191,7 +197,7 @@ async def remove_bluetext_ignore_global(update: Update, context: CallbackContext
 
 
 @dev_plus
-async def bluetext_ignore_list(update: Update, context: CallbackContext):
+async def bluetext_ignore_list(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     message = update.effective_message
     chat = update.effective_chat

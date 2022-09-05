@@ -5,10 +5,10 @@ import zerotwobot.modules.sql.locks_sql as sql
 from alphabet_detector import AlphabetDetector
 from telegram import (Chat, ChatPermissions, InlineKeyboardButton,
                       InlineKeyboardMarkup, Message, MessageEntity,
-                    Update)
+                    Update, ChatMemberAdministrator)
 from telegram.constants import ParseMode
 from telegram.error import BadRequest, TelegramError
-from telegram.ext import (CallbackContext, CallbackQueryHandler,
+from telegram.ext import (ContextTypes, CallbackQueryHandler,
                           CommandHandler, filters, MessageHandler)
 from telegram.helpers import mention_html
 from zerotwobot import DRAGONS, LOGGER, application
@@ -145,7 +145,7 @@ async def unrestr_members(
 
 
 
-async def locktypes(update: Update, context: CallbackContext):
+async def locktypes(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.effective_message.reply_text(
         "\n • ".join(
             ["Locks available: "]
@@ -158,7 +158,7 @@ async def locktypes(update: Update, context: CallbackContext):
 @user_admin
 @loggable
 @typing_action
-async def lock(update: Update, context: CallbackContext) -> str:
+async def lock(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     args = context.args
     chat = update.effective_chat
     user = update.effective_user
@@ -171,7 +171,7 @@ async def lock(update: Update, context: CallbackContext) -> str:
             ltype = args[0].lower()
             if ltype in LOCK_TYPES:
                 # Connection check
-                conn = connected(context.bot, update, chat, user.id, need_admin=True)
+                conn = await connected(context.bot, update, chat, user.id, need_admin=True)
                 if conn:
                     chat = await application.bot.getChat(conn)
                     chat_id = conn
@@ -179,7 +179,7 @@ async def lock(update: Update, context: CallbackContext) -> str:
                     text = "Locked {} for non-admins in {}!".format(ltype, chat_name)
                 else:
                     if update.effective_message.chat.type == "private":
-                        send_message(
+                        await send_message(
                             update.effective_message,
                             "This command is meant to use in group not in PM",
                         )
@@ -189,7 +189,7 @@ async def lock(update: Update, context: CallbackContext) -> str:
                     chat_name = update.effective_message.chat.title
                     text = "Locked {} for non-admins!".format(ltype)
                 sql.update_lock(chat.id, ltype, locked=True)
-                send_message(update.effective_message, text, parse_mode="markdown")
+                await send_message(update.effective_message, text, parse_mode="markdown")
 
                 return (
                     "<b>{}:</b>"
@@ -204,7 +204,7 @@ async def lock(update: Update, context: CallbackContext) -> str:
 
             elif ltype in LOCK_CHAT_RESTRICTION:
                 # Connection check
-                conn = connected(context.bot, update, chat, user.id, need_admin=True)
+                conn = await connected(context.bot, update, chat, user.id, need_admin=True)
                 if conn:
                     chat = await application.bot.getChat(conn)
                     chat_id = conn
@@ -214,7 +214,7 @@ async def lock(update: Update, context: CallbackContext) -> str:
                     )
                 else:
                     if update.effective_message.chat.type == "private":
-                        send_message(
+                        await send_message(
                             update.effective_message,
                             "This command is meant to use in group not in PM",
                         )
@@ -247,7 +247,7 @@ async def lock(update: Update, context: CallbackContext) -> str:
 
 
 
-                send_message(update.effective_message, text, parse_mode="markdown")
+                await send_message(update.effective_message, text, parse_mode="markdown")
                 return (
                     "<b>{}:</b>"
                     "\n#Permission_LOCK"
@@ -260,15 +260,15 @@ async def lock(update: Update, context: CallbackContext) -> str:
                 )
 
             else:
-                send_message(
+                await send_message(
                     update.effective_message,
                     "What are you trying to lock...? Try /locktypes for the list of lockables",
                 )
         else:
-            send_message(update.effective_message, "What are you trying to lock...?")
+            await send_message(update.effective_message, "What are you trying to lock...?")
 
     else:
-        send_message(
+        await send_message(
             update.effective_message,
             "I am not administrator or haven't got enough rights.",
         )
@@ -280,17 +280,17 @@ async def lock(update: Update, context: CallbackContext) -> str:
 @user_admin
 @loggable
 @typing_action
-async def unlock(update: Update, context: CallbackContext) -> str:
+async def unlock(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     args = context.args
     chat = update.effective_chat
     user = update.effective_user
     message = update.effective_message
-    if is_user_admin(chat, message.from_user.id):
+    if await is_user_admin(chat, message.from_user.id):
         if len(args) >= 1:
             ltype = args[0].lower()
             if ltype in LOCK_TYPES:
                 # Connection check
-                conn = connected(context.bot, update, chat, user.id, need_admin=True)
+                conn = await connected(context.bot, update, chat, user.id, need_admin=True)
                 if conn:
                     chat = await application.bot.getChat(conn)
                     chat_id = conn
@@ -298,7 +298,7 @@ async def unlock(update: Update, context: CallbackContext) -> str:
                     text = "Unlocked {} for everyone in {}!".format(ltype, chat_name)
                 else:
                     if update.effective_message.chat.type == "private":
-                        send_message(
+                        await send_message(
                             update.effective_message,
                             "This command is meant to use in group not in PM",
                         )
@@ -308,7 +308,7 @@ async def unlock(update: Update, context: CallbackContext) -> str:
                     chat_name = update.effective_message.chat.title
                     text = "Unlocked {} for everyone!".format(ltype)
                 sql.update_lock(chat.id, ltype, locked=False)
-                send_message(update.effective_message, text, parse_mode="markdown")
+                await send_message(update.effective_message, text, parse_mode="markdown")
                 return (
                     "<b>{}:</b>"
                     "\n#UNLOCK"
@@ -322,7 +322,7 @@ async def unlock(update: Update, context: CallbackContext) -> str:
 
             elif ltype in UNLOCK_CHAT_RESTRICTION:
                 # Connection check
-                conn = connected(context.bot, update, chat, user.id, need_admin=True)
+                conn = await connected(context.bot, update, chat, user.id, need_admin=True)
                 if conn:
                     chat = await application.bot.getChat(conn)
                     chat_id = conn
@@ -330,7 +330,7 @@ async def unlock(update: Update, context: CallbackContext) -> str:
                     text = "Unlocked {} for everyone in {}!".format(ltype, chat_name)
                 else:
                     if update.effective_message.chat.type == "private":
-                        send_message(
+                        await send_message(
                             update.effective_message,
                             "This command is meant to use in group not in PM",
                         )
@@ -339,10 +339,16 @@ async def unlock(update: Update, context: CallbackContext) -> str:
                     chat_id = update.effective_chat.id
                     chat_name = update.effective_message.chat.title
                     text = "Unlocked {} for everyone!".format(ltype)
+                
+                member = await chat.get_member(context.bot.id)
 
-                can_change_info = chat.get_member(context.bot.id).can_change_info
+                if isinstance(member, ChatMemberAdministrator):
+                    can_change_info = member.can_change_info
+                else:
+                    can_change_info = True
+                
                 if not can_change_info:
-                    send_message(
+                    await send_message(
                         update.effective_message,
                         "I don't have permission to change group info.",
                         parse_mode="markdown",
@@ -358,7 +364,7 @@ async def unlock(update: Update, context: CallbackContext) -> str:
                     ),
                 )
 
-                send_message(update.effective_message, text, parse_mode="markdown")
+                await send_message(update.effective_message, text, parse_mode="markdown")
 
                 return (
                     "<b>{}:</b>"
@@ -371,20 +377,20 @@ async def unlock(update: Update, context: CallbackContext) -> str:
                     )
                 )
             else:
-                send_message(
+                await send_message(
                     update.effective_message,
                     "What are you trying to unlock...? Try /locktypes for the list of lockables.",
                 )
 
         else:
-            send_message(update.effective_message, "What are you trying to unlock...?")
+            await send_message(update.effective_message, "What are you trying to unlock...?")
 
     return ""
 
 
 
 @user_not_admin
-async def del_lockables(update: Update, context: CallbackContext):
+async def del_lockables(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat = update.effective_chat  # type: Optional[Chat]
     message = update.effective_message  # type: Optional[Message]
     user = update.effective_user
@@ -483,7 +489,7 @@ async def del_lockables(update: Update, context: CallbackContext):
                 continue
             continue
         if (
-            filter(update)
+            filter.check_update(update)
             and sql.is_locked(chat.id, lockable)
             and can_delete(chat, context.bot.id)
         ):
@@ -491,16 +497,16 @@ async def del_lockables(update: Update, context: CallbackContext):
                 new_members = update.effective_message.new_chat_members
                 for new_mem in new_members:
                     if new_mem.is_bot:
-                        if not is_bot_admin(chat, context.bot.id):
-                            send_message(
+                        if not await is_bot_admin(chat, context.bot.id):
+                            await send_message(
                                 update.effective_message,
                                 "I see a bot and I've been told to stop them from joining..."
                                 "but I'm not admin!",
                             )
                             return
 
-                        chat.ban_member(new_mem.id)
-                        send_message(
+                        await chat.ban_member(new_mem.id)
+                        await send_message(
                             update.effective_message,
                             "Only admins are allowed to add bots in this chat! Get outta here.",
                         )
@@ -549,15 +555,17 @@ async def build_lock_message(chat_id):
             locklist.append("forwardbot = `{}`".format(locks.forwardbot))
             locklist.append("videonote = `{}`".format(locks.videonote))
 
-    permissions = await application.bot.get_chat(chat_id).permissions
-    permslist.append("messages = `{}`".format(permissions.can_send_messages))
-    permslist.append("media = `{}`".format(permissions.can_send_media_messages))
-    permslist.append("poll = `{}`".format(permissions.can_send_polls))
-    permslist.append("other = `{}`".format(permissions.can_send_other_messages))
-    permslist.append("previews = `{}`".format(permissions.can_add_web_page_previews))
-    permslist.append("info = `{}`".format(permissions.can_change_info))
-    permslist.append("invite = `{}`".format(permissions.can_invite_users))
-    permslist.append("pin = `{}`".format(permissions.can_pin_messages))
+    permissions = await application.bot.get_chat(chat_id)
+    if isinstance(permissions, Chat):
+        permissions = permissions.permissions
+        permslist.append("messages = `{}`".format(permissions.can_send_messages))
+        permslist.append("media = `{}`".format(permissions.can_send_media_messages))
+        permslist.append("poll = `{}`".format(permissions.can_send_polls))
+        permslist.append("other = `{}`".format(permissions.can_send_other_messages))
+        permslist.append("previews = `{}`".format(permissions.can_add_web_page_previews))
+        permslist.append("info = `{}`".format(permissions.can_change_info))
+        permslist.append("invite = `{}`".format(permissions.can_invite_users))
+        permslist.append("pin = `{}`".format(permissions.can_pin_messages))
 
     if locklist:
         # Ordering lock list
@@ -574,18 +582,18 @@ async def build_lock_message(chat_id):
 
 @user_admin
 @typing_action
-async def list_locks(update: Update, context: CallbackContext):
+async def list_locks(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user
 
     # Connection check
-    conn = connected(context.bot, update, chat, user.id, need_admin=True)
+    conn = await connected(context.bot, update, chat, user.id, need_admin=True)
     if conn:
         chat = await application.bot.getChat(conn)
         chat_name = chat.title
     else:
         if update.effective_message.chat.type == "private":
-            send_message(
+            await send_message(
                 update.effective_message,
                 "This command is meant to use in group not in PM",
             )
@@ -593,11 +601,11 @@ async def list_locks(update: Update, context: CallbackContext):
         chat = update.effective_chat
         chat_name = update.effective_message.chat.title
 
-    res = build_lock_message(chat.id)
+    res = await build_lock_message(chat.id)
     if conn:
         res = res.replace("Locks in", "*{}*".format(chat_name))
 
-    send_message(update.effective_message, res, parse_mode=ParseMode.MARKDOWN)
+    await send_message(update.effective_message, res, parse_mode=ParseMode.MARKDOWN)
 
 
 def get_permission_list(current, new):
@@ -633,8 +641,8 @@ def __migrate__(old_chat_id, new_chat_id):
     sql.migrate_chat(old_chat_id, new_chat_id)
 
 
-def __chat_settings__(chat_id, user_id):
-    return build_lock_message(chat_id)
+async def __chat_settings__(chat_id, user_id):
+    return await build_lock_message(chat_id)
 
 
 __help__ = """

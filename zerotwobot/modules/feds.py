@@ -32,11 +32,12 @@ from telegram import (
     InlineKeyboardMarkup,
     MessageEntity,
     Update,
+    ChatMember,
 )
 from telegram.constants import ParseMode
 from telegram.error import BadRequest, TelegramError, Forbidden
 from telegram.ext import (
-    CallbackContext,
+    ContextTypes,
     CallbackQueryHandler,
     CommandHandler,
 )
@@ -81,7 +82,7 @@ UNFBAN_ERRORS = {
 
 
 
-async def new_fed(update: Update, context: CallbackContext):
+async def new_fed(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat = update.effective_chat
     user = update.effective_user
     message = update.effective_message
@@ -92,11 +93,11 @@ async def new_fed(update: Update, context: CallbackContext):
         )
         return
     if len(message.text) == 1:
-        send_message(
+        await send_message(
             update.effective_message, "Please write the name of the federation!",
         )
         return
-    fednam = await message.text.split(None, 1)[1]
+    fednam = message.text.split(None, 1)[1]
     if not fednam == "":
         fed_id = str(uuid.uuid4())
         fed_name = fednam
@@ -136,7 +137,7 @@ async def new_fed(update: Update, context: CallbackContext):
 
 
 
-async def del_fed(update: Update, context: CallbackContext):
+async def del_fed(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, args = context.bot, context.args
     chat = update.effective_chat
     user = update.effective_user
@@ -183,36 +184,36 @@ async def del_fed(update: Update, context: CallbackContext):
 
 
 
-async def rename_fed(update: Update, context: CallbackContext):
+async def rename_fed(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     msg = update.effective_message
     args = msg.text.split(None, 2)
 
     if len(args) < 3:
-        return msg.reply_text("usage: /renamefed <fed_id> <newname>")
+        return await msg.reply_text("usage: /renamefed <fed_id> <newname>")
 
     fed_id, newname = args[1], args[2]
     verify_fed = sql.get_fed_info(fed_id)
 
     if not verify_fed:
-        return msg.reply_text("This fed not exist in my database!")
+        return await msg.reply_text("This fed not exist in my database!")
 
     if is_user_fed_owner(fed_id, user.id):
         sql.rename_fed(fed_id, user.id, newname)
-        msg.reply_text(f"Successfully renamed your fed name to {newname}!")
+        await msg.reply_text(f"Successfully renamed your fed name to {newname}!")
     else:
-        msg.reply_text("Only federation owner can do this!")
+        await msg.reply_text("Only federation owner can do this!")
 
 
 
-async def fed_chat(update: Update, context: CallbackContext):
+async def fed_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, args = context.bot, context.args
     chat = update.effective_chat
     user = update.effective_user
     fed_id = sql.get_fed_id(chat.id)
 
     user_id = update.effective_message.from_user.id
-    if not is_user_admin(update.effective_chat, user_id):
+    if not await is_user_admin(update.effective_chat, user_id):
         await update.effective_message.reply_text(
             "You must be an admin to execute this command",
         )
@@ -233,20 +234,20 @@ async def fed_chat(update: Update, context: CallbackContext):
 
 
 
-async def join_fed(update: Update, context: CallbackContext):
+async def join_fed(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, args = context.bot, context.args
     chat = update.effective_chat
     user = update.effective_user
 
     if chat.type == "private":
-        send_message(
+        await send_message(
             update.effective_message,
             "This command is specific to the group, not to our pm!",
         )
         return
 
     message = update.effective_message
-    administrators = chat.get_administrators()
+    administrators = await chat.get_administrators()
     fed_id = sql.get_fed_id(chat.id)
 
     if user.id in DRAGONS:
@@ -279,7 +280,7 @@ async def join_fed(update: Update, context: CallbackContext):
             )
             return
 
-        get_fedlog = sql.get_fed_log(args[0])
+        get_fedlog = await sql.get_fed_log(args[0])
         if get_fedlog:
             if ast.literal_eval(get_fedlog):
                 await bot.send_message(
@@ -296,13 +297,13 @@ async def join_fed(update: Update, context: CallbackContext):
 
 
 
-async def leave_fed(update: Update, context: CallbackContext):
+async def leave_fed(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, args = context.bot, context.args
     chat = update.effective_chat
     user = update.effective_user
 
     if chat.type == "private":
-        send_message(
+        await send_message(
             update.effective_message,
             "This command is specific to the group, not to our PM!",
         )
@@ -311,11 +312,11 @@ async def leave_fed(update: Update, context: CallbackContext):
     fed_id = sql.get_fed_id(chat.id)
     fed_info = sql.get_fed_info(fed_id)
 
-    # administrators = chat.get_administrators().status
+    # administrators = await chat.get_administrators().status
     getuser = await bot.get_chat_member(chat.id, user.id).status
     if getuser in "creator" or user.id in DRAGONS:
         if sql.chat_leave_fed(chat.id) is True:
-            get_fedlog = sql.get_fed_log(fed_id)
+            get_fedlog = await sql.get_fed_log(fed_id)
             if get_fedlog:
                 if ast.literal_eval(get_fedlog):
                     await bot.send_message(
@@ -325,7 +326,7 @@ async def leave_fed(update: Update, context: CallbackContext):
                         ),
                         parse_mode="markdown",
                     )
-            send_message(
+            await send_message(
                 update.effective_message,
                 "This group has left the federation {}!".format(fed_info["fname"]),
             )
@@ -338,14 +339,14 @@ async def leave_fed(update: Update, context: CallbackContext):
 
 
 
-async def user_join_fed(update: Update, context: CallbackContext):
+async def user_join_fed(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, args = context.bot, context.args
     chat = update.effective_chat
     user = update.effective_user
     msg = update.effective_message
 
     if chat.type == "private":
-        send_message(
+        await send_message(
             update.effective_message,
             "This command is specific to the group, not to our pm!",
         )
@@ -354,7 +355,7 @@ async def user_join_fed(update: Update, context: CallbackContext):
     fed_id = sql.get_fed_id(chat.id)
 
     if is_user_fed_owner(fed_id, user.id) or user.id in DRAGONS:
-        user_id = extract_user(msg, args)
+        user_id = await extract_user(msg, context,  args)
         if user_id:
             user = await bot.get_chat(user_id)
         elif not msg.reply_to_message and not args:
@@ -368,7 +369,7 @@ async def user_join_fed(update: Update, context: CallbackContext):
                 and not msg.parse_entities([MessageEntity.TEXT_MENTION])
             )
         ):
-            msg.reply_text("I cannot extract user from this message")
+            await msg.reply_text("I cannot extract user from this message")
             return
         else:
             LOGGER.warning("error")
@@ -376,12 +377,13 @@ async def user_join_fed(update: Update, context: CallbackContext):
         fed_id = sql.get_fed_id(chat.id)
         info = sql.get_fed_info(fed_id)
         get_owner = ast.literal_eval(info["fusers"])["owner"]
-        get_owner = await bot.get_chat(get_owner).id
-        if user_id == get_owner:
-            await update.effective_message.reply_text(
-                "You do know that the user is the federation owner, right? RIGHT?",
-            )
-            return
+        get_owner = await bot.get_chat(get_owner)
+        if isinstance(get_owner, ChatMember):
+            if user_id == get_owner.id:
+                await update.effective_message.reply_text(
+                    "You do know that the user is the federation owner, right? RIGHT?",
+                )
+                return
         if getuser:
             await update.effective_message.reply_text(
                 "I cannot promote users who are already federation admins! Can remove them if you want!",
@@ -402,13 +404,13 @@ async def user_join_fed(update: Update, context: CallbackContext):
 
 
 
-async def user_demote_fed(update: Update, context: CallbackContext):
+async def user_demote_fed(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, args = context.bot, context.args
     chat = update.effective_chat
     user = update.effective_user
 
     if chat.type == "private":
-        send_message(
+        await send_message(
             update.effective_message,
             "This command is specific to the group, not to our pm!",
         )
@@ -418,7 +420,7 @@ async def user_demote_fed(update: Update, context: CallbackContext):
 
     if is_user_fed_owner(fed_id, user.id):
         msg = update.effective_message
-        user_id = extract_user(msg, args)
+        user_id = await extract_user(msg, context,  args)
         if user_id:
             user = await bot.get_chat(user_id)
 
@@ -434,7 +436,7 @@ async def user_demote_fed(update: Update, context: CallbackContext):
                 and not msg.parse_entities([MessageEntity.TEXT_MENTION])
             )
         ):
-            msg.reply_text("I cannot extract user from this message")
+            await msg.reply_text("I cannot extract user from this message")
             return
         else:
             LOGGER.warning("error")
@@ -462,7 +464,7 @@ async def user_demote_fed(update: Update, context: CallbackContext):
 
 
 
-async def fed_info(update: Update, context: CallbackContext):
+async def fed_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, args = context.bot, context.args
     chat = update.effective_chat
     user = update.effective_user
@@ -471,13 +473,13 @@ async def fed_info(update: Update, context: CallbackContext):
         info = sql.get_fed_info(fed_id)
     else:
         if chat.type == 'private':
-            send_message(
+            await send_message(
                 update.effective_message, "You need to provide me a fedid to check fedinfo in my pm.",
             )
             return
         fed_id = sql.get_fed_id(chat.id)
         if not fed_id:
-            send_message(
+            await send_message(
                 update.effective_message, "This group is not in any federation!",
             )
             return
@@ -515,13 +517,13 @@ async def fed_info(update: Update, context: CallbackContext):
 
 
 
-async def fed_admin(update: Update, context: CallbackContext):
+async def fed_admin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, args = context.bot, context.args
     chat = update.effective_chat
     user = update.effective_user
 
     if chat.type == "private":
-        send_message(
+        await send_message(
             update.effective_message,
             "This command is specific to the group, not to our pm!",
         )
@@ -563,13 +565,13 @@ async def fed_admin(update: Update, context: CallbackContext):
 
 
 
-async def fed_ban(update: Update, context: CallbackContext):
+async def fed_ban(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, args = context.bot, context.args
     chat = update.effective_chat
     user = update.effective_user
 
     if chat.type == "private":
-        send_message(
+        await send_message(
             update.effective_message,
             "This command is specific to the group, not to our pm!",
         )
@@ -592,7 +594,7 @@ async def fed_ban(update: Update, context: CallbackContext):
 
     message = update.effective_message
 
-    user_id, reason = extract_unt_fedban(message, args)
+    user_id, reason = extract_unt_fedban(message, context, args)
 
     fban, fbanreason, fbantime = sql.get_fban_user(fed_id, user_id)
 
@@ -643,10 +645,10 @@ async def fed_ban(update: Update, context: CallbackContext):
         fban_user_uname = user_chat.username
     except BadRequest as excp:
         if not str(user_id).isdigit():
-            send_message(update.effective_message, excp.message)
+            await send_message(update.effective_message, excp.message)
             return
         elif len(str(user_id)) != 9:
-            send_message(update.effective_message, "That's so not a user!")
+            await send_message(update.effective_message, "That's so not a user!")
             return
         isvalid = False
         fban_user_id = int(user_id)
@@ -655,7 +657,7 @@ async def fed_ban(update: Update, context: CallbackContext):
         fban_user_uname = None
 
     if isvalid and user_chat.type != "private":
-        send_message(update.effective_message, "That's so not a user!")
+        await send_message(update.effective_message, "That's so not a user!")
         return
 
     if isvalid:
@@ -667,7 +669,7 @@ async def fed_ban(update: Update, context: CallbackContext):
         fed_name = info["fname"]
         # https://t.me/OnePunchSupport/41606 // https://t.me/OnePunchSupport/41619
         # starting = "The reason fban is replaced for {} in the Federation <b>{}</b>.".format(user_target, fed_name)
-        # send_message(update.effective_message, starting, parse_mode=ParseMode.HTML)
+        # await send_message(update.effective_message, starting, parse_mode=ParseMode.HTML)
 
         # if reason == "":
         #    reason = "No reason given."
@@ -728,7 +730,7 @@ async def fed_ban(update: Update, context: CallbackContext):
                 parse_mode="HTML",
             )
         # If fedlog is set, then send message, except fedlog is current chat
-        get_fedlog = sql.get_fed_log(fed_id)
+        get_fedlog = await sql.get_fed_log(fed_id)
         if get_fedlog:
             if int(get_fedlog) != int(chat.id):
                 await bot.send_message(
@@ -822,7 +824,7 @@ async def fed_ban(update: Update, context: CallbackContext):
                             )
                     except TelegramError:
                         pass
-        # send_message(update.effective_message, "Fedban Reason has been updated.")
+        # await send_message(update.effective_message, "Fedban Reason has been updated.")
         return
 
     fed_name = info["fname"]
@@ -886,7 +888,7 @@ async def fed_ban(update: Update, context: CallbackContext):
             parse_mode="HTML",
         )
     # If fedlog is set, then send message, except fedlog is current chat
-    get_fedlog = sql.get_fed_log(fed_id)
+    get_fedlog = await sql.get_fed_log(fed_id)
     if get_fedlog:
         if int(get_fedlog) != int(chat.id):
             await bot.send_message(
@@ -975,21 +977,21 @@ async def fed_ban(update: Update, context: CallbackContext):
                     except TelegramError:
                         pass
     # if chats_in_fed == 0:
-    #    send_message(update.effective_message, "Fedban affected 0 chats. ")
+    #    await send_message(update.effective_message, "Fedban affected 0 chats. ")
     # elif chats_in_fed > 0:
-    #    send_message(update.effective_message,
+    #    await send_message(update.effective_message,
     #                 "Fedban affected {} chats. ".format(chats_in_fed))
 
 
 
-async def unfban(update: Update, context: CallbackContext):
+async def unfban(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, args = context.bot, context.args
     chat = update.effective_chat
     user = update.effective_user
     message = update.effective_message
 
     if chat.type == "private":
-        send_message(
+        await send_message(
             update.effective_message,
             "This command is specific to the group, not to our pm!",
         )
@@ -1010,7 +1012,7 @@ async def unfban(update: Update, context: CallbackContext):
         await update.effective_message.reply_text("Only federation admins can do this!")
         return
 
-    user_id = extract_user_fban(message, args)
+    user_id = extract_user_fban(message, context, args)
     if not user_id:
         await message.reply_text("You do not seem to be referring to a user.")
         return
@@ -1024,10 +1026,10 @@ async def unfban(update: Update, context: CallbackContext):
         fban_user_uname = user_chat.username
     except BadRequest as excp:
         if not str(user_id).isdigit():
-            send_message(update.effective_message, excp.message)
+            await send_message(update.effective_message, excp.message)
             return
         elif len(str(user_id)) != 9:
-            send_message(update.effective_message, "That's so not a user!")
+            await send_message(update.effective_message, "That's so not a user!")
             return
         isvalid = False
         fban_user_id = int(user_id)
@@ -1086,7 +1088,7 @@ async def unfban(update: Update, context: CallbackContext):
             parse_mode="HTML",
         )
     # If fedlog is set, then send message, except fedlog is current chat
-    get_fedlog = sql.get_fed_log(fed_id)
+    get_fedlog = await sql.get_fed_log(fed_id)
     if get_fedlog:
         if int(get_fedlog) != int(chat.id):
             await bot.send_message(
@@ -1133,7 +1135,7 @@ async def unfban(update: Update, context: CallbackContext):
     try:
         x = sql.un_fban_user(fed_id, user_id)
         if not x:
-            send_message(
+            await send_message(
                 update.effective_message,
                 "Un-fban failed, this user may already be un-fedbanned!",
             )
@@ -1174,11 +1176,11 @@ async def unfban(update: Update, context: CallbackContext):
                     pass
 
     if unfbanned_in_chats == 0:
-        send_message(
+        await send_message(
             update.effective_message, "This person has been un-fbanned in 0 chats.",
         )
     if unfbanned_in_chats > 0:
-        send_message(
+        await send_message(
             update.effective_message,
             "This person has been un-fbanned in {} chats.".format(unfbanned_in_chats),
         )
@@ -1202,13 +1204,13 @@ async def unfban(update: Update, context: CallbackContext):
 
 
 
-async def set_frules(update: Update, context: CallbackContext):
+async def set_frules(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, args = context.bot, context.args
     chat = update.effective_chat
     user = update.effective_user
 
     if chat.type == "private":
-        send_message(
+        await send_message(
             update.effective_message,
             "This command is specific to the group, not to our pm!",
         )
@@ -1243,7 +1245,7 @@ async def set_frules(update: Update, context: CallbackContext):
 
         rules = sql.get_fed_info(fed_id)["frules"]
         getfed = sql.get_fed_info(fed_id)
-        get_fedlog = sql.get_fed_log(fed_id)
+        get_fedlog = await sql.get_fed_log(fed_id)
         if get_fedlog:
             if ast.literal_eval(get_fedlog):
                 await bot.send_message(
@@ -1259,12 +1261,12 @@ async def set_frules(update: Update, context: CallbackContext):
 
 
 
-async def get_frules(update: Update, context: CallbackContext):
+async def get_frules(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, args = context.bot, context.args
     chat = update.effective_chat
 
     if chat.type == "private":
-        send_message(
+        await send_message(
             update.effective_message,
             "This command is specific to the group, not to our pm!",
         )
@@ -1282,14 +1284,14 @@ async def get_frules(update: Update, context: CallbackContext):
 
 
 
-async def fed_broadcast(update: Update, context: CallbackContext):
+async def fed_broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, args = context.bot, context.args
     msg = update.effective_message
     user = update.effective_user
     chat = update.effective_chat
 
     if chat.type == "private":
-        send_message(
+        await send_message(
             update.effective_message,
             "This command is specific to the group, not to our pm!",
         )
@@ -1344,13 +1346,13 @@ async def fed_broadcast(update: Update, context: CallbackContext):
 
 
 
-async def fed_ban_list(update: Update, context: CallbackContext):
+async def fed_ban_list(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, args, chat_data = context.bot, context.args, context.chat_data
     chat = update.effective_chat
     user = update.effective_user
 
     if chat.type == "private":
-        send_message(
+        await send_message(
             update.effective_message,
             "This command is specific to the group, not to our pm!",
         )
@@ -1525,7 +1527,7 @@ async def fed_ban_list(update: Update, context: CallbackContext):
 
 
 
-async def fed_notif(update: Update, context: CallbackContext):
+async def fed_notif(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, args = context.bot, context.args
     chat = update.effective_chat
     user = update.effective_user
@@ -1541,32 +1543,32 @@ async def fed_notif(update: Update, context: CallbackContext):
     if args:
         if args[0] in ("yes", "on"):
             sql.set_feds_setting(user.id, True)
-            msg.reply_text(
+            await msg.reply_text(
                 "Reporting Federation back up! Every user who is fban / unfban you will be notified via PM.",
             )
         elif args[0] in ("no", "off"):
             sql.set_feds_setting(user.id, False)
-            msg.reply_text(
+            await msg.reply_text(
                 "Reporting Federation has stopped! Every user who is fban / unfban you will not be notified via PM.",
             )
         else:
-            msg.reply_text("Please enter `on`/`off`", parse_mode="markdown")
+            await msg.reply_text("Please enter `on`/`off`", parse_mode="markdown")
     else:
         getreport = sql.user_feds_report(user.id)
-        msg.reply_text(
+        await msg.reply_text(
             "Your current Federation report preferences: `{}`".format(getreport),
             parse_mode="markdown",
         )
 
 
 
-async def fed_chats(update: Update, context: CallbackContext):
+async def fed_chats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, args = context.bot, context.args
     chat = update.effective_chat
     user = update.effective_user
 
     if chat.type == "private":
-        send_message(
+        await send_message(
             update.effective_message,
             "This command is specific to the group, not to our pm!",
         )
@@ -1624,14 +1626,14 @@ async def fed_chats(update: Update, context: CallbackContext):
 
 
 
-async def fed_import_bans(update: Update, context: CallbackContext):
+async def fed_import_bans(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, chat_data = context.bot, context.chat_data
     chat = update.effective_chat
     user = update.effective_user
     msg = update.effective_message
 
     if chat.type == "private":
-        send_message(
+        await send_message(
             update.effective_message,
             "This command is specific to the group, not to our pm!",
         )
@@ -1681,7 +1683,7 @@ async def fed_import_bans(update: Update, context: CallbackContext):
         try:
             file_info = await bot.get_file(msg.reply_to_message.document.file_id)
         except BadRequest:
-            msg.reply_text(
+            await msg.reply_text(
                 "Try downloading and re-uploading the file, this one seems broken!",
             )
             return
@@ -1757,7 +1759,7 @@ async def fed_import_bans(update: Update, context: CallbackContext):
             )
             if failed >= 1:
                 text += " {} Failed to import.".format(failed)
-            get_fedlog = sql.get_fed_log(fed_id)
+            get_fedlog = await sql.get_fed_log(fed_id)
             if get_fedlog:
                 if ast.literal_eval(get_fedlog):
                     teks = "Fed *{}* has successfully imported data. {} banned.".format(
@@ -1836,7 +1838,7 @@ async def fed_import_bans(update: Update, context: CallbackContext):
             text = "Files were imported successfully. {} people banned.".format(success)
             if failed >= 1:
                 text += " {} Failed to import.".format(failed)
-            get_fedlog = sql.get_fed_log(fed_id)
+            get_fedlog = await sql.get_fed_log(fed_id)
             if get_fedlog:
                 if ast.literal_eval(get_fedlog):
                     teks = "Fed *{}* has successfully imported data. {} banned.".format(
@@ -1846,13 +1848,13 @@ async def fed_import_bans(update: Update, context: CallbackContext):
                         teks += " {} Failed to import.".format(failed)
                     await bot.send_message(get_fedlog, teks, parse_mode="markdown")
         else:
-            send_message(update.effective_message, "This file is not supported.")
+            await send_message(update.effective_message, "This file is not supported.")
             return
-        send_message(update.effective_message, text)
+        await send_message(update.effective_message, text)
 
 
 
-async def del_fed_button(update: Update, context: CallbackContext):
+async def del_fed_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     userid = query.message.chat.id
     fed_id = await query.data.split("_")[1]
@@ -1874,7 +1876,7 @@ async def del_fed_button(update: Update, context: CallbackContext):
 
 
 
-async def fed_stat_user(update: Update, context: CallbackContext):
+async def fed_stat_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, args = context.bot, context.args
     chat = update.effective_chat
     user = update.effective_user
@@ -1884,9 +1886,9 @@ async def fed_stat_user(update: Update, context: CallbackContext):
         if args[0].isdigit():
             user_id = args[0]
         else:
-            user_id = extract_user(msg, args)
+            user_id = await extract_user(msg, context,  args)
     else:
-        user_id = extract_user(msg, args)
+        user_id = await extract_user(msg, context,  args)
 
     if user_id:
         if len(args) == 2 and args[0].isdigit():
@@ -1897,7 +1899,7 @@ async def fed_stat_user(update: Update, context: CallbackContext):
             else:
                 fbantime = "Unavaiable"
             if user_name is False:
-                send_message(
+                await send_message(
                     update.effective_message,
                     "Fed {} not found!".format(fed_id),
                     parse_mode="markdown",
@@ -1906,7 +1908,7 @@ async def fed_stat_user(update: Update, context: CallbackContext):
             if user_name == "" or user_name is None:
                 user_name = "He/she"
             if not reason:
-                send_message(
+                await send_message(
                     update.effective_message,
                     "{} is not banned in this federation!".format(user_name),
                 )
@@ -1914,18 +1916,20 @@ async def fed_stat_user(update: Update, context: CallbackContext):
                 teks = "{} banned in this federation because:\n`{}`\n*Banned at:* `{}`".format(
                     user_name, reason, fbantime,
                 )
-                send_message(update.effective_message, teks, parse_mode="markdown")
+                await send_message(update.effective_message, teks, parse_mode="markdown")
             return
         user_name, fbanlist = sql.get_user_fbanlist(str(user_id))
         if user_name == "":
             try:
-                user_name = await bot.get_chat(user_id).first_name
+                user_first = await bot.get_chat(user_id)
+                if isinstance(user_first, ChatMember):
+                    user_name = user_id.first_name
             except BadRequest:
                 user_name = "He/she"
             if user_name == "" or user_name is None:
                 user_name = "He/she"
         if len(fbanlist) == 0:
-            send_message(
+            await send_message(
                 update.effective_message,
                 "{} is not banned in any federation!".format(user_name),
             )
@@ -1935,7 +1939,7 @@ async def fed_stat_user(update: Update, context: CallbackContext):
             for x in fbanlist:
                 teks += "- `{}`: {}\n".format(x[0], x[1][:20])
             teks += "\nIf you want to find out more about the reasons for Fedban specifically, use /fbanstat <FedID>"
-            send_message(update.effective_message, teks, parse_mode="markdown")
+            await send_message(update.effective_message, teks, parse_mode="markdown")
 
     elif not msg.reply_to_message and not args:
         user_id = msg.from_user.id
@@ -1943,7 +1947,7 @@ async def fed_stat_user(update: Update, context: CallbackContext):
         if user_name == "":
             user_name = msg.from_user.first_name
         if len(fbanlist) == 0:
-            send_message(
+            await send_message(
                 update.effective_message,
                 "{} is not banned in any federation!".format(user_name),
             )
@@ -1952,13 +1956,13 @@ async def fed_stat_user(update: Update, context: CallbackContext):
             for x in fbanlist:
                 teks += "- `{}`: {}\n".format(x[0], x[1][:20])
             teks += "\nIf you want to find out more about the reasons for Fedban specifically, use /fbanstat <FedID>"
-            send_message(update.effective_message, teks, parse_mode="markdown")
+            await send_message(update.effective_message, teks, parse_mode="markdown")
 
     else:
         fed_id = args[0]
         fedinfo = sql.get_fed_info(fed_id)
         if not fedinfo:
-            send_message(update.effective_message, "Fed {} not found!".format(fed_id))
+            await send_message(update.effective_message, "Fed {} not found!".format(fed_id))
             return
         name, reason, fbantime = sql.get_user_fban(fed_id, msg.from_user.id)
         if fbantime:
@@ -1968,12 +1972,12 @@ async def fed_stat_user(update: Update, context: CallbackContext):
         if not name:
             name = msg.from_user.first_name
         if not reason:
-            send_message(
+            await send_message(
                 update.effective_message,
                 "{} is not banned in this federation".format(name),
             )
             return
-        send_message(
+        await send_message(
             update.effective_message,
             "{} banned in this federation because:\n`{}`\n*Banned at:* `{}`".format(
                 name, reason, fbantime,
@@ -1983,14 +1987,14 @@ async def fed_stat_user(update: Update, context: CallbackContext):
 
 
 
-async def set_fed_log(update: Update, context: CallbackContext):
+async def set_fed_log(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = context.args
     chat = update.effective_chat
     user = update.effective_user
     msg = update.effective_message
 
     if chat.type == "private":
-        send_message(
+        await send_message(
             update.effective_message,
             "This command is specific to the group, not to our pm!",
         )
@@ -1999,18 +2003,18 @@ async def set_fed_log(update: Update, context: CallbackContext):
     if args:
         fedinfo = sql.get_fed_info(args[0])
         if not fedinfo:
-            send_message(update.effective_message, "This Federation does not exist!")
+            await send_message(update.effective_message, "This Federation does not exist!")
             return
         isowner = is_user_fed_owner(args[0], user.id)
         if not isowner:
-            send_message(
+            await send_message(
                 update.effective_message,
                 "Only federation creator can set federation logs.",
             )
             return
         setlog = sql.set_fed_log(args[0], chat.id)
         if setlog:
-            send_message(
+            await send_message(
                 update.effective_message,
                 "Federation log `{}` has been set to {}".format(
                     fedinfo["fname"], chat.title,
@@ -2018,20 +2022,20 @@ async def set_fed_log(update: Update, context: CallbackContext):
                 parse_mode="markdown",
             )
     else:
-        send_message(
+        await send_message(
             update.effective_message, "You have not provided your federated ID!",
         )
 
 
 
-async def unset_fed_log(update: Update, context: CallbackContext):
+async def unset_fed_log(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = context.args
     chat = update.effective_chat
     user = update.effective_user
     msg = update.effective_message
 
     if chat.type == "private":
-        send_message(
+        await send_message(
             update.effective_message,
             "This command is specific to the group, not to our pm!",
         )
@@ -2040,18 +2044,18 @@ async def unset_fed_log(update: Update, context: CallbackContext):
     if args:
         fedinfo = sql.get_fed_info(args[0])
         if not fedinfo:
-            send_message(update.effective_message, "This Federation does not exist!")
+            await send_message(update.effective_message, "This Federation does not exist!")
             return
         isowner = is_user_fed_owner(args[0], user.id)
         if not isowner:
-            send_message(
+            await send_message(
                 update.effective_message,
                 "Only federation creator can set federation logs.",
             )
             return
         setlog = sql.set_fed_log(args[0], None)
         if setlog:
-            send_message(
+            await send_message(
                 update.effective_message,
                 "Federation log `{}` has been revoked on {}".format(
                     fedinfo["fname"], chat.title,
@@ -2059,20 +2063,20 @@ async def unset_fed_log(update: Update, context: CallbackContext):
                 parse_mode="markdown",
             )
     else:
-        send_message(
+        await send_message(
             update.effective_message, "You have not provided your federated ID!",
         )
 
 
 
-async def subs_feds(update: Update, context: CallbackContext):
+async def subs_feds(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, args = context.bot, context.args
     chat = update.effective_chat
     user = update.effective_user
     msg = update.effective_message
 
     if chat.type == "private":
-        send_message(
+        await send_message(
             update.effective_message,
             "This command is specific to the group, not to our pm!",
         )
@@ -2082,30 +2086,30 @@ async def subs_feds(update: Update, context: CallbackContext):
     fedinfo = sql.get_fed_info(fed_id)
 
     if not fed_id:
-        send_message(update.effective_message, "This group is not in any federation!")
+        await send_message(update.effective_message, "This group is not in any federation!")
         return
 
     if is_user_fed_owner(fed_id, user.id) is False:
-        send_message(update.effective_message, "Only fed owner can do this!")
+        await send_message(update.effective_message, "Only fed owner can do this!")
         return
 
     if args:
         getfed = sql.search_fed_by_id(args[0])
         if getfed is False:
-            send_message(
+            await send_message(
                 update.effective_message, "Please enter a valid federation id.",
             )
             return
         subfed = sql.subs_fed(args[0], fed_id)
         if subfed:
-            send_message(
+            await send_message(
                 update.effective_message,
                 "Federation `{}` has subscribe the federation `{}`. Every time there is a Fedban from that federation, this federation will also banned that user.".format(
                     fedinfo["fname"], getfed["fname"],
                 ),
                 parse_mode="markdown",
             )
-            get_fedlog = sql.get_fed_log(args[0])
+            get_fedlog = await sql.get_fed_log(args[0])
             if get_fedlog:
                 if int(get_fedlog) != int(chat.id):
                     await bot.send_message(
@@ -2116,7 +2120,7 @@ async def subs_feds(update: Update, context: CallbackContext):
                         parse_mode="markdown",
                     )
         else:
-            send_message(
+            await send_message(
                 update.effective_message,
                 "Federation `{}` already subscribe the federation `{}`.".format(
                     fedinfo["fname"], getfed["fname"],
@@ -2124,20 +2128,20 @@ async def subs_feds(update: Update, context: CallbackContext):
                 parse_mode="markdown",
             )
     else:
-        send_message(
+        await send_message(
             update.effective_message, "You have not provided your federated ID!",
         )
 
 
 
-async def unsubs_feds(update: Update, context: CallbackContext):
+async def unsubs_feds(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, args = context.bot, context.args
     chat = update.effective_chat
     user = update.effective_user
     msg = update.effective_message
 
     if chat.type == "private":
-        send_message(
+        await send_message(
             update.effective_message,
             "This command is specific to the group, not to our pm!",
         )
@@ -2147,30 +2151,30 @@ async def unsubs_feds(update: Update, context: CallbackContext):
     fedinfo = sql.get_fed_info(fed_id)
 
     if not fed_id:
-        send_message(update.effective_message, "This group is not in any federation!")
+        await send_message(update.effective_message, "This group is not in any federation!")
         return
 
     if is_user_fed_owner(fed_id, user.id) is False:
-        send_message(update.effective_message, "Only fed owner can do this!")
+        await send_message(update.effective_message, "Only fed owner can do this!")
         return
 
     if args:
         getfed = sql.search_fed_by_id(args[0])
         if getfed is False:
-            send_message(
+            await send_message(
                 update.effective_message, "Please enter a valid federation id.",
             )
             return
         subfed = sql.unsubs_fed(args[0], fed_id)
         if subfed:
-            send_message(
+            await send_message(
                 update.effective_message,
                 "Federation `{}` now unsubscribe fed `{}`.".format(
                     fedinfo["fname"], getfed["fname"],
                 ),
                 parse_mode="markdown",
             )
-            get_fedlog = sql.get_fed_log(args[0])
+            get_fedlog = await sql.get_fed_log(args[0])
             if get_fedlog:
                 if int(get_fedlog) != int(chat.id):
                     await bot.send_message(
@@ -2181,7 +2185,7 @@ async def unsubs_feds(update: Update, context: CallbackContext):
                         parse_mode="markdown",
                     )
         else:
-            send_message(
+            await send_message(
                 update.effective_message,
                 "Federation `{}` is not subscribing `{}`.".format(
                     fedinfo["fname"], getfed["fname"],
@@ -2189,20 +2193,20 @@ async def unsubs_feds(update: Update, context: CallbackContext):
                 parse_mode="markdown",
             )
     else:
-        send_message(
+        await send_message(
             update.effective_message, "You have not provided your federated ID!",
         )
 
 
 
-async def get_myfedsubs(update: Update, context: CallbackContext):
+async def get_myfedsubs(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = context.args
     chat = update.effective_chat
     user = update.effective_user
     msg = update.effective_message
 
     if chat.type == "private":
-        send_message(
+        await send_message(
             update.effective_message,
             "This command is specific to the group, not to our pm!",
         )
@@ -2212,11 +2216,11 @@ async def get_myfedsubs(update: Update, context: CallbackContext):
     fedinfo = sql.get_fed_info(fed_id)
 
     if not fed_id:
-        send_message(update.effective_message, "This group is not in any federation!")
+        await send_message(update.effective_message, "This group is not in any federation!")
         return
 
     if is_user_fed_owner(fed_id, user.id) is False:
-        send_message(update.effective_message, "Only fed owner can do this!")
+        await send_message(update.effective_message, "Only fed owner can do this!")
         return
 
     try:
@@ -2225,7 +2229,7 @@ async def get_myfedsubs(update: Update, context: CallbackContext):
         getmy = []
 
     if len(getmy) == 0:
-        send_message(
+        await send_message(
             update.effective_message,
             "Federation `{}` is not subscribing any federation.".format(
                 fedinfo["fname"],
@@ -2242,11 +2246,11 @@ async def get_myfedsubs(update: Update, context: CallbackContext):
         listfed += (
             "\nTo get fed info `/fedinfo <fedid>`. To unsubscribe `/unsubfed <fedid>`."
         )
-        send_message(update.effective_message, listfed, parse_mode="markdown")
+        await send_message(update.effective_message, listfed, parse_mode="markdown")
 
 
 
-async def get_myfeds_list(update: Update, context: CallbackContext):
+async def get_myfeds_list(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat = update.effective_chat
     user = update.effective_user
     msg = update.effective_message
@@ -2258,7 +2262,7 @@ async def get_myfeds_list(update: Update, context: CallbackContext):
             text += "- `{}`: *{}*\n".format(f["fed_id"], f["fed"]["fname"])
     else:
         text = "*You are not have any feds!*"
-    send_message(update.effective_message, text, parse_mode="markdown")
+    await send_message(update.effective_message, text, parse_mode="markdown")
 
 
 def is_user_fed_admin(fed_id, user_id):
@@ -2287,7 +2291,7 @@ def is_user_fed_owner(fed_id, user_id):
 
 # There's no handler for this yet, but updating for v12 in case its used
 
-async def welcome_fed(update: Update, context: CallbackContext):
+async def welcome_fed(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, args = context.bot, context.args
     chat = update.effective_chat
     user = update.effective_user
@@ -2353,7 +2357,7 @@ def get_chat(chat_id, chat_data):
 
 
 
-async def fed_owner_help(update: Update, context: CallbackContext):
+async def fed_owner_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.effective_message.reply_text(
         """*👑 Fed Owner Only:*
  • `/newfed <fed_name>`*:* Creates a Federation, One allowed per user
@@ -2372,7 +2376,7 @@ async def fed_owner_help(update: Update, context: CallbackContext):
 
 
 
-async def fed_admin_help(update: Update, context: CallbackContext):
+async def fed_admin_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.effective_message.reply_text(
         """*🔱 Fed Admins:*
  • `/fban <user> <reason>`*:* Fed bans a user
@@ -2390,7 +2394,7 @@ async def fed_admin_help(update: Update, context: CallbackContext):
 
 
 
-async def fed_user_help(update: Update, context: CallbackContext):
+async def fed_user_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.effective_message.reply_text(
         """*🎩 Any user:*
  • `/fbanstat`*:* Shows if you/or the user you are replying to or their username is fbanned somewhere or not
