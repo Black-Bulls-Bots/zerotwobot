@@ -1,5 +1,6 @@
 import importlib
-from typing import Union
+import re
+from typing import Dict, List, Optional, Tuple, Union
 
 from future.utils import string_types
 from zerotwobot import application
@@ -8,7 +9,7 @@ from zerotwobot.modules.helper_funcs.misc import is_module_loaded
 from telegram import Update
 from telegram.constants import ParseMode
 from telegram.ext import (
-    CallbackContext,
+    ContextTypes,
     CommandHandler,
     MessageHandler,
 )
@@ -32,50 +33,55 @@ if is_module_loaded(FILENAME):
     ADMIN_CMDS = []
 
     class DisableAbleCommandHandler(CommandHandler):
-        def __init__(self, command, callback, block: bool, admin_ok=False, **kwargs):
-            super().__init__(command, callback, block=block, **kwargs)
+        def __init__(self, command, callback, block: bool, filters: filters_module.BaseFilter = None, admin_ok=False):
+            super().__init__(command, callback, block=block)
             self.admin_ok = admin_ok
+
             if isinstance(command, string_types):
+                commands = frozenset({command.lower()})
                 DISABLE_CMDS.append(command)
                 if admin_ok:
                     ADMIN_CMDS.append(command)
             else:
+                commands = frozenset(x.lower() for x in command)
                 DISABLE_CMDS.extend(command)
                 if admin_ok:
                     ADMIN_CMDS.extend(command)
+            for comm in commands:
+                if not re.match(r"^[\da-z_]{1,32}$", comm):
+                    raise ValueError(f"Command `{comm}` is not a valid bot command")
+                    
+            self.commands = commands
+            self.filters = filters if filters is not None else filters_module.UpdateType.MESSAGES
 
-        async def check_update(self, update):
+        def check_update(self, update) -> Optional[Union[bool, Tuple[List[str], Optional[Union[bool, Dict]]]]]:
             if isinstance(update, Update) and update.effective_message:
                 message = update.effective_message
 
                 if message.text and len(message.text) > 1:
-                    fst_word = await message.text.split(None, 1)[0]
+                    fst_word = message.text.split(None, 1)[0]
                     if len(fst_word) > 1 and any(
                         fst_word.startswith(start) for start in CMD_STARTERS
                     ):
-                        args = await message.text.split()[1:]
-                        command = fst_word[1:].split("@")
-                        command.append(message.get_bot().username)
+                        args = message.text.split()[1:]
+                        command_parts = fst_word[1:].split("@")
+                        command_parts.append(message.get_bot().username)
 
                         if not (
-                            command[0].lower() in self.command
-                            and command[1].lower() == await message.get_bot().username.lower()
+                            command_parts[0].lower() in self.commands
+                            and command_parts[1].lower() == message.get_bot().username.lower()
                         ):
                             return None
+
                         chat = update.effective_chat
                         user = update.effective_user
-                        if user.id == 1087968824:
-                            user_id = chat.id
-                        else:
-                            user_id = user.id
-                        if SpamChecker.check_user(user_id):
-                            return None
+
                         filter_result = self.filters.check_update(update)
                         if filter_result:
                             # disabled, admincmd, user admin
-                            if sql.is_command_disabled(chat.id, command[0].lower()):
+                            if sql.is_command_disabled(chat.id, command_parts[0].lower()):
                                 # check if command was disabled
-                                is_disabled = command[
+                                is_disabled = command_parts[
                                     0
                                 ] in ADMIN_CMDS and is_user_admin(chat, user.id)
                                 if not is_disabled:
@@ -84,9 +90,8 @@ if is_module_loaded(FILENAME):
                                     return args, filter_result
 
                             return args, filter_result
-                        else:
-                            return False
-
+                        return False
+                return None
     class DisableAbleMessageHandler(MessageHandler):
         def __init__(
             self, 
@@ -105,14 +110,14 @@ if is_module_loaded(FILENAME):
             else:
                 self.filters = filters_module.UpdateType.MESSAGES
 
-        async def check_update(self, update):
+        def check_update(self, update):
 
             chat = update.effective_chat
             message = update.effective_message
             filter_result = self.filters.check_update(update)
 
             try:
-                args = await message.text.split()[1:]
+                args = message.text.split()[1:]
             except:
                 args = []
 
@@ -125,7 +130,7 @@ if is_module_loaded(FILENAME):
     
     @connection_status
     @user_admin
-    async def disable(update: Update, context: CallbackContext):
+    async def disable(update: Update, context: ContextTypes.DEFAULT_TYPE):
         args = context.args
         chat = update.effective_chat
         if len(args) >= 1:
@@ -148,7 +153,7 @@ if is_module_loaded(FILENAME):
     
     @connection_status
     @user_admin
-    async def disable_module(update: Update, context: CallbackContext):
+    async def disable_module(update: Update, context: ContextTypes.DEFAULT_TYPE):
         args = context.args
         chat = update.effective_chat
         if len(args) >= 1:
@@ -201,7 +206,7 @@ if is_module_loaded(FILENAME):
     
     @connection_status
     @user_admin
-    async def enable(update: Update, context: CallbackContext):
+    async def enable(update: Update, context: ContextTypes.DEFAULT_TYPE):
         args = context.args
         chat = update.effective_chat
         if len(args) >= 1:
@@ -222,7 +227,7 @@ if is_module_loaded(FILENAME):
     
     @connection_status
     @user_admin
-    async def enable_module(update: Update, context: CallbackContext):
+    async def enable_module(update: Update, context: ContextTypes.DEFAULT_TYPE):
         args = context.args
         chat = update.effective_chat
 
@@ -275,7 +280,7 @@ if is_module_loaded(FILENAME):
     
     @connection_status
     @user_admin
-    async def list_cmds(update: Update, context: CallbackContext):
+    async def list_cmds(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if DISABLE_CMDS + DISABLE_OTHER:
             result = ""
             for cmd in set(DISABLE_CMDS + DISABLE_OTHER):
@@ -300,7 +305,7 @@ if is_module_loaded(FILENAME):
 
     
     @connection_status
-    async def commands(update: Update, context: CallbackContext):
+    async def commands(update: Update, context: ContextTypes.DEFAULT_TYPE):
         chat = update.effective_chat
         await update.effective_message.reply_text(
             build_curr_disabled(chat.id), parse_mode=ParseMode.MARKDOWN,
