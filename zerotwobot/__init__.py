@@ -3,7 +3,6 @@ import os
 import platform
 import sys
 import time
-import spamwatch
 import asyncio
 import telegram.ext as tg
 from telegram.ext import Application
@@ -44,7 +43,7 @@ if sys.version_info[0] < 3 or sys.version_info[1] < 9:
     quit(1)
 
 ENV = bool(os.environ.get("ENV", False))
-BOT_VERSION = "0.3"
+BOT_VERSION = "0.4b"
 PTB_VERSION = ptb_version
 BOT_API_VERSION = __bot_api_version__
 PYTHON_VERSION = platform.python_version()
@@ -102,8 +101,6 @@ if ENV:
     AI_API_KEY = os.environ.get("AI_API_KEY", None)
     WALL_API = os.environ.get("WALL_API", None)
     SUPPORT_CHAT = os.environ.get("SUPPORT_CHAT", None)
-    SPAMWATCH_SUPPORT_CHAT = os.environ.get("SPAMWATCH_SUPPORT_CHAT", None)
-    SPAMWATCH_API = os.environ.get("SPAMWATCH_API", None)
 
     ALLOW_CHATS = os.environ.get("ALLOW_CHATS", True)
     DB_URI = os.environ.get("DATABASE_URL")
@@ -172,8 +169,6 @@ else:
     AI_API_KEY = Config.AI_API_KEY
     WALL_API = Config.WALL_API
     SUPPORT_CHAT = Config.SUPPORT_CHAT
-    SPAMWATCH_SUPPORT_CHAT = Config.SPAMWATCH_SUPPORT_CHAT
-    SPAMWATCH_API = Config.SPAMWATCH_API
     INFOPIC = Config.INFOPIC
     TEMP_DOWNLOAD_LOC = Config.TEMP_DOWNLOAD_LOC
     DB_URI = Config.SQLALCHEMY_DATABASE_URI 
@@ -188,16 +183,6 @@ else:
 
 DRAGONS.add(OWNER_ID)
 DEV_USERS.add(OWNER_ID)
-
-if not SPAMWATCH_API:
-    sw = None
-    LOGGER.warning("SpamWatch API key missing! recheck your config.")
-else:
-    try:
-        sw = spamwatch.Client(SPAMWATCH_API)
-    except:
-        sw = None
-        LOGGER.warning("Can't connect to SpamWatch!")
 
 telethn = TelegramClient("zero-two", API_ID, API_HASH)
 
