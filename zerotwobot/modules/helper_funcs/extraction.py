@@ -7,7 +7,7 @@ from telegram.ext import ContextTypes
 from telegram.error import BadRequest
 
 
-async def id_from_reply(message):
+async def id_from_reply(message: Message):
     prev_message = message.reply_to_message
     if not prev_message:
         return None, None
