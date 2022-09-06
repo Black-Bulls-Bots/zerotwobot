@@ -221,9 +221,9 @@ async def get(update: Update, context: ContextTypes.DEFAULT_TYPE, notename, show
 async def cmd_get(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, args = context.bot, context.args
     if len(args) >= 2 and args[1].lower() == "noformat":
-        get(update, context, args[0].lower(), show_none=True, no_format=True)
+        await get(update, context, args[0].lower(), show_none=True, no_format=True)
     elif len(args) >= 1:
-        get(update, context, args[0].lower(), show_none=True)
+        await get(update, context, args[0].lower(), show_none=True)
     else:
         await update.effective_message.reply_text("Get rekt")
 
@@ -234,7 +234,7 @@ async def hash_get(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message.text
     fst_word = await message.split()[0]
     no_hash = fst_word[1:].lower()
-    get(update, context, no_hash, show_none=False)
+    await get(update, context, no_hash, show_none=False)
 
 
 
@@ -247,7 +247,7 @@ async def slash_get(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         noteid = note_list[int(no_slash) - 1]
         note_name = str(noteid).strip(">").split()[1]
-        get(update, context, note_name, show_none=False)
+        await get(update, context, note_name, show_none=False)
     except IndexError:
         await update.effective_message.reply_text("Wrong Note ID 😾")
 
