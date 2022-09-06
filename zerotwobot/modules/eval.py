@@ -52,13 +52,13 @@ async def send(msg, bot, update):
 @dev_plus
 async def evaluate(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
-    await send(do(eval, bot, update), bot, update)
+    await send(await do(eval, bot, update), bot, update)
 
 
 @dev_plus
 async def execute(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
-    await send(do(exec, bot, update), bot, update)
+    await send(await do(exec, bot, update), bot, update)
 
 
 def cleanup_code(code):
@@ -69,7 +69,7 @@ def cleanup_code(code):
 
 async def do(func, bot, update):
     log_input(update)
-    content = await update.message.text.split(" ", 1)[-1]
+    content = update.message.text.split(" ", 1)[-1]
     body = cleanup_code(content)
     env = namespace_of(update.message.chat_id, update, bot)
 
@@ -81,7 +81,7 @@ async def do(func, bot, update):
 
     stdout = io.StringIO()
 
-    to_compile = f'def func():\n{textwrap.indent(body, "  ")}'
+    to_compile = f'async def func():\n{textwrap.indent(body, "  ")}'
 
     try:
         exec(to_compile, env)
@@ -92,7 +92,7 @@ async def do(func, bot, update):
 
     try:
         with redirect_stdout(stdout):
-            func_return = func()
+            func_return = await func()
     except Exception as e:
         value = stdout.getvalue()
         return f"{value}{traceback.format_exc()}"
