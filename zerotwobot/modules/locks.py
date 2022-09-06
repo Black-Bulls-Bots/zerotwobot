@@ -34,7 +34,7 @@ LOCK_TYPES = {
     "contact": filters.CONTACT,
     "photo": filters.PHOTO,
     "url": filters.Entity(MessageEntity.URL)
-    | filters.CaptionEntity(MessageEntity.URL),
+        | filters.CaptionEntity(MessageEntity.URL),
     "bots": filters.StatusUpdate.NEW_CHAT_MEMBERS,
     "forward": filters.FORWARDED,
     "game": filters.GAME,
@@ -43,14 +43,20 @@ LOCK_TYPES = {
     "rtl": "rtl",
     "button": "button",
     "inline": "inline",
-    "phone": filters.Entity(MessageEntity.PHONE_NUMBER) | filters.CaptionEntity(MessageEntity.PHONE_NUMBER),
+    "phone": filters.Entity(MessageEntity.PHONE_NUMBER) 
+        | filters.CaptionEntity(MessageEntity.PHONE_NUMBER),
     "command": filters.COMMAND,
-    "email": filters.Entity(MessageEntity.EMAIL) | filters.CaptionEntity(MessageEntity.EMAIL),
+    "email": filters.Entity(MessageEntity.EMAIL) 
+        | filters.CaptionEntity(MessageEntity.EMAIL),
     "anonchannel": "anonchannel",
     "forwardchannel": "forwardchannel",
     "forwardbot": "forwardbot",
     #"invitelink": ,
     "videonote": filters.VIDEO_NOTE,
+    "emojicustom": filters.Entity(MessageEntity.CUSTOM_EMOJI) 
+        | filters.CaptionEntity(MessageEntity.CUSTOM_EMOJI),
+    "stickerpremium": filters.Sticker.PREMIUM,
+    "stickeranimated": filters.Sticker.ANIMATED,
 
 }
 
