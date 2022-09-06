@@ -7,8 +7,8 @@ import requests
 from bs4 import BeautifulSoup as bs
 from PIL import Image
 from telegram import (InlineKeyboardButton, InlineKeyboardMarkup,
-                      Update)
-from telegram.error import TelegramError
+                      Update, User, Message)
+from telegram.error import TelegramError, BadRequest
 from telegram.constants import ParseMode
 from telegram.ext import ContextTypes
 from telegram.helpers import mention_html
@@ -451,12 +451,32 @@ async def kang(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except:
         pass
 
+async def delsticker(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    sticker = update.effective_message.reply_to_message.sticker
+    check = "_by_" + context.bot.username
+
+    if sticker.set_name.endswith(check):  #check if the sticker set made by this bot
+        try:
+            await context.bot.delete_sticker_from_set(sticker.file_id)
+        except BadRequest as e:
+            if e.message == "Stickerset_not_modified":
+                await update.effective_message.reply_text("I wonder how you can use that sticker,\nI can't seem to find that one in the pack")
+            return
+        await update.effective_message.reply_text("Done!")
+        return
+
+    else:
+        await update.effective_message.reply_text("I can't delete that sticker since I didn't make that one...")
+        return
+
+
 
 async def makepack_internal(
-    update,
-    context,
-    msg,
-    user,
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+    msg: Message,
+    user: User,
     emoji,
     packname,
     packnum,
@@ -536,6 +556,7 @@ async def makepack_internal(
 __help__ = """
 • `/stickerid`*:* reply to a sticker to me to tell you its file ID.
 • `/getsticker`*:* reply to a sticker to me to upload its raw PNG file.
+• `/delstcker`*:* reply to a sticker to delete it from the pack, I can delete what I made only.
 • `/kang`*:* reply to sticker (animated/static/video) or image or gif to kang into your own pack.
 • `/stickers`*:* Find stickers for given term on combot sticker catalogue
 """
@@ -545,8 +566,10 @@ STICKERID_HANDLER = DisableAbleCommandHandler("stickerid", stickerid, block=Fals
 GETSTICKER_HANDLER = DisableAbleCommandHandler("getsticker", getsticker, block=False)
 KANG_HANDLER = DisableAbleCommandHandler("kang", kang, admin_ok=True, block=False)
 STICKERS_HANDLER = DisableAbleCommandHandler("stickers", cb_sticker, block=False)
+DELSTICKER_HANDLER = DisableAbleCommandHandler("delsticker", delsticker, block=False)
 
 application.add_handler(STICKERS_HANDLER)
 application.add_handler(STICKERID_HANDLER)
 application.add_handler(GETSTICKER_HANDLER)
 application.add_handler(KANG_HANDLER)
+application.add_handler(DELSTICKER_HANDLER)
