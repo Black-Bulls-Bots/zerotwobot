@@ -5,10 +5,11 @@ import textwrap
 import bs4
 import jikanpy
 import requests
-from zerotwobot import dispatcher
+from zerotwobot import application
 from zerotwobot.modules.disable import DisableAbleCommandHandler
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, Update, Message
-from telegram.ext import CallbackContext
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, Message
+from telegram.ext import ContextTypes
+from telegram.constants import ParseMode
 
 info_btn = "More Information"
 kaizoku_btn = "Kaizoku ☠️"
@@ -159,7 +160,7 @@ query ($id: Int,$search: String) {
 
 url = "https://graphql.anilist.co"
 
-def extract_arg(message: Message):
+async def extract_arg(message: Message):
     split = message.text.split(" ", 1)
     if len(split) > 1:
         return split[1]
@@ -169,11 +170,11 @@ def extract_arg(message: Message):
     return None
 
 
-def airing(update: Update, context: CallbackContext):
+async def airing(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
-    search_str = extract_arg(message)
+    search_str = await extract_arg(message)
     if not search_str:
-        update.effective_message.reply_text(
+        await update.effective_message.reply_text(
             "Tell Anime Name :) ( /airing <anime name>)",
         )
         return
@@ -188,22 +189,22 @@ def airing(update: Update, context: CallbackContext):
         msg += f"\n*Episode*: `{response['nextAiringEpisode']['episode']}`\n*Airing In*: `{time}`"
     else:
         msg += f"\n*Episode*:{response['episodes']}\n*Status*: `N/A`"
-    update.effective_message.reply_text(msg, parse_mode=ParseMode.MARKDOWN)
+    await update.effective_message.reply_text(msg, parse_mode=ParseMode.MARKDOWN)
 
 
 
-def anime(update: Update, context: CallbackContext):
+async def anime(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
-    search = extract_arg(message)
+    search = await extract_arg(message)
     if not search:
-        update.effective_message.reply_text("Format : /anime < anime name >")
+        await update.effective_message.reply_text("Format : /anime < anime name >")
         return
     variables = {"search": search}
     json = requests.post(
         url, json={"query": anime_query, "variables": variables},
     ).json()
     if "errors" in json.keys():
-        update.effective_message.reply_text("Anime not found")
+        await update.effective_message.reply_text("Anime not found")
         return
     if json:
         json = json["data"]["Media"]
@@ -242,7 +243,7 @@ def anime(update: Update, context: CallbackContext):
             buttons = [[InlineKeyboardButton("More Info", url=info)]]
         if image:
             try:
-                update.effective_message.reply_photo(
+                await update.effective_message.reply_photo(
                     photo=image,
                     caption=msg,
                     parse_mode=ParseMode.MARKDOWN,
@@ -250,13 +251,13 @@ def anime(update: Update, context: CallbackContext):
                 )
             except:
                 msg += f" [〽️]({image})"
-                update.effective_message.reply_text(
+                await update.effective_message.reply_text(
                     msg,
                     parse_mode=ParseMode.MARKDOWN,
                     reply_markup=InlineKeyboardMarkup(buttons),
                 )
         else:
-            update.effective_message.reply_text(
+            await update.effective_message.reply_text(
                 msg,
                 parse_mode=ParseMode.MARKDOWN,
                 reply_markup=InlineKeyboardMarkup(buttons),
@@ -264,18 +265,18 @@ def anime(update: Update, context: CallbackContext):
 
 
 
-def character(update: Update, context: CallbackContext):
+async def character(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
-    search = extract_arg(message)
+    search = await extract_arg(message)
     if not search:
-        update.effective_message.reply_text("Format : /character < character name >")
+        await update.effective_message.reply_text("Format : /character < character name >")
         return
     variables = {"query": search}
     json = requests.post(
         url, json={"query": character_query, "variables": variables},
     ).json()
     if "errors" in json.keys():
-        update.effective_message.reply_text("Character not found")
+        await update.effective_message.reply_text("Character not found")
         return
     if json:
         json = json["data"]["Character"]
@@ -286,23 +287,23 @@ def character(update: Update, context: CallbackContext):
         image = json.get("image", None)
         if image:
             image = image.get("large")
-            update.effective_message.reply_photo(
+            await update.effective_message.reply_photo(
                 photo=image,
                 caption=msg.replace("<b>", "</b>"),
                 parse_mode=ParseMode.MARKDOWN,
             )
         else:
-            update.effective_message.reply_text(
+            await update.effective_message.reply_text(
                 msg.replace("<b>", "</b>"), parse_mode=ParseMode.MARKDOWN,
             )
 
 
 
-def manga(update: Update, context: CallbackContext):
+async def manga(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
-    search = extract_arg(message)
+    search = await extract_arg(message)
     if not search:
-        update.effective_message.reply_text("Format : /manga < manga name >")
+        await update.effective_message.reply_text("Format : /manga < manga name >")
         return
     variables = {"search": search}
     json = requests.post(
@@ -310,7 +311,7 @@ def manga(update: Update, context: CallbackContext):
     ).json()
     msg = ""
     if "errors" in json.keys():
-        update.effective_message.reply_text("Manga not found")
+        await update.effective_message.reply_text("Manga not found")
         return
     if json:
         json = json["data"]["Media"]
@@ -342,7 +343,7 @@ def manga(update: Update, context: CallbackContext):
         msg += f"\n➢ *Description* - _{json.get('description', None)}_"
         if image:
             try:
-                update.effective_message.reply_photo(
+                await update.effective_message.reply_photo(
                     photo=image,
                     caption=msg,
                     parse_mode=ParseMode.MARKDOWN,
@@ -350,13 +351,13 @@ def manga(update: Update, context: CallbackContext):
                 )
             except:
                 msg += f" [〽️]({image})"
-                update.effective_message.reply_text(
+                await update.effective_message.reply_text(
                     msg,
                     parse_mode=ParseMode.MARKDOWN,
                     reply_markup=InlineKeyboardMarkup(buttons),
                 )
         else:
-            update.effective_message.reply_text(
+            await update.effective_message.reply_text(
                 msg,
                 parse_mode=ParseMode.MARKDOWN,
                 reply_markup=InlineKeyboardMarkup(buttons),
@@ -364,12 +365,12 @@ def manga(update: Update, context: CallbackContext):
 
 
 
-def user(update: Update, context: CallbackContext):
+async def user(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
-    search_query = extract_arg(message)
+    search_query = await extract_arg(message)
 
     if not search_query:
-        update.effective_message.reply_text("Format : /user <username>")
+        await update.effective_message.reply_text("Format : /user <username>")
         return
 
     jikan = jikanpy.jikan.Jikan()
@@ -377,10 +378,10 @@ def user(update: Update, context: CallbackContext):
     try:
         us = jikan.user(search_query)
     except jikanpy.APIException:
-        update.effective_message.reply_text("Username not found.")
+        await update.effective_message.reply_text("Username not found.")
         return
 
-    progress_message = update.effective_message.reply_text("Searching.... ")
+    progress_message = await update.effective_message.reply_text("Searching.... ")
 
     date_format = "%Y-%m-%d"
     if us["image_url"] is None:
@@ -437,7 +438,7 @@ def user(update: Update, context: CallbackContext):
         ],
     ]
 
-    update.effective_message.reply_photo(
+    await update.effective_message.reply_photo(
         photo=img,
         caption=caption,
         parse_mode=ParseMode.MARKDOWN,
@@ -448,7 +449,7 @@ def user(update: Update, context: CallbackContext):
 
 
 
-def upcoming(update: Update, context: CallbackContext):
+async def upcoming(update: Update, context: ContextTypes.DEFAULT_TYPE):
     jikan = jikanpy.jikan.Jikan()
     upcomin = jikan.top("anime", page=1, subtype="upcoming")
 
@@ -460,16 +461,16 @@ def upcoming(update: Update, context: CallbackContext):
             break
         upcoming_message += f"{entry_num + 1}. {upcoming_list[entry_num]}\n"
 
-    update.effective_message.reply_text(upcoming_message)
+    await update.effective_message.reply_text(upcoming_message)
 
 
-def site_search(update: Update, context: CallbackContext, site: str):
+async def site_search(update: Update, context: ContextTypes.DEFAULT_TYPE, site: str):
     message = update.effective_message
-    search_query = extract_arg(message)
+    search_query = await extract_arg(message)
     more_results = True
 
     if not search_query:
-        message.reply_text("Give something to search")
+        await message.reply_text("Give something to search")
         return
 
     if site == "kaizoku":
@@ -509,26 +510,26 @@ def site_search(update: Update, context: CallbackContext, site: str):
     buttons = [[InlineKeyboardButton("See all results", url=search_url)]]
 
     if more_results:
-        message.reply_text(
+        await message.reply_text(
             result,
             parse_mode=ParseMode.HTML,
             reply_markup=InlineKeyboardMarkup(buttons),
             disable_web_page_preview=True,
         )
     else:
-        message.reply_text(
+        await message.reply_text(
             result, parse_mode=ParseMode.HTML, disable_web_page_preview=True,
         )
 
 
 
-def kaizoku(update: Update, context: CallbackContext):
-    site_search(update, context, "kaizoku")
+async def kaizoku(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await site_search(update, context, "kaizoku")
 
 
 
-def kayo(update: Update, context: CallbackContext):
-    site_search(update, context, "kayo")
+async def kayo(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await site_search(update, context, "kayo")
 
 
 __help__ = """
@@ -547,23 +548,23 @@ Get information about anime, manga or characters from [AniList](anilist.co).
 
  """
 
-ANIME_HANDLER = DisableAbleCommandHandler("anime", anime, run_async=True)
-AIRING_HANDLER = DisableAbleCommandHandler("airing", airing, run_async=True)
-CHARACTER_HANDLER = DisableAbleCommandHandler("character", character, run_async=True)
-MANGA_HANDLER = DisableAbleCommandHandler("manga", manga, run_async=True)
-USER_HANDLER = DisableAbleCommandHandler("user", user, run_async=True)
-UPCOMING_HANDLER = DisableAbleCommandHandler("upcoming", upcoming, run_async=True)
-KAIZOKU_SEARCH_HANDLER = DisableAbleCommandHandler("kaizoku", kaizoku, run_async=True)
-KAYO_SEARCH_HANDLER = DisableAbleCommandHandler("kayo", kayo, run_async=True)
+ANIME_HANDLER = DisableAbleCommandHandler("anime", anime, block=False)
+AIRING_HANDLER = DisableAbleCommandHandler("airing", airing, block=False)
+CHARACTER_HANDLER = DisableAbleCommandHandler("character", character, block=False)
+MANGA_HANDLER = DisableAbleCommandHandler("manga", manga, block=False)
+USER_HANDLER = DisableAbleCommandHandler("user", user, block=False)
+UPCOMING_HANDLER = DisableAbleCommandHandler("upcoming", upcoming, block=False)
+KAIZOKU_SEARCH_HANDLER = DisableAbleCommandHandler("kaizoku", kaizoku, block=False)
+KAYO_SEARCH_HANDLER = DisableAbleCommandHandler("kayo", kayo, block=False)
 
-dispatcher.add_handler(ANIME_HANDLER)
-dispatcher.add_handler(CHARACTER_HANDLER)
-dispatcher.add_handler(MANGA_HANDLER)
-dispatcher.add_handler(AIRING_HANDLER)
-dispatcher.add_handler(USER_HANDLER)
-dispatcher.add_handler(KAIZOKU_SEARCH_HANDLER)
-dispatcher.add_handler(KAYO_SEARCH_HANDLER)
-dispatcher.add_handler(UPCOMING_HANDLER)
+application.add_handler(ANIME_HANDLER)
+application.add_handler(CHARACTER_HANDLER)
+application.add_handler(MANGA_HANDLER)
+application.add_handler(AIRING_HANDLER)
+application.add_handler(USER_HANDLER)
+application.add_handler(KAIZOKU_SEARCH_HANDLER)
+application.add_handler(KAYO_SEARCH_HANDLER)
+application.add_handler(UPCOMING_HANDLER)
 
 __mod_name__ = "Anime"
 __command_list__ = [

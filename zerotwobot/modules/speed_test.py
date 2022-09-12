@@ -1,9 +1,10 @@
 import speedtest
-from zerotwobot import DEV_USERS, dispatcher
+from zerotwobot import DEV_USERS, application
 from zerotwobot.modules.disable import DisableAbleCommandHandler
 from zerotwobot.modules.helper_funcs.chat_status import dev_plus
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, Update
-from telegram.ext import CallbackContext, CallbackQueryHandler
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram.constants import ParseMode
+from telegram.ext import ContextTypes, CallbackQueryHandler
 
 
 def convert(speed):
@@ -11,23 +12,23 @@ def convert(speed):
 
 
 @dev_plus
-def speedtestxyz(update: Update, context: CallbackContext):
+async def speedtestxyz(update: Update, context: ContextTypes.DEFAULT_TYPE):
     buttons = [
         [
             InlineKeyboardButton("Image", callback_data="speedtest_image"),
             InlineKeyboardButton("Text", callback_data="speedtest_text"),
         ],
     ]
-    update.effective_message.reply_text(
+    await update.effective_message.reply_text(
         "Select SpeedTest Mode", reply_markup=InlineKeyboardMarkup(buttons),
     )
 
 
-def speedtestxyz_callback(update: Update, context: CallbackContext):
+async def speedtestxyz_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
 
     if query.from_user.id in DEV_USERS:
-        msg = update.effective_message.edit_text("Running a speedtest....")
+        msg = await update.effective_message.edit_text("Running a speedtest....")
         speed = speedtest.Speedtest()
         speed.get_best_server()
         speed.download()
@@ -36,7 +37,7 @@ def speedtestxyz_callback(update: Update, context: CallbackContext):
 
         if query.data == "speedtest_image":
             speedtest_image = speed.results.share()
-            update.effective_message.reply_photo(
+            await update.effective_message.reply_photo(
                 photo=speedtest_image, caption=replymsg,
             )
             msg.delete()
@@ -44,18 +45,18 @@ def speedtestxyz_callback(update: Update, context: CallbackContext):
         elif query.data == "speedtest_text":
             result = speed.results.dict()
             replymsg += f"\nDownload: `{convert(result['download'])}Mb/s`\nUpload: `{convert(result['upload'])}Mb/s`\nPing: `{result['ping']}`"
-            update.effective_message.edit_text(replymsg, parse_mode=ParseMode.MARKDOWN)
+            await update.effective_message.edit_text(replymsg, parse_mode=ParseMode.MARKDOWN)
     else:
-        query.answer("You are required to join Black Bulls to use this command.")
+        await query.answer("You are required to join Black Bulls to use this command.")
 
 
-SPEED_TEST_HANDLER = DisableAbleCommandHandler("speedtest", speedtestxyz, run_async=True)
+SPEED_TEST_HANDLER = DisableAbleCommandHandler("speedtest", speedtestxyz, block=False)
 SPEED_TEST_CALLBACKHANDLER = CallbackQueryHandler(
-    speedtestxyz_callback, pattern="speedtest_.*", run_async=True
+    speedtestxyz_callback, pattern="speedtest_.*", block=False
 )
 
-dispatcher.add_handler(SPEED_TEST_HANDLER)
-dispatcher.add_handler(SPEED_TEST_CALLBACKHANDLER)
+application.add_handler(SPEED_TEST_HANDLER)
+application.add_handler(SPEED_TEST_CALLBACKHANDLER)
 
 __mod_name__ = "SpeedTest"
 __command_list__ = ["speedtest"]

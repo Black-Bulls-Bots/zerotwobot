@@ -5,12 +5,12 @@ import os
 from GoogleSearch import Search
 from telegram import (InlineKeyboardButton, InlineKeyboardMarkup,
                       MessageEntity, Update)
-from telegram.ext import CallbackContext
-from zerotwobot import dispatcher
+from telegram.ext import ContextTypes
+from zerotwobot import application
 from zerotwobot.modules.disable import DisableAbleCommandHandler
 
 
-def reverse(update: Update, context: CallbackContext):
+async def reverse(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
     args = context.args
     
@@ -18,14 +18,14 @@ def reverse(update: Update, context: CallbackContext):
         if len(args) <= 1:
             url = args[0]
             if url.startswith(("https://", "http://")):
-                msg = message.reply_text("Uploading url to google..")
+                msg = await message.reply_text("Uploading url to google..")
 
                 result = Search(url=url)
                 name = result["output"]
                 link = result["similar"]
                 
-                msg.edit_text("Uploaded to google, fetching results...")
-                msg.edit_text(
+                await msg.edit_text("Uploaded to google, fetching results...")
+                await msg.edit_text(
                 text=f"{name}",
                 reply_markup=InlineKeyboardMarkup(
                         [
@@ -40,23 +40,23 @@ def reverse(update: Update, context: CallbackContext):
                 )
                 return
         else:
-            message.reply_text("Command must be used with a reply to an image or should give url")
+            await message.reply_text("Command must be used with a reply to an image or should give url")
     
     elif message.reply_to_message and message.reply_to_message.photo:
-        edit = message.reply_text("Downloading Image")
+        edit = await message.reply_text("Downloading Image")
 
         photo = message.reply_to_message.photo[-1]
-        file = context.bot.get_file(photo.file_id)
-        file.download("reverse.jpg")
+        file = await context.bot.get_file(photo.file_id)
+        await file.download("reverse.jpg")
 
-        edit.edit_text("Downloaded Image, uploading to google...")
+        await edit.edit_text("Downloaded Image, uploading to google...")
 
         result = Search(file_path="reverse.jpg")
-        edit.edit_text("Uploaded to google, fetching results...")
+        await edit.edit_text("Uploaded to google, fetching results...")
         name = result["output"]
         link = result["similar"]
 
-        edit.edit_text(
+        await edit.edit_text(
             text=f"{name}",
             reply_markup=InlineKeyboardMarkup(
                 [
@@ -71,10 +71,10 @@ def reverse(update: Update, context: CallbackContext):
         )
         return
     else:
-        message.reply_text("Command should be used with replying to an image or url should given.")
+        await message.reply_text("Command should be used with replying to an image or url should given.")
 
-REVERSE_HANDLER = DisableAbleCommandHandler("reverse", reverse, run_async=True)
-dispatcher.add_handler(REVERSE_HANDLER)
+REVERSE_HANDLER = DisableAbleCommandHandler("reverse", reverse, block=False)
+application.add_handler(REVERSE_HANDLER)
 
 __help__ = """
 Reverse search any image using google image search.

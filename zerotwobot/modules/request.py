@@ -1,19 +1,20 @@
 import html
 
-from telegram import Update, ParseMode
-from telegram.error import BadRequest, Unauthorized
-from telegram.ext import CallbackContext, CommandHandler, MessageHandler, Filters
-from telegram.utils.helpers import mention_html
+from telegram import Update
+from telegram.constants import ParseMode
+from telegram.error import BadRequest, Forbidden
+from telegram.ext import ContextTypes, CommandHandler, MessageHandler, filters
+from telegram.helpers import mention_html
 from zerotwobot.modules.helper_funcs.chat_status import user_admin, user_not_admin
 from zerotwobot.modules.log_channel import loggable
 
-from zerotwobot import LOGGER, dispatcher
+from zerotwobot import LOGGER, application
 from zerotwobot.modules.sql import request_sql as sql
 
 REQUEST_GROUP = 12
 
 @user_admin
-def settings(update: Update, context: CallbackContext):
+async def settings(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
     chat = update.effective_chat
     user = update.effective_user
@@ -23,35 +24,35 @@ def settings(update: Update, context: CallbackContext):
         if len(args) >= 1:
             if args[0] in ['yes', 'on']:
                 sql.set_user_setting(user.id, True)
-                message.reply_text(
+                await message.reply_text(
                     "Succesfully set request handling to True\n You will now receive requests from chats you are admin."
                 )
             elif args[0] in ['no', 'off']:
                 sql.set_user_setting(user.id, False)
-                message.reply_text(
+                await message.reply_text(
                     "Succesfully set request handling to False\n You will not receive requests from chats you are admin."
                 )
         else:
-            message.reply_text(f"Current request handling preference: <code>{sql.user_should_request(user.id)}</code>", parse_mode="html")
+            await message.reply_text(f"Current request handling preference: <code>{sql.user_should_request(user.id)}</code>", parse_mode="html")
 
     else:
         if len(args) >= 1:
             if args[0] in ['yes', 'on']:
                 sql.set_chat_setting(chat.id, True)
-                message.reply_text(
+                await message.reply_text(
                     f"Request handling has successfully turned on in {chat.title} \n Now users can request by /request command."
                 )
             elif args[0] in ['no', 'off']:
                 sql.set_chat_setting(chat.id, False)
-                message.reply_text(
+                await message.reply_text(
                     f"Request handling is now turned off in {chat.title}"
                 )
         else:
-            message.reply_text(f"Current request handling preference: <code>{sql.chat_should_request(chat.id)}</code>", parse_mode="html")
+            await message.reply_text(f"Current request handling preference: <code>{sql.chat_should_request(chat.id)}</code>", parse_mode="html")
 
 @loggable
 @user_not_admin
-def request(update: Update, context: CallbackContext):
+async def request(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
     chat = update.effective_chat
     user = update.effective_user
@@ -60,10 +61,10 @@ def request(update: Update, context: CallbackContext):
 
     if chat and sql.chat_should_request(chat.id):
         chat_name = chat.title or chat.username or chat.first_name
-        admin_list = chat.get_administrators()
+        admin_list = await chat.get_administrators()
 
         if not args:
-            message.reply_text("Please give something to request")
+            await message.reply_text("Please give something to request")
             return ""
 
         if chat.type == chat.SUPERGROUP:
@@ -87,36 +88,36 @@ def request(update: Update, context: CallbackContext):
             if sql.user_should_request(admin.user.id):
                 try:
                     if not chat.type == chat.SUPERGROUP:
-                        bot.send_message(
+                        await bot.send_message(
                             admin.user.id, msg+link, parse_mode=ParseMode.HTML, disable_web_page_preview=True
                         )
 
                         if should_forward:
-                            message.forward(admin.user.id)
+                            await message.forward(admin.user.id)
 
                     if not chat.username:
-                        bot.send_message(
+                        await bot.send_message(
                             admin.user.id, msg+link, parse_mode=ParseMode.HTML, disable_web_page_preview=True
                         )
 
                         if should_forward:
-                            message.forward(admin.user.id)
+                            await message.forward(admin.user.id)
                     
                     if chat.username and chat.type == chat.SUPERGROUP:
 
-                        bot.send_message(
+                        await bot.send_message(
                             admin.user.id, msg + link, parse_mode=ParseMode.HTML, disable_web_page_preview=True
                         )
 
                         if should_forward:
-                            message.forward(admin.user.id)
+                            await message.forward(admin.user.id)
 
-                except Unauthorized:
+                except Forbidden:
                     pass
                 except BadRequest as excp:
                     LOGGER.exception("Exception while requesting content!")
                 
-        message.reply_text(
+        await message.reply_text(
             f"{mention_html(user.id, user.first_name)} I've submitted your request to the admins.",
             parse_mode=ParseMode.HTML,
         )
@@ -140,15 +141,15 @@ def __user_settings__(user_id):
     return text
 
 
-SETTINGS_HANDLER = CommandHandler("requests", settings, run_async=True)
-REQUEST_HANDLER = CommandHandler("request", request, Filters.chat_type.groups , run_async=True)
-HASH_REQUEST_HANDLER = MessageHandler(Filters.regex(r"(?i)#request(s)?"), request)
+SETTINGS_HANDLER = CommandHandler("requests", settings, block=False)
+REQUEST_HANDLER = CommandHandler("request", request, filters=filters.ChatType.GROUPS , block=False)
+HASH_REQUEST_HANDLER = MessageHandler(filters.Regex(r"(?i)#request(s)?"), request, block=False)
 
 
 
-dispatcher.add_handler(SETTINGS_HANDLER)
-dispatcher.add_handler(REQUEST_HANDLER, REQUEST_GROUP)
-dispatcher.add_handler(HASH_REQUEST_HANDLER)
+application.add_handler(SETTINGS_HANDLER)
+application.add_handler(REQUEST_HANDLER, REQUEST_GROUP)
+application.add_handler(HASH_REQUEST_HANDLER)
 
 __mod_name__ = "Request Handling"
 __help__ = """

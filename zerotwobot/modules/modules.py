@@ -1,7 +1,7 @@
 import importlib
 import collections
 
-from zerotwobot import dispatcher, telethn
+from zerotwobot import application, telethn
 from zerotwobot.__main__ import (
     CHAT_SETTINGS,
     DATA_EXPORT,
@@ -14,23 +14,24 @@ from zerotwobot.__main__ import (
     USER_SETTINGS,
 )
 from zerotwobot.modules.helper_funcs.chat_status import dev_plus, sudo_plus
-from telegram import ParseMode, Update
-from telegram.ext import CallbackContext, CommandHandler
+from telegram import Update
+from telegram.constants import ParseMode
+from telegram.ext import ContextTypes, CommandHandler
 
 
 
 @dev_plus
-def load(update: Update, context: CallbackContext):
+async def load(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
     text = message.text.split(" ", 1)[1]
-    load_messasge = message.reply_text(
+    load_messasge = await message.reply_text(
         f"Attempting to load module : <b>{text}</b>", parse_mode=ParseMode.HTML,
     )
 
     try:
         imported_module = importlib.import_module("zerotwobot.modules." + text)
     except:
-        load_messasge.edit_text("Does that module even exist?")
+        await load_messasge.edit_text("Does that module even exist?")
         return
 
     if not hasattr(imported_module, "__mod_name__"):
@@ -39,23 +40,23 @@ def load(update: Update, context: CallbackContext):
     if imported_module.__mod_name__.lower() not in IMPORTED:
         IMPORTED[imported_module.__mod_name__.lower()] = imported_module
     else:
-        load_messasge.edit_text("Module already loaded.")
+        await load_messasge.edit_text("Module already loaded.")
         return
     if "__handlers__" in dir(imported_module):
         handlers = imported_module.__handlers__
         for handler in handlers:
             if not isinstance(handler, tuple):
-                dispatcher.add_handler(handler)
+                application.add_handler(handler)
             else:
                 if isinstance(handler[0], collections.Callable):
                     callback, telethon_event = handler
                     telethn.add_event_handler(callback, telethon_event)
                 else:
                     handler_name, priority = handler
-                    dispatcher.add_handler(handler_name, priority)
+                    application.add_handler(handler_name, priority)
     else:
         IMPORTED.pop(imported_module.__mod_name__.lower())
-        load_messasge.edit_text("The module cannot be loaded.")
+        await load_messasge.edit_text("The module cannot be loaded.")
         return
 
     if hasattr(imported_module, "__help__") and imported_module.__help__:
@@ -83,24 +84,24 @@ def load(update: Update, context: CallbackContext):
     if hasattr(imported_module, "__user_settings__"):
         USER_SETTINGS[imported_module.__mod_name__.lower()] = imported_module
 
-    load_messasge.edit_text(
+    await load_messasge.edit_text(
         "Successfully loaded module : <b>{}</b>".format(text), parse_mode=ParseMode.HTML,
     )
 
 
 
 @dev_plus
-def unload(update: Update, context: CallbackContext):
+async def unload(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
     text = message.text.split(" ", 1)[1]
-    unload_messasge = message.reply_text(
+    unload_messasge = await message.reply_text(
         f"Attempting to unload module : <b>{text}</b>", parse_mode=ParseMode.HTML,
     )
 
     try:
         imported_module = importlib.import_module("zerotwobot.modules." + text)
     except:
-        unload_messasge.edit_text("Does that module even exist?")
+        await unload_messasge.edit_text("Does that module even exist?")
         return
 
     if not hasattr(imported_module, "__mod_name__"):
@@ -108,25 +109,25 @@ def unload(update: Update, context: CallbackContext):
     if imported_module.__mod_name__.lower() in IMPORTED:
         IMPORTED.pop(imported_module.__mod_name__.lower())
     else:
-        unload_messasge.edit_text("Can't unload something that isn't loaded.")
+        await unload_messasge.edit_text("Can't unload something that isn't loaded.")
         return
     if "__handlers__" in dir(imported_module):
         handlers = imported_module.__handlers__
         for handler in handlers:
             if isinstance(handler, bool):
-                unload_messasge.edit_text("This module can't be unloaded!")
+                await unload_messasge.edit_text("This module can't be unloaded!")
                 return
             elif not isinstance(handler, tuple):
-                dispatcher.remove_handler(handler)
+                application.remove_handler(handler)
             else:
                 if isinstance(handler[0], collections.Callable):
                     callback, telethon_event = handler
                     telethn.remove_event_handler(callback, telethon_event)
                 else:
                     handler_name, priority = handler
-                    dispatcher.remove_handler(handler_name, priority)
+                    application.remove_handler(handler_name, priority)
     else:
-        unload_messasge.edit_text("The module cannot be unloaded.")
+        await unload_messasge.edit_text("The module cannot be unloaded.")
         return
 
     if hasattr(imported_module, "__help__") and imported_module.__help__:
@@ -154,13 +155,13 @@ def unload(update: Update, context: CallbackContext):
     if hasattr(imported_module, "__user_settings__"):
         USER_SETTINGS.pop(imported_module.__mod_name__.lower())
 
-    unload_messasge.edit_text(
+    await unload_messasge.edit_text(
         f"Successfully unloaded module : <b>{text}</b>", parse_mode=ParseMode.HTML,
     )
 
 
 @sudo_plus
-def listmodules(update: Update, context: CallbackContext):
+async def listmodules(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
     module_list = []
 
@@ -171,15 +172,15 @@ def listmodules(update: Update, context: CallbackContext):
         mod_name = file_info.__mod_name__
         module_list.append(f"- <code>{mod_name} ({file_name})</code>\n")
     module_list = "Following modules are loaded : \n\n" + "".join(module_list)
-    message.reply_text(module_list, parse_mode=ParseMode.HTML)
+    await message.reply_text(module_list, parse_mode=ParseMode.HTML)
 
 
-LOAD_HANDLER = CommandHandler("load", load, run_async=True)
-UNLOAD_HANDLER = CommandHandler("unload", unload, run_async=True)
-LISTMODULES_HANDLER = CommandHandler("listmodules", listmodules, run_async=True)
+LOAD_HANDLER = CommandHandler("load", load, block=False)
+UNLOAD_HANDLER = CommandHandler("unload", unload, block=False)
+LISTMODULES_HANDLER = CommandHandler("listmodules", listmodules, block=False)
 
-dispatcher.add_handler(LOAD_HANDLER)
-dispatcher.add_handler(UNLOAD_HANDLER)
-dispatcher.add_handler(LISTMODULES_HANDLER)
+application.add_handler(LOAD_HANDLER)
+application.add_handler(UNLOAD_HANDLER)
+application.add_handler(LISTMODULES_HANDLER)
 
 __mod_name__ = "Modules"

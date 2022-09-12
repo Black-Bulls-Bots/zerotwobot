@@ -1,12 +1,13 @@
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from zerotwobot import LOGGER
 from zerotwobot.modules.users import get_user_id
 from telegram import Message, MessageEntity
+from telegram.ext import ContextTypes
 from telegram.error import BadRequest
 
 
-def id_from_reply(message):
+async def id_from_reply(message: Message):
     prev_message = message.reply_to_message
     if not prev_message:
         return None, None
@@ -20,18 +21,18 @@ def id_from_reply(message):
     return user_id, res[1]
 
 
-def extract_user(message: Message, args: List[str]) -> Optional[int]:
-    return extract_user_and_text(message, args)[0]
+async def extract_user(message: Message, context: ContextTypes.DEFAULT_TYPE, args: List[str],) -> Optional[int]:
+    return (await extract_user_and_text(message, context, args))[0]
 
 
-def extract_user_and_text(
-    message: Message, args: List[str],
-) -> (Optional[int], Optional[str]):
+async def extract_user_and_text(
+    message: Message, context: ContextTypes.DEFAULT_TYPE, args: List[str],
+) -> Union[(Optional[int], Optional[str])]:
     prev_message = message.reply_to_message
     split_text = message.text.split(None, 1)
 
     if len(split_text) < 2:
-        return id_from_reply(message)  # only option possible
+        return await id_from_reply(message)  # only option possible
 
     text_to_parse = split_text[1]
 
@@ -47,9 +48,9 @@ def extract_user_and_text(
 
     elif len(args) >= 1 and args[0][0] == "@":
         user = args[0]
-        user_id = get_user_id(user)
+        user_id = await get_user_id(user)
         if not user_id:
-            message.reply_text(
+            await message.reply_text(
                 "No idea who this user is. You'll be able to interact with them if "
                 "you reply to that person's message instead, or forward one of that user's messages.",
             )
@@ -68,16 +69,16 @@ def extract_user_and_text(
             text = res[2]
 
     elif prev_message:
-        user_id, text = id_from_reply(message)
+        user_id, text = await id_from_reply(message)
 
     else:
         return None, None
 
     try:
-        message.bot.get_chat(user_id)
+        await context.bot.get_chat(user_id)
     except BadRequest as excp:
         if excp.message in ("User_id_invalid", "Chat not found"):
-            message.reply_text(
+            await message.reply_text(
                 "I don't seem to have interacted with this user before - please forward a message from "
                 "them to give me control! (like a voodoo doll, I need a piece of them to be able "
                 "to execute certain commands...)",
@@ -90,7 +91,7 @@ def extract_user_and_text(
     return user_id, text
 
 
-def extract_text(message) -> str:
+async def extract_text(message) -> str:
     return (
         message.text
         or message.caption
@@ -98,14 +99,14 @@ def extract_text(message) -> str:
     )
 
 
-def extract_unt_fedban(
-    message: Message, args: List[str],
-) -> (Optional[int], Optional[str]):
+async def extract_unt_fedban(
+    message: Message, context: ContextTypes.DEFAULT_TYPE, args: List[str]
+) -> Union[(Optional[int], Optional[str])]:
     prev_message = message.reply_to_message
     split_text = message.text.split(None, 1)
 
     if len(split_text) < 2:
-        return id_from_reply(message)  # only option possible
+        return await id_from_reply(message)  # only option possible
 
     text_to_parse = split_text[1]
 
@@ -121,9 +122,9 @@ def extract_unt_fedban(
 
     elif len(args) >= 1 and args[0][0] == "@":
         user = args[0]
-        user_id = get_user_id(user)
+        user_id = await get_user_id(user)
         if not user_id and not isinstance(user_id, int):
-            message.reply_text(
+            await message.reply_text(
                 "I don't have that user in my db.  "
                 "You'll be able to interact with them if you reply to that person's message instead, or forward one of that user's messages.",
             )
@@ -142,18 +143,18 @@ def extract_unt_fedban(
             text = res[2]
 
     elif prev_message:
-        user_id, text = id_from_reply(message)
+        user_id, text = await id_from_reply(message)
 
     else:
         return None, None
 
     try:
-        message.bot.get_chat(user_id)
+        await context.bot.get_chat(user_id)
     except BadRequest as excp:
         if excp.message in ("User_id_invalid", "Chat not found") and not isinstance(
             user_id, int,
         ):
-            message.reply_text(
+            await message.reply_text(
                 "I don't seem to have interacted with this user before "
                 "please forward a message from them to give me control! "
                 "(like a voodoo doll, I need a piece of them to be able to execute certain commands...)",
@@ -168,5 +169,5 @@ def extract_unt_fedban(
     return user_id, text
 
 
-def extract_user_fban(message: Message, args: List[str]) -> Optional[int]:
-    return extract_unt_fedban(message, args)[0]
+async def extract_user_fban(message: Message, context: ContextTypes.DEFAULT_TYPE, args: List[str]) -> Optional[int]:
+    return (await extract_unt_fedban(message, context, args))[0]

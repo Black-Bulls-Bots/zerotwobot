@@ -7,8 +7,8 @@ import sys
 import pretty_errors
 import io
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
-from telegram.ext import CallbackContext, CommandHandler
-from zerotwobot import dispatcher, DEV_USERS, OWNER_ID
+from telegram.ext import ContextTypes, CommandHandler
+from zerotwobot import application, DEV_USERS, OWNER_ID
 
 pretty_errors.mono()
 
@@ -37,7 +37,7 @@ class ErrorsDict(dict):
 errors = ErrorsDict()
 
 
-def error_callback(update: Update, context: CallbackContext):
+async def error_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update:
         return
     if context.error in errors:
@@ -82,7 +82,7 @@ def error_callback(update: Update, context: CallbackContext):
     if not key.get("result", {}).get("key"):
         with open("error.txt", "w+") as f:
             f.write(pretty_message)
-        context.bot.send_document(
+        await context.bot.send_document(
             OWNER_ID,
                 open("error.txt", "rb"),
                 caption=f"#{context.error.identifier}\n<b>An unknown error occured:</b>\n<code>{e}</code>",
@@ -91,7 +91,7 @@ def error_callback(update: Update, context: CallbackContext):
         return
     key = key.get("result").get("key")
     url = f"https://nekobin.com/{key}.py"
-    context.bot.send_message(
+    await context.bot.send_message(
         OWNER_ID,
             text=f"#{context.error.identifier}\n<b>An unknown error occured:</b>\n<code>{e}</code>",
             reply_markup=InlineKeyboardMarkup(
@@ -101,7 +101,7 @@ def error_callback(update: Update, context: CallbackContext):
     )
 
 
-def list_errors(update: Update, context: CallbackContext):
+async def list_errors(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id not in DEV_USERS:
         return
     e = {
@@ -114,15 +114,15 @@ def list_errors(update: Update, context: CallbackContext):
     if len(msg) > 4096:
         with open("errors_msg.txt", "w+") as f:
             f.write(msg)
-        context.bot.send_document(
+        await context.bot.send_document(
             update.effective_chat.id,
             open("errors_msg.txt", "rb"),
             caption=f"Too many errors have occured..",
             parse_mode="html",
         )
         return
-    update.effective_message.reply_text(msg, parse_mode="html")
+    await update.effective_message.reply_text(msg, parse_mode="html")
 
 
-dispatcher.add_error_handler(error_callback)
-dispatcher.add_handler(CommandHandler("errors", list_errors))
+application.add_error_handler(error_callback)
+application.add_handler(CommandHandler("errors", list_errors))

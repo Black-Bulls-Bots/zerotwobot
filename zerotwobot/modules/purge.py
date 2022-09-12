@@ -24,7 +24,7 @@ async def purge_messages(event):
         await event.reply("You don't have the permission to delete messages")
         return
 
-    if not await can_delete_messages(message=event):
+    if not can_delete_messages(message=event):
         await event.reply("Can't seem to purge the message")
         return
 
@@ -70,7 +70,7 @@ async def delete_messages(event):
     me = await telethn.get_me()
     BOT_ID = me.id
 
-    if not await can_delete_messages(message=event)\
+    if not can_delete_messages(message=event)\
         and message\
             and not int(message.sender.id) == int(BOT_ID):
         if event.chat.admin_rights is None:

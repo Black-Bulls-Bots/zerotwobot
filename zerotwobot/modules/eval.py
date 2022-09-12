@@ -6,10 +6,11 @@ import textwrap
 import traceback
 from contextlib import redirect_stdout
 
-from zerotwobot import LOGGER, dispatcher
+from zerotwobot import LOGGER, application
 from zerotwobot.modules.helper_funcs.chat_status import dev_plus
-from telegram import ParseMode, Update
-from telegram.ext import CallbackContext, CommandHandler
+from telegram import Update
+from telegram.constants import ParseMode
+from telegram.ext import ContextTypes, CommandHandler
 
 namespaces = {}
 
@@ -34,14 +35,14 @@ def log_input(update):
     LOGGER.info(f"IN: {update.effective_message.text} (user={user}, chat={chat})")
 
 
-def send(msg, bot, update):
+async def send(msg, bot, update):
     if len(str(msg)) > 2000:
         with io.BytesIO(str.encode(msg)) as out_file:
             out_file.name = "output.txt"
-            bot.send_document(chat_id=update.effective_chat.id, document=out_file)
+            await bot.send_document(chat_id=update.effective_chat.id, document=out_file)
     else:
         LOGGER.info(f"OUT: '{msg}'")
-        bot.send_message(
+        await bot.send_message(
             chat_id=update.effective_chat.id,
             text=f"`{msg}`",
             parse_mode=ParseMode.MARKDOWN,
@@ -49,15 +50,15 @@ def send(msg, bot, update):
 
 
 @dev_plus
-def evaluate(update: Update, context: CallbackContext):
+async def evaluate(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
-    send(do(eval, bot, update), bot, update)
+    await send(await do(eval, bot, update), bot, update)
 
 
 @dev_plus
-def execute(update: Update, context: CallbackContext):
+async def execute(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
-    send(do(exec, bot, update), bot, update)
+    await send(await do(exec, bot, update), bot, update)
 
 
 def cleanup_code(code):
@@ -66,7 +67,7 @@ def cleanup_code(code):
     return code.strip("` \n")
 
 
-def do(func, bot, update):
+async def do(func, bot, update):
     log_input(update)
     content = update.message.text.split(" ", 1)[-1]
     body = cleanup_code(content)
@@ -80,7 +81,7 @@ def do(func, bot, update):
 
     stdout = io.StringIO()
 
-    to_compile = f'def func():\n{textwrap.indent(body, "  ")}'
+    to_compile = f'async def func():\n{textwrap.indent(body, "  ")}'
 
     try:
         exec(to_compile, env)
@@ -91,7 +92,7 @@ def do(func, bot, update):
 
     try:
         with redirect_stdout(stdout):
-            func_return = func()
+            func_return = await func()
     except Exception as e:
         value = stdout.getvalue()
         return f"{value}{traceback.format_exc()}"
@@ -113,21 +114,21 @@ def do(func, bot, update):
 
 
 @dev_plus
-def clear(update: Update, context: CallbackContext):
+async def clear(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
     log_input(update)
     global namespaces
     if update.message.chat_id in namespaces:
         del namespaces[update.message.chat_id]
-    send("Cleared locals.", bot, update)
+    await send("Cleared locals.", bot, update)
 
 
-EVAL_HANDLER = CommandHandler(("e", "ev", "eva", "eval"), evaluate, run_async=True)
-EXEC_HANDLER = CommandHandler(("x", "ex", "exe", "exec", "py"), execute, run_async=True)
-CLEAR_HANDLER = CommandHandler("clearlocals", clear, run_async=True)
+EVAL_HANDLER = CommandHandler(("e", "ev", "eva", "eval"), evaluate, block=False)
+EXEC_HANDLER = CommandHandler(("x", "ex", "exe", "exec", "py"), execute, block=False)
+CLEAR_HANDLER = CommandHandler("clearlocals", clear, block=False)
 
-dispatcher.add_handler(EVAL_HANDLER)
-dispatcher.add_handler(EXEC_HANDLER)
-dispatcher.add_handler(CLEAR_HANDLER)
+application.add_handler(EVAL_HANDLER)
+application.add_handler(EXEC_HANDLER)
+application.add_handler(CLEAR_HANDLER)
 
 __mod_name__ = "Eval Module"

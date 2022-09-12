@@ -2,10 +2,11 @@ import datetime
 from typing import List
 
 import requests
-from zerotwobot import TIME_API_KEY, dispatcher
+from zerotwobot import TIME_API_KEY, application
 from zerotwobot.modules.disable import DisableAbleCommandHandler
-from telegram import ParseMode, Update
-from telegram.ext import CallbackContext
+from telegram import Update
+from telegram.constants import ParseMode
+from telegram.ext import ContextTypes
 
 
 def generate_time(to_find: str, findtype: List[str]) -> str:
@@ -58,26 +59,26 @@ def generate_time(to_find: str, findtype: List[str]) -> str:
     return result
 
 
-def gettime(update: Update, context: CallbackContext):
+async def gettime(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
 
     try:
-        query = message.text.strip().split(" ", 1)[1]
+        query = await message.text.strip().split(" ", 1)[1]
     except:
-        message.reply_text("Provide a country name/abbreviation/timezone to find.")
+        await message.reply_text("Provide a country name/abbreviation/timezone to find.")
         return
-    send_message = message.reply_text(
+    send_message = await message.reply_text(
         f"Finding timezone info for <b>{query}</b>", parse_mode=ParseMode.HTML,
     )
 
-    query_timezone = query.lower()
+    query_timezone = await query.lower()
     if len(query_timezone) == 2:
         result = generate_time(query_timezone, ["countryCode"])
     else:
         result = generate_time(query_timezone, ["zoneName", "countryName"])
 
     if not result:
-        send_message.edit_text(
+        await send_message.edit_text(
             f"Timezone info not available for <b>{query}</b>\n"
             '<b>All Timezones:</b> <a href="https://en.wikipedia.org/wiki/List_of_tz_database_time_zones">List here</a>',
             parse_mode=ParseMode.HTML,
@@ -85,14 +86,14 @@ def gettime(update: Update, context: CallbackContext):
         )
         return
 
-    send_message.edit_text(
+    await send_message.edit_text(
         result, parse_mode=ParseMode.HTML, disable_web_page_preview=True,
     )
 
 
-TIME_HANDLER = DisableAbleCommandHandler("time", gettime, run_async=True)
+TIME_HANDLER = DisableAbleCommandHandler("time", gettime, block=False)
 
-dispatcher.add_handler(TIME_HANDLER)
+application.add_handler(TIME_HANDLER)
 
 __mod_name__ = "Time"
 __command_list__ = ["time"]

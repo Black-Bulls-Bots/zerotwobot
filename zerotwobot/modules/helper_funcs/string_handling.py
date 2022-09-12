@@ -7,7 +7,7 @@ import markdown2
 import emoji
 
 from telegram import MessageEntity
-from telegram.utils.helpers import escape_markdown
+from telegram.helpers import escape_markdown
 
 # NOTE: the url \ escape may cause double escapes
 # match * (bold) (don't escape if in url)
@@ -251,13 +251,12 @@ def escape_chars(text: str, to_escape: List[str]) -> str:
         new_text += x
     return new_text
 
-
-def extract_time(message, time_val):
+async def extract_time(message, time_val):
     if any(time_val.endswith(unit) for unit in ("m", "h", "d")):
         unit = time_val[-1]
         time_num = time_val[:-1]  # type: str
         if not time_num.isdigit():
-            message.reply_text("Invalid time amount specified.")
+            await message.reply_text("Invalid time amount specified.")
             return ""
 
         if unit == "m":
@@ -271,7 +270,7 @@ def extract_time(message, time_val):
             return ""
         return bantime
     else:
-        message.reply_text(
+        await message.reply_text(
             "Invalid time type specified. Expected m,h, or d, got: {}".format(
                 time_val[-1],
             ),

@@ -1,12 +1,11 @@
 import os
 import datetime
-from telegram.files.document import Document
 
 from telethon import events
 from telegram import Update
-from telegram.ext import CallbackContext, CommandHandler
+from telegram.ext import ContextTypes, CommandHandler
 
-from zerotwobot import LOGGER, telethn, dispatcher
+from zerotwobot import LOGGER, telethn, application
 from zerotwobot.modules.helper_funcs.chat_status import dev_plus
 
 DEBUG_MODE = False
@@ -14,7 +13,7 @@ DEBUG_MODE = False
 
 
 @dev_plus
-def debug(update: Update, context: CallbackContext):
+async def debug(update: Update, context: ContextTypes.DEFAULT_TYPE):
     global DEBUG_MODE
     args = update.effective_message.text.split(None, 1)
     message = update.effective_message
@@ -22,15 +21,15 @@ def debug(update: Update, context: CallbackContext):
     if len(args) > 1:
         if args[1] in ("yes", "on"):
             DEBUG_MODE = True
-            message.reply_text("Debug mode is now on.")
+            await message.reply_text("Debug mode is now on.")
         elif args[1] in ("no", "off"):
             DEBUG_MODE = False
-            message.reply_text("Debug mode is now off.")
+            await message.reply_text("Debug mode is now off.")
     else:
         if DEBUG_MODE:
-            message.reply_text("Debug mode is currently on.")
+            await message.reply_text("Debug mode is currently on.")
         else:
-            message.reply_text("Debug mode is currently off.")
+            await message.reply_text("Debug mode is currently off.")
 
 
 @telethn.on(events.NewMessage(pattern="[/!].*"))
@@ -55,30 +54,30 @@ support_chat = os.getenv("SUPPORT_CHAT")
 
 
 @dev_plus
-def logs(update: Update, context: CallbackContext):
+async def logs(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     with open("log.txt", "rb") as f:
-        context.bot.send_document(document=f, filename=f.name, chat_id=user.id)
+        await context.bot.send_document(document=f, filename=f.name, chat_id=user.id)
 
 @dev_plus
-def debug_log(update: Update, context: CallbackContext):
+async def debug_log(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     message = update.effective_message
     try:
         with open("updates.txt", "rb") as f:
-            context.bot.send_document(document=f, filename=f.name, chat_id=user.id)
+            await context.bot.send_document(document=f, filename=f.name, chat_id=user.id)
     except FileNotFoundError:
         LOGGER.warning("updates.txt not found, means you have deleted or turned on debug mode yet")
-        message.reply_text("Sorry sir, but 404")
+        await message.reply_text("Sorry sir, but 404")
 
 
-LOG_HANDLER = CommandHandler("logs", logs, run_async=True)
-SEND_DEBUG_HANDLER = CommandHandler("debuglog", debug_log, run_async=True)
-DEBUG_HANDLER = CommandHandler("debug", debug, run_async=True)
+LOG_HANDLER = CommandHandler("logs", logs, block=False)
+SEND_DEBUG_HANDLER = CommandHandler("debuglog", debug_log, block=False)
+DEBUG_HANDLER = CommandHandler("debug", debug, block=False)
 
-dispatcher.add_handler(DEBUG_HANDLER)
-dispatcher.add_handler(LOG_HANDLER)
-dispatcher.add_handler(SEND_DEBUG_HANDLER)
+application.add_handler(DEBUG_HANDLER)
+application.add_handler(LOG_HANDLER)
+application.add_handler(SEND_DEBUG_HANDLER)
 
 __mod_name__ = "Debug"
 __command_list__ = ["debug"]

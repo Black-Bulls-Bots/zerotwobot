@@ -1,12 +1,13 @@
 import json, time, os
 from io import BytesIO
 
-from telegram import ParseMode, Message, Update
+from telegram import Message, Update
+from telegram.constants import ParseMode
 from telegram.error import BadRequest
-from telegram.ext import CommandHandler, CallbackContext
+from telegram.ext import CommandHandler, ContextTypes
 
 import zerotwobot.modules.sql.notes_sql as sql
-from zerotwobot import dispatcher, LOGGER, OWNER_ID, JOIN_LOGGER, SUPPORT_CHAT
+from zerotwobot import application, LOGGER, OWNER_ID, JOIN_LOGGER, SUPPORT_CHAT
 from zerotwobot.__main__ import DATA_IMPORT
 from zerotwobot.modules.helper_funcs.chat_status import user_admin
 from zerotwobot.modules.helper_funcs.alternate import typing_action
@@ -27,20 +28,20 @@ from zerotwobot.modules.connection import connected
 
 @user_admin
 @typing_action
-def import_data(update: Update, context: CallbackContext):
+async def import_data(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.effective_message
     chat = update.effective_chat
     user = update.effective_user
     # TODO: allow uploading doc with command, not just as reply
     # only work with a doc
 
-    conn = connected(context.bot, update, chat, user.id, need_admin=True)
+    conn = await connected(context.bot, update, chat, user.id, need_admin=True)
     if conn:
-        chat = dispatcher.bot.getChat(conn)
-        chat_name = dispatcher.bot.getChat(conn).title
+        chat = await application.bot.getChat(conn)
+        chat_name = await application.bot.getChat(conn).title
     else:
         if update.effective_message.chat.type == "private":
-            update.effective_message.reply_text("This is a group only command!")
+            await update.effective_message.reply_text("This is a group only command!")
             return ""
 
         chat = update.effective_chat
@@ -48,21 +49,21 @@ def import_data(update: Update, context: CallbackContext):
 
     if msg.reply_to_message and msg.reply_to_message.document:
         try:
-            file_info = context.bot.get_file(msg.reply_to_message.document.file_id)
+            file_info = await context.bot.get_file(msg.reply_to_message.document.file_id)
         except BadRequest:
-            msg.reply_text(
+            await msg.reply_text(
                 "Try downloading and uploading the file yourself again, This one seem broken to me!",
             )
             return
 
         with BytesIO() as file:
-            file_info.download(out=file)
+            await file_info.download(out=file)
             file.seek(0)
             data = json.load(file)
 
         # only import one group
         if len(data) > 1 and str(chat.id) not in data:
-            msg.reply_text(
+            await msg.reply_text(
                 "There are more than one group in this file and the chat.id is not same! How am i supposed to import it?",
             )
             return
@@ -95,9 +96,9 @@ def import_data(update: Update, context: CallbackContext):
 
         try:
             for mod in DATA_IMPORT:
-                mod.__import_data__(str(chat.id), data)
+                await mod.__import_data__(str(chat.id), data)
         except Exception:
-            msg.reply_text(
+            await msg.reply_text(
                 f"An error occurred while recovering your data. The process failed. If you experience a problem with this, please take it to @{SUPPORT_CHAT}",
             )
 
@@ -115,26 +116,28 @@ def import_data(update: Update, context: CallbackContext):
             text = "Backup fully restored on *{}*.".format(chat_name)
         else:
             text = "Backup fully restored"
-        msg.reply_text(text, parse_mode="markdown")
-
+        await msg.reply_text(text, parse_mode="markdown")
+    else:
+        await msg.reply_text("You have to reply to exported backup document.")
+        return
 
 
 @user_admin
-def export_data(update: Update, context: CallbackContext):
+async def export_data(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_data = context.chat_data
     msg = update.effective_message  # type: Optional[Message]
     user = update.effective_user  # type: Optional[User]
     chat_id = update.effective_chat.id
     chat = update.effective_chat
     current_chat_id = update.effective_chat.id
-    conn = connected(context.bot, update, chat, user.id, need_admin=True)
+    conn = await connected(context.bot, update, chat, user.id, need_admin=True)
     if conn:
-        chat = dispatcher.bot.getChat(conn)
+        chat = await application.bot.getChat(conn)
         chat_id = conn
-        # chat_name = dispatcher.bot.getChat(conn).title
+        # chat_name = await application.bot.getChat(conn).title
     else:
         if update.effective_message.chat.type == "private":
-            update.effective_message.reply_text("This is a group only command!")
+            await update.effective_message.reply_text("This is a group only command!")
             return ""
         chat = update.effective_chat
         chat_id = update.effective_chat.id
@@ -148,7 +151,7 @@ def export_data(update: Update, context: CallbackContext):
             timeformatt = time.strftime(
                 "%H:%M:%S %d/%m/%Y", time.localtime(checkchat.get("value")),
             )
-            update.effective_message.reply_text(
+            await update.effective_message.reply_text(
                 "You can only backup once a day!\nYou can backup again in about `{}`".format(
                     timeformatt,
                 ),
@@ -327,10 +330,10 @@ def export_data(update: Update, context: CallbackContext):
     baccinfo = json.dumps(backup, indent=4)
     with open("zerotwobot{}.backup".format(chat_id), "w") as f:
         f.write(str(baccinfo))
-    context.bot.sendChatAction(current_chat_id, "upload_document")
+    await context.bot.sendChatAction(current_chat_id, "upload_document")
     tgl = time.strftime("%H:%M:%S - %d/%m/%Y", time.localtime(time.time()))
     try:
-        context.bot.sendMessage(
+        await context.bot.sendMessage(
             JOIN_LOGGER,
             "*Successfully imported backup:*\nChat: `{}`\nChat ID: `{}`\nOn: `{}`".format(
                 chat.title, chat_id, tgl,
@@ -339,13 +342,12 @@ def export_data(update: Update, context: CallbackContext):
         )
     except BadRequest:
         pass
-    context.bot.sendDocument(
+    await context.bot.sendDocument(
         current_chat_id,
         document=open("zerotwobot{}.backup".format(chat_id), "rb"),
         caption="*Successfully Exported backup:*\nChat: `{}`\nChat ID: `{}`\nOn: `{}`\n\nNote: This `zerotwobot-Backup` was specially made for notes.".format(
             chat.title, chat_id, tgl,
         ),
-        timeout=360,
         reply_to_message_id=msg.message_id,
         parse_mode=ParseMode.MARKDOWN,
     )
@@ -379,8 +381,8 @@ __help__ = """
 
 """
 
-IMPORT_HANDLER = CommandHandler("import", import_data, run_async=True)
-EXPORT_HANDLER = CommandHandler("export", export_data, pass_chat_data=True, run_async=True)
+IMPORT_HANDLER = CommandHandler("import", import_data, block=False)
+EXPORT_HANDLER = CommandHandler("export", export_data, block=False)
 
-dispatcher.add_handler(IMPORT_HANDLER)
-dispatcher.add_handler(EXPORT_HANDLER)
+application.add_handler(IMPORT_HANDLER)
+application.add_handler(EXPORT_HANDLER)

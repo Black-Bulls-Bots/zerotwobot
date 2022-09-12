@@ -2,10 +2,11 @@ import time
 from typing import List
 
 import requests
-from telegram import ParseMode, Update
-from telegram.ext import CallbackContext
+from telegram import Update
+from telegram.constants import ParseMode
+from telegram.ext import ContextTypes
 
-from zerotwobot import StartTime, dispatcher
+from zerotwobot import StartTime, application
 from zerotwobot.modules.helper_funcs.chat_status import sudo_plus
 from zerotwobot.modules.disable import DisableAbleCommandHandler
 
@@ -70,16 +71,16 @@ def ping_func(to_ping: List[str]) -> List[str]:
 
 
 @sudo_plus
-def ping(update: Update, context: CallbackContext):
+async def ping(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.effective_message
 
     start_time = time.time()
-    message = msg.reply_text("Pinging...")
+    message = await msg.reply_text("Pinging...")
     end_time = time.time()
     telegram_ping = str(round((end_time - start_time) * 1000, 3)) + " ms"
     uptime = get_readable_time((time.time() - StartTime))
 
-    message.edit_text(
+    await message.edit_text(
         "PONG!!\n"
         "<b>Time Taken:</b> <code>{}</code>\n"
         "<b>Service uptime:</b> <code>{}</code>".format(telegram_ping, uptime),
@@ -89,7 +90,7 @@ def ping(update: Update, context: CallbackContext):
 
 
 @sudo_plus
-def pingall(update: Update, context: CallbackContext):
+async def pingall(update: Update, context: ContextTypes.DEFAULT_TYPE):
     to_ping = ["Kaizoku", "Kayo", "Telegram", "Jikan"]
     pinged_list = ping_func(to_ping)
     pinged_list.insert(2, "")
@@ -99,16 +100,16 @@ def pingall(update: Update, context: CallbackContext):
     reply_msg += "\n".join(pinged_list)
     reply_msg += "\n<b>Service uptime:</b> <code>{}</code>".format(uptime)
 
-    update.effective_message.reply_text(
+    await update.effective_message.reply_text(
         reply_msg, parse_mode=ParseMode.HTML, disable_web_page_preview=True,
     )
 
 
-PING_HANDLER = DisableAbleCommandHandler("ping", ping, run_async=True)
-PINGALL_HANDLER = DisableAbleCommandHandler("pingall", pingall, run_async=True)
+PING_HANDLER = DisableAbleCommandHandler("ping", ping, block=False)
+PINGALL_HANDLER = DisableAbleCommandHandler("pingall", pingall, block=False)
 
-dispatcher.add_handler(PING_HANDLER)
-dispatcher.add_handler(PINGALL_HANDLER)
+application.add_handler(PING_HANDLER)
+application.add_handler(PINGALL_HANDLER)
 
 __command_list__ = ["ping", "pingall"]
 __handlers__ = [PING_HANDLER, PINGALL_HANDLER]

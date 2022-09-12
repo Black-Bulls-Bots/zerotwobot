@@ -2,8 +2,11 @@ import zerotwobot.modules.sql.blacklistusers_sql as sql
 from zerotwobot import ALLOW_EXCL
 from zerotwobot import DEV_USERS, DRAGONS, DEMONS, TIGERS, WOLVES
 
+import re
+from typing import Optional, Tuple, List, Dict, Union
 from telegram import Update
-from telegram.ext import CommandHandler, MessageHandler, RegexHandler, Filters
+from telegram.ext import CommandHandler, MessageHandler
+from telegram.ext import filters as filters_module
 from pyrate_limiter import (
     BucketFullException,
     Duration,
@@ -59,15 +62,20 @@ MessageHandlerChecker = AntiSpam()
 
 
 class CustomCommandHandler(CommandHandler):
-    def __init__(self, command, callback, admin_ok=False, allow_edit=False, **kwargs):
+    def __init__(self, command, callback, **kwargs):
         super().__init__(command, callback, **kwargs)
 
-        if allow_edit is False:
-            self.filters &= ~(
-                Filters.update.edited_message | Filters.update.edited_channel_post
-            )
+        if isinstance(command, str):
+            commands = frozenset({command.lower()})
+        else:
+            commands = frozenset(x.lower() for x in command)
+        for comm in commands:
+            if not re.match(r"^[\da-z_]{1,32}$", comm):
+                raise ValueError(f"Command `{comm}` is not a valid bot command")
+        self.commands = commands
 
-    def check_update(self, update):
+
+    def check_update(self, update) -> Optional[Union[bool, Tuple[List[str], Optional[Union[bool, Dict]]]]]:
         if isinstance(update, Update) and update.effective_message:
             message = update.effective_message
 
@@ -81,57 +89,66 @@ class CustomCommandHandler(CommandHandler):
                     return False
 
             if message.text and len(message.text) > 1:
-                fst_word = message.text.split(None, 1)[0]
+                fst_word =  message.text.split(None, 1)[0]
                 if len(fst_word) > 1 and any(
                     fst_word.startswith(start) for start in CMD_STARTERS
                 ):
 
-                    args = message.text.split()[1:]
-                    command = fst_word[1:].split("@")
-                    command.append(message.bot.username)
+                    args =  message.text.split()[1:]
+                    command_parts = fst_word[1:].split("@")
+                    command_parts.append(message.get_bot().username)
                     if user_id == 1087968824:
                         user_id = update.effective_chat.id
                     if not (
-                        command[0].lower() in self.command
-                        and command[1].lower() == message.bot.username.lower()
+                        command_parts[0].lower() in self.commands
+                        and command_parts[1].lower() == message.get_bot().username.lower()
                     ):
                         return None
                     if SpamChecker.check_user(user_id):
                         return None
-                    filter_result = self.filters(update)
+                    filter_result = self.filters.check_update(update)
                     if filter_result:
                         return args, filter_result
-                    else:
-                        return False
+                    return False
+        return None
 
-    def handle_update(self, update, dispatcher, check_result, context=None):
-        if context:
-            self.collect_additional_context(context, update, dispatcher, check_result)
-            return self.callback(update, context)
-        else:
-            optional_args = self.collect_optional_args(dispatcher, update, check_result)
-            return self.callback(dispatcher.bot, update, **optional_args)
+    def handle_update(self, update, application, check_result, context=None):
+            if context:
+                self.collect_additional_context(context, update, application, check_result)
+                return self.callback(update, context)
+            else:
+                optional_args = self.collect_optional_args(application, update, check_result)
+                return self.callback(application.bot, update, **optional_args)
 
-    def collect_additional_context(self, context, update, dispatcher, check_result):
-        if isinstance(check_result, bool):
-            context.args = update.effective_message.text.split()[1:]
-        else:
+    def collect_additional_context(
+        self,
+        context,
+        update,
+        application,
+        check_result: Optional[Union[bool, Tuple[List[str], Optional[bool]]]],
+    ) -> None:
+        if isinstance(check_result, tuple):
             context.args = check_result[0]
             if isinstance(check_result[1], dict):
                 context.update(check_result[1])
+                if isinstance(check_result[1], dict):
+                    context.update(check_result[1])
 
-
-class CustomRegexHandler(RegexHandler):
-    def __init__(self, pattern, callback, friendly="", **kwargs):
-        super().__init__(pattern, callback, **kwargs)
 
 
 class CustomMessageHandler(MessageHandler):
-    def __init__(self, filters, callback, friendly="", allow_edit=False, **kwargs):
-        super().__init__(filters, callback, **kwargs)
+    def __init__(
+        self, filters, 
+        callback, 
+        block, 
+        friendly="", 
+        allow_edit=False, 
+        **kwargs
+    ):
+        super().__init__(filters, callback, block=block, **kwargs)
         if allow_edit is False:
             self.filters &= ~(
-                Filters.update.edited_message | Filters.update.edited_channel_post
+                filters_module.UpdateType.EDITED_MESSAGE | filters_module.UpdateType.EDITED_CHANNEL_POST
             )
 
         def check_update(self, update):

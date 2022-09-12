@@ -5,7 +5,8 @@ from html import escape
 import ffmpeg
 
 from zerotwobot import NO_LOAD
-from telegram import MAX_MESSAGE_LENGTH, Bot, InlineKeyboardButton, ParseMode
+from telegram import Bot, InlineKeyboardButton
+from telegram.constants import ParseMode, MessageLimit
 from telegram.error import TelegramError
 
 
@@ -21,14 +22,14 @@ class EqInlineKeyboardButton(InlineKeyboardButton):
 
 
 def split_message(msg: str) -> List[str]:
-    if len(msg) < MAX_MESSAGE_LENGTH:
+    if len(msg) < MessageLimit.TEXT_LENGTH:
         return [msg]
 
     lines = msg.splitlines(True)
     small_msg = ""
     result = []
     for line in lines:
-        if len(small_msg) + len(line) < MAX_MESSAGE_LENGTH:
+        if len(small_msg) + len(line) < MessageLimit.TEXT_LENGTH:
             small_msg += line
         else:
             result.append(small_msg)
@@ -75,7 +76,7 @@ def paginate_modules(page_n: int, module_dict: Dict, prefix, chat=None) -> List:
     return pairs
 
 
-def send_to_list(
+async def send_to_list(
     bot: Bot, send_to: list, message: str, markdown=False, html=False,
 ) -> None:
     if html and markdown:
@@ -83,11 +84,11 @@ def send_to_list(
     for user_id in set(send_to):
         try:
             if markdown:
-                bot.send_message(user_id, message, parse_mode=ParseMode.MARKDOWN)
+                await bot.send_message(user_id, message, parse_mode=ParseMode.MARKDOWN)
             elif html:
-                bot.send_message(user_id, message, parse_mode=ParseMode.HTML)
+                await bot.send_message(user_id, message, parse_mode=ParseMode.HTML)
             else:
-                bot.send_message(user_id, message)
+                await bot.send_message(user_id, message)
         except TelegramError:
             pass  # ignore users who fail
 
