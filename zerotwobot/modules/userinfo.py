@@ -1,37 +1,27 @@
+import datetime
 import html
-import re
 import os
-import requests
+import re
 
-from telethon.tl.functions.channels import GetFullChannelRequest
-from telethon.tl.types import ChannelParticipantsAdmins, updates
-from telethon import events
-
-from telegram import Update, MessageEntity
-from telegram.constants import ParseMode
-from telegram.ext import ContextTypes, CommandHandler
+import humanize
+from telegram import ChatMemberAdministrator, Update
+from telegram.constants import ChatID, ParseMode, ChatType
 from telegram.error import BadRequest
-from telegram.helpers import escape_markdown, mention_html
-
-from zerotwobot import (
-    DEV_USERS,
-    OWNER_ID,
-    DRAGONS,
-    DEMONS,
-    TIGERS,
-    WOLVES,
-    INFOPIC,
-    application,
-)
+from telegram.ext import CommandHandler, ContextTypes
+from telegram.helpers import mention_html
+from telethon import events
+from telethon.tl.functions.channels import GetFullChannelRequest
+from telethon.tl.types import ChannelParticipantsAdmins
+from zerotwobot import (DEMONS, DEV_USERS, DRAGONS, INFOPIC, LOGGER, OWNER_ID,
+                        TIGERS, WOLVES, application)
+from zerotwobot import telethn as ZerotwoTelethonClient
 from zerotwobot.__main__ import STATS, TOKEN, USER_INFO
 from zerotwobot.modules.disable import DisableAbleCommandHandler
-from zerotwobot.modules.sql.global_bans_sql import is_user_gbanned
-from zerotwobot.modules.sql.afk_sql import is_afk, check_afk_status
-from zerotwobot.modules.sql.users_sql import get_user_num_chats
 from zerotwobot.modules.helper_funcs.chat_status import sudo_plus
 from zerotwobot.modules.helper_funcs.extraction import extract_user
-from zerotwobot import telethn as ZerotwoTelethonClient
-
+from zerotwobot.modules.sql.afk_sql import check_afk_status, is_afk
+from zerotwobot.modules.sql.approve_sql import is_approved
+from zerotwobot.modules.users import get_user_id
 
 
 async def get_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -128,139 +118,198 @@ async def gifid(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.effective_message.reply_text("Please reply to a gif to get its ID.")
 
-
-
 async def info(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    bot, args = context.bot, context.args
-    message = update.effective_message
     chat = update.effective_chat
-    user_id = await extract_user(update.effective_message, args)
+    message = update.effective_message
+    args = context.args
+    bot = context.bot
 
-    if user_id:
-        user = await bot.get_chat(user_id)
+    head = ""
+    premium = False
 
-    elif not message.reply_to_message and not args:
-        user = message.from_user
+    reply = await message.reply_text("<code>Getting Information...</code>", parse_mode=ParseMode.HTML)
 
-    elif not message.reply_to_message and (
-        not args
-        or (
-            len(args) >= 1
-            and not args[0].startswith("@")
-            and not args[0].isdigit()
-            and not message.parse_entities([MessageEntity.TEXT_MENTION])
-        )
-    ):
-        await message.reply_text("I can't extract a user from this.")
-        return
+    if len(args) >= 1 and args[0][0] == "@":
+        user_name = args[0]
+        user_id = await get_user_id(user_name)
 
-    else:
-        return
-
-    rep = await message.reply_text("<code>Appraising...</code>", parse_mode=ParseMode.HTML)
-
-    text = (
-        f"╒═══「<b> Appraisal results:</b> 」\n"
-        f"ID: <code>{user.id}</code>\n"
-        f"First Name: {html.escape(user.first_name)}"
-    )
-
-    if user.last_name:
-        text += f"\nLast Name: {html.escape(user.last_name)}"
-
-    if user.username:
-        text += f"\nUsername: @{html.escape(user.username)}"
-
-    text += f"\nPermalink: {mention_html(user.id, 'link')}"
-
-    if chat.type != "private" and user_id != bot.id:
-        _stext = "\nPresence: <code>{}</code>"
-
-        afk_st = is_afk(user.id)
-        if afk_st:
-            text += _stext.format("AFK")
+        if not user_id:
+            try:
+                chat_obj = await bot.get_chat(user_name)
+            except BadRequest:
+                if BadRequest.message == "Chat not found":
+                    await reply.edit_text("I can't get information about this user/channel/group.")
+                return
+            userid = chat_obj.id
         else:
-            status = status = await bot.get_chat_member(chat.id, user.id).status
-            if status:
-                if status in {"left", "kicked"}:
-                    text += _stext.format("Not here")
-                elif status == "member":
-                    text += _stext.format("Detected")
-                elif status == "administrator":
-                    text += _stext.format("Admin")
-                elif status == "creator":
-                    text += _stext.format("Owner")
-                elif status == "restricted":
-                    text += _stext.format("Restricted")
+            userid = user_id
+    elif len(args) >= 1 and args[0].lstrip("-").isdigit():
+        userid = int(args[0])
+    elif message.reply_to_message:
+        if message.reply_to_message.sender_chat:
+            userid = message.reply_to_message.sender_chat.id
+        elif message.reply_to_message.from_user:
+            if message.reply_to_message.from_user.id == ChatID.FAKE_CHANNEL:
+                userid = message.reply_to_message.chat.id
+            else:
+                userid = message.reply_to_message.from_user.id
+                premium = message.reply_to_message.from_user.is_premium
+    elif not message.reply_to_message and not args:
+        if message.from_user.id == ChatID.FAKE_CHANNEL:
+            userid = message.sender_chat.id
+        else:
+            userid = message.from_user.id
+            premium = message.from_user.is_premium
+
     try:
-        user_member = await chat.get_member(user.id)
-        if user_member.status in {"administrator", "creator"}:
-            custom_title = user_member.custom_title
-            text += f"\n\nTitle:\n<b>{custom_title}</b>"
+        chat_obj = await bot.get_chat(userid)
     except BadRequest:
-        pass
+        await reply.edit_text("I can't get information about this user/channel/group.")
+        return
+    
+    if chat_obj.type == ChatType.PRIVATE:
+        if not chat_obj.username:
+            head = f"╒═══「<b> User Information:</b> 」\n"
+            await reply.edit_text("Found User, getting information...")
+        elif chat_obj.username.endswith("bot"):
+            head = f"╒═══「<b> Bot Information:</b> 」\n"
+            await reply.edit_text("Found Bot, getting information...")
+        else:
+            head = f"╒═══「<b> User Information:</b> 」\n"
+            await reply.edit_text("Found User, getting information...")
+        head += f"<b>\nID:</b> <code>{chat_obj.id}</code>"
+        head += f"<b>\nFirst Name:</b> {chat_obj.first_name}"
+        if chat_obj.last_name:
+            head += f"<b>\nLast Name:</b> {chat_obj.last_name}"
+        if chat_obj.username:
+            head += f"<b>\nUsername:</b> @{chat_obj.username}"
+        head += f"\nPermalink: {mention_html(chat_obj.id, 'link')}"
+        if not chat_obj.username.endswith("bot"):
+            head += f"<b>\nPremium User:</b> {premium}"
+        if chat_obj.bio:
+            head += f"<b>\n\nBio:</b> {chat_obj.bio}"
+        
+        if chat.type != ChatType.PRIVATE:
+            if chat_obj.id != bot.id:
+                if is_afk(chat_obj.id):
+                    afk_st = check_afk_status(chat_obj.id)
+                    time = humanize.naturaldate(datetime.now() - afk_st.time)
 
-    disaster_level_present = False
+                    if not afk_st.reason:
+                        head += f"<b>\n\nAFK:</b> This user is away from keyboard since {time}"
+                    else:
+                        head += f"<b>\n\nAFK:</b> This user is away from keyboard since {time}, \nReason: {afk_st.reason}"
+            
+            chat_member = await chat.get_member(chat_obj.id)
+            if isinstance(chat_member, ChatMemberAdministrator):
+                head += f"<b>\nPresence:</b> {chat_member.status}"
+                if chat_member.custom_title:
+                    head += f"<b>\nAdmin Title:</b> {chat_member.custom_title}"
+            else:
+                head += f"<b>\nPresence:</b> {chat_member.status}"
 
-    if user.id == OWNER_ID:
-        text += "\n\nThe Disaster level of this person is 'God'."
-        disaster_level_present = True
-    elif user.id in DEV_USERS:
-        text += "\n\nThis user is member of 'Black Bulls'."
-        disaster_level_present = True
-    elif user.id in DRAGONS:
-        text += "\n\nThe Disaster level of this person is 'Dragon'."
-        disaster_level_present = True
-    elif user.id in DEMONS:
-        text += "\n\nThe Disaster level of this person is 'Demon'."
-        disaster_level_present = True
-    elif user.id in TIGERS:
-        text += "\n\nThe Disaster level of this person is 'Tiger'."
-        disaster_level_present = True
-    elif user.id in WOLVES:
-        text += "\n\nThe Disaster level of this person is 'Wolf'."
-        disaster_level_present = True
+            if is_approved(chat.id, chat_obj.id):
+                head += f"<b>\nApproved:</b> This user is approved in this chat."
+        
+        disaster_level_present = False
 
-    if disaster_level_present:
-        text += ' [<a href="https://t.me/blackbull_bots/49">?</a>]'.format(
-            bot.username,
-        )
+        if chat_obj.id == OWNER_ID:
+            head += "\n\nThe Disaster level of this person is 'God'."
+            disaster_level_present = True
+        elif chat_obj.id in DEV_USERS:
+            head += "\n\nThis user is member of 'Black Bulls'."
+            disaster_level_present = True
+        elif chat_obj.id in DRAGONS:
+            head += "\n\nThe Disaster level of this person is 'Dragon'."
+            disaster_level_present = True
+        elif chat_obj.id in DEMONS:
+            head += "\n\nThe Disaster level of this person is 'Demon'."
+            disaster_level_present = True
+        elif chat_obj.id in TIGERS:
+            head += "\n\nThe Disaster level of this person is 'Tiger'."
+            disaster_level_present = True
+        elif chat_obj.id in WOLVES:
+            head += "\n\nThe Disaster level of this person is 'Wolf'."
+            disaster_level_present = True
+
+        if disaster_level_present:
+            head += ' [<a href="https://t.me/blackbull_bots/49">?</a>]'.format(
+                bot.username,
+            )
 
 
-    for mod in USER_INFO:
-        try:
-            mod_info = mod.__user_info__(user.id).strip()
-        except TypeError:
-            mod_info = mod.__user_info__(user.id, chat.id).strip()
-        if mod_info:
-            text += "\n\n" + mod_info
+                
+        for mod in USER_INFO:
+            try:
+                mod_info = mod.__user_info__(chat_obj.id).strip()
+            except TypeError:
+                mod_info = mod.__user_info__(chat_obj.id, chat.id).strip()
 
+            head += "\n\n" + mod_info if mod_info else ""
+            
+    if chat_obj.type == ChatType.SENDER:
+        head = f"╒═══「<b>Sender Chat Information:</b> 」\n"
+        await reply.edit_text("Found Sender Chat, getting information...")
+        head += f"<b>\nID:</b> <code>{chat_obj.id}</code>"
+        if chat_obj.title:
+            head += f"<b>\nTitle:</b> {chat_obj.title}"
+        if chat_obj.username:
+            head += f"<b>\nUsername:</b> @{chat_obj.username}"
+        head += f"\nPermalink: {mention_html(chat_obj.id, 'link')}"
+        if chat_obj.description:
+            head += f"<b>\n\nDescription:</b> {chat_obj.description}"
+
+    elif chat_obj.type == ChatType.CHANNEL:
+        head = f"╒═══「<b> Channel Information:</b> 」\n"
+        await reply.edit_text("Found Channel, getting information...")
+        head += f"<b>\nID:</b> <code>{chat_obj.id}</code>"
+        if chat_obj.title:
+            head += f"<b>\nTitle:</b> {chat_obj.title}"
+        if chat_obj.username:
+            head += f"<b>\nUsername:</b> @{chat_obj.username}"
+        head += f"\nPermalink: {mention_html(chat_obj.id, 'link')}"
+        if chat_obj.description:
+            head += f"<b>\n\nDescription:</b> {chat_obj.description}"
+        if chat_obj.linked_chat_id:
+            head += f"<b>\nLinked Chat ID:</b> <code>{chat_obj.linked_chat_id}</code>"
+
+    elif chat_obj.type in [ChatType.GROUP, ChatType.SUPERGROUP]:
+        head = f"╒═══「<b> Group Information:</b> 」\n"
+        await reply.edit_text("Found Group, getting information...")
+        head += f"<b>\nID:</b> <code>{chat_obj.id}</code>"
+        if chat_obj.title:
+            head += f"<b>\nTitle:</b> {chat_obj.title}"
+        if chat_obj.username:
+            head += f"<b>\nUsername:</b> @{chat_obj.username}"
+        head += f"\nPermalink: {mention_html(chat_obj.id, 'link')}"
+        if chat_obj.description:
+            head += f"<b>\n\nDescription:</b> {chat_obj.description}"
+    
     if INFOPIC:
         try:
-            profile = await context.bot.get_user_profile_photos(user.id).photos[0][-1]
-            _file = await bot.get_file(profile["file_id"])
-            _file.download(f"{user.id}.png")
+            if chat_obj.photo:
+                _file = await chat_obj.photo.get_big_file()
+                # _file = await bot.get_file(file_id)
+                await _file.download(f"{chat_obj.id}.png")
 
-            await message.reply_photo(
-                photo=open(f"{user.id}.png", "rb"),
-                caption=(text),
-                parse_mode=ParseMode.HTML,
+                await message.reply_photo(
+                    photo=open(f"{chat_obj.id}.png", "rb"),
+                    caption=(head),
+                    parse_mode=ParseMode.HTML,
+                )
+                await reply.delete()
+                os.remove(f"{chat_obj.id}.png")
+            else:
+                await reply.edit_text(
+                head, parse_mode=ParseMode.HTML, disable_web_page_preview=True,
             )
 
-            os.remove(f"{user.id}.png")
-        # Incase user don't have profile pic, send normal text
-        except IndexError:
-            await message.reply_text(
-                text, parse_mode=ParseMode.HTML, disable_web_page_preview=True,
+            
+        except:
+            await reply.edit_text(
+                head, parse_mode=ParseMode.HTML, disable_web_page_preview=True,
             )
-
-    else:
-        await message.reply_text(
-            text, parse_mode=ParseMode.HTML, disable_web_page_preview=True,
-        )
-
-    rep.delete()
-
+    
 
 
 

@@ -1,5 +1,6 @@
 import asyncio
 from io import BytesIO
+from typing import Union
 
 from telegram import Update, ChatMemberAdministrator
 from telegram.constants import ParseMode
@@ -22,7 +23,7 @@ CHAT_GROUP = 5
 DEV_AND_MORE = DEV_USERS.append(int(OWNER_ID))
 
 
-async def get_user_id(username):
+async def get_user_id(username: str) -> Union[int, None]:
     # ensure valid userid
     if len(username) <= 5:
         return None
