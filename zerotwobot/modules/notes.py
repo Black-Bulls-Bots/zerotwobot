@@ -232,7 +232,7 @@ async def cmd_get(update: Update, context: ContextTypes.DEFAULT_TYPE):
 @connection_status
 async def hash_get(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message.text
-    fst_word = await message.split()[0]
+    fst_word = message.split()[0]
     no_hash = fst_word[1:].lower()
     await get(update, context, no_hash, show_none=False)
 

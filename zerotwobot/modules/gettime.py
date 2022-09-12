@@ -63,7 +63,7 @@ async def gettime(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
 
     try:
-        query = await message.text.strip().split(" ", 1)[1]
+        query = message.text.strip().split(" ", 1)[1]
     except:
         await message.reply_text("Provide a country name/abbreviation/timezone to find.")
         return
