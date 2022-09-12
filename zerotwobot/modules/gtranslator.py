@@ -64,7 +64,7 @@ async def totranslate(update: Update, context: ContextTypes.DEFAULT_TYPE):
             detection = trl.detect(text)
             trans_str = trl.translate(text, lang_tgt=dest_lang)
             return await message.reply_text(
-                f"Translated from `{detection.lang}` to `{dest_lang}`:\n`{trans_str.text}`",
+                f"Translated from `{detection[0]}` to `{dest_lang}`:\n`{trans_str.text}`",
                 parse_mode=ParseMode.MARKDOWN,
             )
         else:
