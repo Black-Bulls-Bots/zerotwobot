@@ -453,8 +453,13 @@ async def kang(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def delsticker(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
-    sticker = update.effective_message.reply_to_message.sticker
     check = "_by_" + context.bot.username
+
+    if not update.effective_message.reply_to_message or not context.args:
+        await update.effective_message.reply_text("Sorry but you have to reply to a sticker to delete.")
+        return
+
+    sticker = update.effective_message.reply_to_message.sticker
 
     if sticker.set_name.endswith(check):  #check if the sticker set made by this bot
         try:
