@@ -6,6 +6,7 @@ import time
 import asyncio
 import telegram.ext as tg
 from telegram.ext import Application
+from telegram.error import BadRequest, Forbidden
 from telegram import __version__ as ptb_version
 from telegram import __bot_api_version__
 from telethon import TelegramClient
@@ -184,7 +185,17 @@ DEV_USERS.add(OWNER_ID)
 
 telethn = TelegramClient("zero-two", API_ID, API_HASH)
 
-application = Application.builder().token(TOKEN).build()
+async def post_init(application: Application):
+    try:
+        await application.bot.sendMessage(-1001765891293, "Hey developer's I'm Now online")
+    except Forbidden:
+        LOGGER.warning(
+            "Bot isn't able to send message to support_chat, go and check!",
+        )
+    except BadRequest as e:
+        LOGGER.warning(e.message)
+
+application = Application.builder().token(TOKEN).post_init(post_init).build()
 asyncio.get_event_loop().run_until_complete(application.bot.initialize())
 
 DRAGONS = list(DRAGONS) + list(DEV_USERS)

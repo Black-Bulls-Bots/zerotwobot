@@ -671,16 +671,6 @@ async def migrate_chats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     LOGGER.info("Successfully migrated!")
     raise ApplicationHandlerStop
 
-# async def start_function():
-#     if SUPPORT_CHAT is not None and isinstance(SUPPORT_CHAT, str):
-#         try:
-#             await application.bot.send_message(f"{SUPPORT_CHAT}", "Hey developer's I'm Now online")
-#         except Forbidden:
-#             LOGGER.warning(
-#                 "Bot isn't able to send message to support_chat, go and check!",
-#             )
-#         except BadRequest as e:
-#             LOGGER.warning(e.message)
 
 def main():
 
