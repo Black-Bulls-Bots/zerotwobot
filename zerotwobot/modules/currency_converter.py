@@ -1,5 +1,5 @@
-import requests
-from zerotwobot import CASH_API_KEY, application
+import httpx
+from zerotwobot import  application
 from telegram import Update
 from telegram.constants import ParseMode
 from telegram.ext import ContextTypes, CommandHandler
@@ -10,34 +10,27 @@ async def convert(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if len(args) == 4:
         try:
-            orig_cur_amount = float(args[1])
+            orig_cur_amount = int(args[1])
 
         except ValueError:
             await update.effective_message.reply_text("Invalid Amount Of Currency")
             return
 
-        orig_cur = args[2].upper()
+        orig_cur = args[2].lower()
+        new_cur = args[3].lower()
 
-        new_cur = args[3].upper()
+        request_url = (f"https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/{orig_cur}.json")
+        async with httpx.AsyncClient() as client:
+            r = await client.get(request_url)
+        data = r.json()
 
-        request_url = (
-            f"https://www.alphavantage.co/query"
-            f"?function=CURRENCY_EXCHANGE_RATE"
-            f"&from_currency={orig_cur}"
-            f"&to_currency={new_cur}"
-            f"&apikey={CASH_API_KEY}"
-        )
-        response = requests.get(request_url).json()
-        try:
-            current_rate = float(
-                response["Realtime Currency Exchange Rate"]["5. Exchange Rate"],
-            )
-        except KeyError:
-            await update.effective_message.reply_text("Currency Not Supported.")
-            return
+        for curr_name in data[orig_cur]:
+            if new_cur == curr_name:
+                current_rate = data[orig_cur][curr_name]
+
         new_cur_amount = round(orig_cur_amount * current_rate, 5)
         await update.effective_message.reply_text(
-            f"{orig_cur_amount} {orig_cur} = {new_cur_amount} {new_cur}",
+            f"{orig_cur_amount} {orig_cur.upper()} = {new_cur_amount} {new_cur.upper()}",
         )
 
     elif len(args) == 1:
@@ -51,6 +44,7 @@ async def convert(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 help = """
 Converts money from one exchange to another
+Note: Supports Cryptocurrencies too.
 Usage: /cash amount from to
 Example: /cash 20 USD INR"""
 
