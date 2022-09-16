@@ -171,7 +171,7 @@ async def info(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if not chat_obj.username:
             head = f"╒═══「<b> User Information:</b> 」\n"
             await reply.edit_text("Found User, getting information...")
-        elif chat_obj.username.endswith("bot"):
+        elif chat_obj.username and chat_obj.username.endswith("bot"):
             head = f"╒═══「<b> Bot Information:</b> 」\n"
             await reply.edit_text("Found Bot, getting information...")
         else:

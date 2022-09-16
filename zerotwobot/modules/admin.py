@@ -634,7 +634,7 @@ async def admin_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat = update.effective_chat
     admin_user = query.from_user
 
-    splitter = await query.data.replace("admin_", "").split("=")
+    splitter = query.data.replace("admin_", "").split("=")
 
     if splitter[1] == "promote":
 

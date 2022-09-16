@@ -71,7 +71,7 @@ async def gettime(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"Finding timezone info for <b>{query}</b>", parse_mode=ParseMode.HTML,
     )
 
-    query_timezone = await query.lower()
+    query_timezone = query.lower()
     if len(query_timezone) == 2:
         result = generate_time(query_timezone, ["countryCode"])
     else:

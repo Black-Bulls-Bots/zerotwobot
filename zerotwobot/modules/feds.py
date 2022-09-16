@@ -1857,7 +1857,7 @@ async def fed_import_bans(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def del_fed_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     userid = query.message.chat.id
-    fed_id = await query.data.split("_")[1]
+    fed_id = query.data.split("_")[1]
 
     if fed_id == "cancel":
         await query.message.edit_text("Federation deletion cancelled")

@@ -272,16 +272,25 @@ async def new_member(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         creator = x.user
                         break
                 if creator:
+                    reply = f"""#NEWGROUP \
+                        \nID:   `{chat.id}` \
+                    """
+                                             
+                    if chat.title:
+                        reply += f"\nGroup Name:   **{escape_markdown(chat.title)}**"
+                    
+                        
+                    if chat.username:
+                        reply += f"\nUsername: @{escape_markdown(chat.username)}"
+                    
+                    reply += f"\nCreator ID:   `{creator.id}`"
+                    
+                    if creator.username:
+                        reply += f"\nCreator Username: @{creator.username}"                        
+
                     await bot.send_message(
                         JOIN_LOGGER,
-                        f"""
-                        #NEWGROUP \
-                        \nGroup Name:   **{escape_markdown(chat.title)}** \
-                        \nID:   `{chat.id}` \
-                        \nUsername: @{escape_markdown(chat.username)} \
-                        \nCreator ID:   `{creator.id}` \
-                        \nCreator Username:   @{escape_markdown(creator.username)} \
-                        """,
+                        reply,
                         parse_mode="markdown",
                     )
                 else:
