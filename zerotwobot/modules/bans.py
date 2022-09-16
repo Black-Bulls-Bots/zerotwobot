@@ -511,7 +511,7 @@ async def bans_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
     args = context.args
     log_message = ""
-    splitter = await query.data.replace("bans_", "").split("=")
+    splitter = query.data.replace("bans_", "").split("=")
 
     admin_user = query.from_user
     member = await chat.get_member(admin_user.id)

@@ -54,7 +54,7 @@ async def clean_blue_text_must_click(update: Update, context: ContextTypes.DEFAU
             (member.can_delete_messages if isinstance(member, ChatMemberAdministrator) else None)
             and sql.is_enabled(chat.id)
         ):
-            fst_word = await message.text.strip().split(None, 1)[0]
+            fst_word = message.text.strip().split(None, 1)[0]
 
             if len(fst_word) > 1 and any(
                 fst_word.startswith(start) for start in CMD_STARTERS

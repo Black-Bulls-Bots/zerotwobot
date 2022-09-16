@@ -219,7 +219,7 @@ def __user_settings__(user_id):
 async def buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
     query = update.callback_query
-    splitter = await query.data.replace("report_", "").split("=")
+    splitter = query.data.replace("report_", "").split("=")
     if splitter[1] == "kick":
         try:
             await bot.banChatMember(splitter[0], splitter[2])

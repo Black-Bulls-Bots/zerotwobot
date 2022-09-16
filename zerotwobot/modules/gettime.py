@@ -63,7 +63,7 @@ async def gettime(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
 
     try:
-        query = await message.text.strip().split(" ", 1)[1]
+        query = message.text.strip().split(" ", 1)[1]
     except:
         await message.reply_text("Provide a country name/abbreviation/timezone to find.")
         return
@@ -71,7 +71,7 @@ async def gettime(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"Finding timezone info for <b>{query}</b>", parse_mode=ParseMode.HTML,
     )
 
-    query_timezone = await query.lower()
+    query_timezone = query.lower()
     if len(query_timezone) == 2:
         result = generate_time(query_timezone, ["countryCode"])
     else:
