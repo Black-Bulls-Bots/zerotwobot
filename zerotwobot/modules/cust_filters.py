@@ -211,7 +211,7 @@ async def filters(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await send_message(update.effective_message, "Invalid filter!")
         return
 
-    add = await (update, chat_id, keyword, text, file_type, file_id, buttons)
+    add = await addnew_filter(update, chat_id, keyword, text, file_type, file_id, buttons)
     # This is an old method
     # sql.add_filter(chat_id, keyword, content, is_sticker, is_document, is_image, is_audio, is_voice, is_video, buttons)
 
