@@ -40,7 +40,7 @@ async def speedtestxyz_callback(update: Update, context: ContextTypes.DEFAULT_TY
             await update.effective_message.reply_photo(
                 photo=speedtest_image, caption=replymsg,
             )
-            msg.delete()
+            await msg.delete()
 
         elif query.data == "speedtest_text":
             result = speed.results.dict()

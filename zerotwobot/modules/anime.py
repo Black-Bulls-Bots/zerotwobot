@@ -445,7 +445,7 @@ async def user(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=InlineKeyboardMarkup(buttons),
         disable_web_page_preview=False,
     )
-    progress_message.delete()
+    await progress_message.delete()
 
 
 
