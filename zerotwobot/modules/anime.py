@@ -4,7 +4,7 @@ import textwrap
 
 import bs4
 import jikanpy
-import requests
+from httpx import AsyncClient
 from zerotwobot import application
 from zerotwobot.modules.disable import DisableAbleCommandHandler
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, Message
@@ -179,9 +179,11 @@ async def airing(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
     variables = {"search": search_str}
-    response = requests.post(
+    async with AsyncClient() as client:
+        r = await client.post(
         url, json={"query": airing_query, "variables": variables},
-    ).json()["data"]["Media"]
+    )
+    response = r.json()["data"]["Media"]
     msg = f"*Name*: *{response['title']['romaji']}*(`{response['title']['native']}`)\n*ID*: `{response['id']}`"
     if response["nextAiringEpisode"]:
         time = response["nextAiringEpisode"]["timeUntilAiring"] * 1000
@@ -200,9 +202,11 @@ async def anime(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.effective_message.reply_text("Format : /anime < anime name >")
         return
     variables = {"search": search}
-    json = requests.post(
+    async with AsyncClient() as client:
+        r = await client.post(
         url, json={"query": anime_query, "variables": variables},
-    ).json()
+    )
+    json = r.json()
     if "errors" in json.keys():
         await update.effective_message.reply_text("Anime not found")
         return
@@ -272,9 +276,11 @@ async def character(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.effective_message.reply_text("Format : /character < character name >")
         return
     variables = {"query": search}
-    json = requests.post(
+    async with AsyncClient() as client:
+        r = await client.post(
         url, json={"query": character_query, "variables": variables},
-    ).json()
+    )
+    json = r.json()
     if "errors" in json.keys():
         await update.effective_message.reply_text("Character not found")
         return
@@ -306,9 +312,11 @@ async def manga(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.effective_message.reply_text("Format : /manga < manga name >")
         return
     variables = {"search": search}
-    json = requests.post(
+    async with AsyncClient() as client:
+        r = await client.post(
         url, json={"query": manga_query, "variables": variables},
-    ).json()
+    )
+    json = r.json()
     msg = ""
     if "errors" in json.keys():
         await update.effective_message.reply_text("Manga not found")
@@ -475,7 +483,9 @@ async def site_search(update: Update, context: ContextTypes.DEFAULT_TYPE, site: 
 
     if site == "kaizoku":
         search_url = f"https://animekaizoku.com/?s={search_query}"
-        html_text = requests.get(search_url).text
+        async with AsyncClient() as client:
+            r = await client.get(search_url)
+        html_text = r.text
         soup = bs4.BeautifulSoup(html_text, "html.parser")
         search_result = soup.find_all("h2", {"class": "post-title"})
 
@@ -491,7 +501,9 @@ async def site_search(update: Update, context: ContextTypes.DEFAULT_TYPE, site: 
 
     elif site == "kayo":
         search_url = f"https://animekayo.com/?s={search_query}"
-        html_text = requests.get(search_url).text
+        async with AsyncClient() as client:
+            r = await client.get(search_url)
+        html_text = r.text
         soup = bs4.BeautifulSoup(html_text, "html.parser")
         search_result = soup.find_all("h2", {"class": "title"})
 

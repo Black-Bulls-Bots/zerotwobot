@@ -1,7 +1,7 @@
 import datetime
 from typing import List
 
-import requests
+from httpx import AsyncClient
 from zerotwobot import TIME_API_KEY, application
 from zerotwobot.modules.disable import DisableAbleCommandHandler
 from telegram import Update
@@ -9,13 +9,15 @@ from telegram.constants import ParseMode
 from telegram.ext import ContextTypes
 
 
-def generate_time(to_find: str, findtype: List[str]) -> str:
-    data = requests.get(
+async def generate_time(to_find: str, findtype: List[str]) -> str:
+    async with AsyncClient() as client:
+        r = await client.get(
         f"https://api.timezonedb.com/v2.1/list-time-zone"
         f"?key={TIME_API_KEY}"
         f"&format=json"
         f"&fields=countryCode,countryName,zoneName,gmtOffset,timestamp,dst",
-    ).json()
+    )
+    data = r.json()
 
     for zone in data["zones"]:
         for eachtype in findtype:
@@ -73,9 +75,9 @@ async def gettime(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     query_timezone = query.lower()
     if len(query_timezone) == 2:
-        result = generate_time(query_timezone, ["countryCode"])
+        result = await generate_time(query_timezone, ["countryCode"])
     else:
-        result = generate_time(query_timezone, ["zoneName", "countryName"])
+        result = await generate_time(query_timezone, ["zoneName", "countryName"])
 
     if not result:
         await send_message.edit_text(

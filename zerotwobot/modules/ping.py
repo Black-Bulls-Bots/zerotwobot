@@ -1,7 +1,7 @@
 import time
 from typing import List
 
-import requests
+from httpx import AsyncClient
 from telegram import Update
 from telegram.constants import ParseMode
 from telegram.ext import ContextTypes
@@ -46,14 +46,15 @@ def get_readable_time(seconds: int) -> str:
     return ping_time
 
 
-def ping_func(to_ping: List[str]) -> List[str]:
+async def ping_func(to_ping: List[str]) -> List[str]:
     ping_result = []
 
     for each_ping in to_ping:
 
         start_time = time.time()
         site_to_ping = sites_list[each_ping]
-        r = requests.get(site_to_ping)
+        async with AsyncClient() as client:
+            r = await client.get(site_to_ping)
         end_time = time.time()
         ping_time = str(round((end_time - start_time), 2)) + "s"
 
@@ -92,7 +93,7 @@ async def ping(update: Update, context: ContextTypes.DEFAULT_TYPE):
 @sudo_plus
 async def pingall(update: Update, context: ContextTypes.DEFAULT_TYPE):
     to_ping = ["Kaizoku", "Kayo", "Telegram", "Jikan"]
-    pinged_list = ping_func(to_ping)
+    pinged_list = await ping_func(to_ping)
     pinged_list.insert(2, "")
     uptime = get_readable_time((time.time() - StartTime))
 
