@@ -85,7 +85,7 @@ async def list_handlers(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await send_message(
                 update.effective_message,
                 filter_list.format(chat_name),
-                parse_mode=telegram.ParseMode.MARKDOWN,
+                parse_mode=ParseMode.MARKDOWN,
             )
             filter_list = entry
         else:
@@ -94,7 +94,7 @@ async def list_handlers(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await send_message(
         update.effective_message,
         filter_list.format(chat_name),
-        parse_mode=telegram.ParseMode.MARKDOWN,
+        parse_mode=ParseMode.MARKDOWN,
     )
 
 
@@ -219,7 +219,7 @@ async def filters(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await send_message(
             update.effective_message,
             "Saved filter '{}' in *{}*!".format(keyword, chat_name),
-            parse_mode=telegram.ParseMode.MARKDOWN,
+            parse_mode=ParseMode.MARKDOWN,
         )
     raise ApplicationHandlerStop
 
@@ -258,7 +258,7 @@ async def stop_filter(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await send_message(
                 update.effective_message,
                 "Okay, I'll stop replying to that filter in *{}*.".format(chat_name),
-                parse_mode=telegram.ParseMode.MARKDOWN,
+                parse_mode=ParseMode.MARKDOWN,
             )
             raise ApplicationHandlerStop
 
