@@ -3,7 +3,7 @@ import os
 import urllib.request as urllib
 from html import escape
 
-import requests
+from httpx import AsyncClient
 from bs4 import BeautifulSoup as bs
 from PIL import Image
 from telegram import (InlineKeyboardButton, InlineKeyboardMarkup,
@@ -45,7 +45,9 @@ async def cb_sticker(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if len(split) == 1:
         await msg.reply_text("Provide some name to search for pack.")
         return
-    text = requests.get(combot_stickers_url + split[1]).text
+    async with AsyncClient() as client:
+        r = await client.get(combot_stickers_url + split[1])
+    text = r.text
     soup = bs(text, "lxml")
     results = soup.find_all("a", {"class": "sticker-pack__btn"})
     titles = soup.find_all("div", "sticker-pack__title")

@@ -19,7 +19,7 @@ from telegram.helpers import escape_markdown
 
 async def get_rules(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
-    send_rules(update, chat_id)
+    await send_rules(update, chat_id)
 
 
 # Do not async - not from a handler

@@ -47,7 +47,7 @@ async def get_invalid_chats(update: Update, context: ContextTypes.DEFAULT_TYPE, 
             pass
 
     try:
-        progress_message.delete()
+        await progress_message.delete()
     except:
         pass
 

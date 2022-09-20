@@ -1,6 +1,6 @@
 from random import randint
 
-import requests as r
+from httpx import AsyncClient
 from zerotwobot import SUPPORT_CHAT, WALL_API, application
 from zerotwobot.modules.disable import DisableAbleCommandHandler
 from telegram import Update
@@ -22,10 +22,10 @@ async def wall(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     else:
         caption = query
-        term = await query.replace(" ", "%20")
-        json_rep = r.get(
-            f"https://wall.alphacoders.com/api2.0/get.php?auth={WALL_API}&method=search&term={term}",
-        ).json()
+        term = query.replace(" ", "%20")
+        async with AsyncClient() as client:
+            r = await client.get(f"https://wall.alphacoders.com/api2.0/get.php?auth={WALL_API}&method=search&term={term}")
+        json_rep = r.json()
         if not json_rep.get("success"):
             await msg.reply_text(f"An error occurred! Report this @{SUPPORT_CHAT}")
         else:

@@ -1,6 +1,6 @@
 import traceback
 
-import requests
+from httpx import AsyncClient
 import html
 import random
 import sys
@@ -75,9 +75,11 @@ async def error_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         update.effective_message.text if update.effective_message else "No message",
         tb,
     )
-    key = requests.post(
+    async with AsyncClient() as client:
+        r = await client.post(
         "https://nekobin.com/api/documents", json={"content": pretty_message},
-    ).json()
+    )
+    key = r.json()
     e = html.escape(f"{context.error}")
     if not key.get("result", {}).get("key"):
         with open("error.txt", "w+") as f:
