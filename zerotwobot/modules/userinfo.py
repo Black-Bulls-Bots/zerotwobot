@@ -184,7 +184,7 @@ async def info(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if chat_obj.username:
             head += f"<b>\nUsername:</b> @{chat_obj.username}"
         head += f"\nPermalink: {mention_html(chat_obj.id, 'link')}"
-        if not chat_obj.username.endswith("bot"):
+        if chat_obj.username and not chat_obj.username.endswith("bot"):
             head += f"<b>\nPremium User:</b> {premium}"
         if chat_obj.bio:
             head += f"<b>\n\nBio:</b> {chat_obj.bio}"
