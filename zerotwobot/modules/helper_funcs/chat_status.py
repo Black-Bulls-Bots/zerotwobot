@@ -284,7 +284,7 @@ def bot_can_delete(func):
         else:
             cant_delete = f"I can't delete messages in <b>{update_chat_title}</b>!\nMake sure I'm admin and can delete other user's messages there."
 
-        if can_delete(chat, bot.id):
+        if await can_delete(chat, bot.id):
             return await func(update, context, *args, **kwargs)
         else:
             await update.effective_message.reply_text(cant_delete, parse_mode=ParseMode.HTML)
@@ -382,7 +382,7 @@ def connection_status(func):
 
         if conn:
             chat = await application.bot.getChat(conn)
-            await update.__setattr__("_effective_chat", chat)
+            update.__setattr__("_effective_chat", chat)
             return await func(update, context, *args, **kwargs)
         else:
             if update.effective_message.chat.type == "private":

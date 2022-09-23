@@ -138,7 +138,7 @@ async def ban(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
 
     if SILENT:
         silent = True
-        if not can_delete(chat, context.bot.id):
+        if not await can_delete(chat, context.bot.id):
             return ""
     else:
         silent = False

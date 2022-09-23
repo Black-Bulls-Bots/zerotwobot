@@ -388,7 +388,7 @@ async def reply_filter(update: Update, context: ContextTypes.DEFAULT_TYPE):
                             )
                 else:
                     try:
-                        ENUM_FUNC_MAP[filt.file_type](
+                        await ENUM_FUNC_MAP[filt.file_type](
                             chat.id,
                             filt.file_id,
                             reply_markup=keyboard,
