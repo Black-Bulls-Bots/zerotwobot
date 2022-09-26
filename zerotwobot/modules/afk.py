@@ -3,7 +3,7 @@ import html
 from datetime import datetime
 import humanize
 
-from zerotwobot import application
+from zerotwobot import LOGGER, application
 from zerotwobot.modules.disable import (
     DisableAbleCommandHandler,
     DisableAbleMessageHandler,
@@ -133,7 +133,7 @@ async def reply_afk(update: Update, context: ContextTypes.DEFAULT_TYPE):
             try:
                 chat = await bot.get_chat(user_id)
             except BadRequest:
-                print("Error: Could not fetch userid {} for AFK module".format(user_id))
+                LOGGER.error("Error: Could not fetch userid {} for AFK module".format(user_id))
                 return
             fst_name = chat.first_name
 

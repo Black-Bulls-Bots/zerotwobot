@@ -266,32 +266,32 @@ async def error_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         raise error
     except Forbidden:
-        print("\nForbidden Erro\n")
-        print(error)
+        LOGGER.error("\nForbidden Erro\n")
+        LOGGER.error(error)
         raise error
         # remove update.message.chat_id from conversation list
     except BadRequest:
-        print("\nBadRequest Error\n")
-        print("BadRequest caught")
-        print(error)
+        LOGGER.error("\nBadRequest Error\n")
+        LOGGER.error("BadRequest caught")
+        LOGGER.error(error)
         raise error
 
         # handle malformed requests - read more below!
     except TimedOut:
-        print("\nTimedOut Error\n")
+        LOGGER.error("\nTimedOut Error\n")
         raise error
         # handle slow connection problems
     except NetworkError:
-        print("\n NetWork Error\n")
+        LOGGER.error("\n NetWork Error\n")
         raise error
         # handle other connection problems
     except ChatMigrated as err:
-        print("\n ChatMigrated error\n")
+        LOGGER.error("\n ChatMigrated error\n")
         raise error
-        print(err)
+        LOGGER.error(err)
         # the chat_id of a group has changed, use e.new_chat_id instead
     except TelegramError:
-        print(error)
+        LOGGER.error(error)
         # handle all other telegram related errors
 
 
@@ -322,8 +322,6 @@ async def help_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     prev_match = re.match(r"help_prev\((.+?)\)", query.data)
     next_match = re.match(r"help_next\((.+?)\)", query.data)
     back_match = re.match(r"help_back", query.data)
-
-    print(query.message.chat.id)
 
     try:
         if mod_match:

@@ -2,7 +2,7 @@ import time
 from telethon import events
 from telethon.errors.rpcerrorlist import MessageDeleteForbiddenError
 
-from zerotwobot import telethn
+from zerotwobot import LOGGER, telethn
 from zerotwobot.modules.helper_funcs.telethn.chatstatus import (
     can_delete_messages,
     user_is_admin,
@@ -92,7 +92,7 @@ async def delete_messages(event):
     try:
         await event.client.delete_messages(chat, event.message)
     except MessageDeleteForbiddenError:
-        print("error in deleting message {} in {}".format(event.message.id, event.chat.id))
+        LOGGER.error("error in deleting message {} in {}".format(event.message.id, event.chat.id))
         pass
 
 

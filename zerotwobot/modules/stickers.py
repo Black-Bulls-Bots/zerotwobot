@@ -12,7 +12,7 @@ from telegram.error import TelegramError, BadRequest
 from telegram.constants import ParseMode
 from telegram.ext import ContextTypes
 from telegram.helpers import mention_html
-from zerotwobot import application
+from zerotwobot import LOGGER, application
 from zerotwobot.modules.disable import DisableAbleCommandHandler
 from zerotwobot.modules.helper_funcs.misc import convert_gif
 
@@ -182,7 +182,7 @@ async def kang(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
             except OSError as e:
                 await msg.reply_text("I can only kang images m8.")
-                print(e)
+                LOGGER.error(e)
                 return
 
             except TelegramError as e:
@@ -222,7 +222,7 @@ async def kang(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         "Emoji is:" + " " + sticker_emoji,
                         parse_mode=ParseMode.MARKDOWN,
                     )
-                print(e)
+                LOGGER.error(e)
 
         elif is_animated:
             packname = "animated" + str(user.id) + "_by_" + context.bot.username
@@ -280,7 +280,7 @@ async def kang(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         "Emoji is:" + " " + sticker_emoji,
                         parse_mode=ParseMode.MARKDOWN,
                     )
-                print(e)
+                LOGGER.error(e)
 
         elif is_video or is_gif:
             packname = "video" + str(user.id) + "_by_" + context.bot.username
@@ -385,7 +385,7 @@ async def kang(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
         except OSError as e:
             await msg.reply_text("I can only kang images m8.")
-            print(e)
+            LOGGER.error(e)
             return
         except TelegramError as e:
             if e.message == "Stickerset_invalid":
@@ -428,7 +428,7 @@ async def kang(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     "Emoji is:" + " " + sticker_emoji,
                     parse_mode=ParseMode.MARKDOWN,
                 )
-            print(e)
+            LOGGER.error(e)
     else:
         packs = "Please reply to a sticker, or image or gif to kang it!\nOh, by the way. here are your packs:\n"
         if packnum > 0:
@@ -523,7 +523,7 @@ async def makepack_internal(
             )
 
     except TelegramError as e:
-        print(e)
+        LOGGER.error(e)
         if e.message == "Sticker set name is already occupied":
             await msg.reply_text(
                 "Your pack can be found [here](t.me/addstickers/%s)" % packname,

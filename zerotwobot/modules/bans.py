@@ -551,7 +551,6 @@ async def bans_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             try:
                 member = await chat.get_member(user_id)
             except BadRequest as excp:
-                print(excp)
                 if excp.message == "User not found.":
                     raise
                 elif excp == "Invalid user_id specified":
