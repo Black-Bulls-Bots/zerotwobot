@@ -27,6 +27,7 @@ from zerotwobot.modules.helper_funcs.msg_types import get_welcome_type
 from zerotwobot.modules.helper_funcs.string_handling import (
     escape_invalid_curly_brackets,
     markdown_parser,
+    markdown_to_html,
 )
 from zerotwobot.modules.log_channel import loggable
 from zerotwobot.modules.sql.global_bans_sql import is_user_gbanned
@@ -86,15 +87,15 @@ async def send(update, message, keyboard, backup_message):
         reply = False
     try:
         msg = await update.effective_message.reply_text(
-            message,
-            parse_mode=ParseMode.MARKDOWN,
+            markdown_to_html(message),
+            parse_mode=ParseMode.HTML,
             reply_markup=keyboard,
             reply_to_message_id=reply,
         )
     except BadRequest as excp:
         if excp.message == "Reply message not found":
             msg = await update.effective_message.reply_text(
-                message,
+                markdown_to_html(message),
                 parse_mode=ParseMode.MARKDOWN,
                 reply_markup=keyboard,
                 quote=False,
@@ -463,7 +464,7 @@ async def new_member(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         if welcome_bool:
             if media_wel:
-                sent = ENUM_FUNC_MAP[welc_type](
+                sent = await ENUM_FUNC_MAP[welc_type](
                     chat.id,
                     cust_content,
                     caption=res,
@@ -581,7 +582,7 @@ async def left_member(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
             # if media goodbye, use appropriate function for it
             if goodbye_type != sql.Types.TEXT and goodbye_type != sql.Types.BUTTON_TEXT:
-                ENUM_FUNC_MAP[goodbye_type](chat.id, cust_goodbye)
+                await ENUM_FUNC_MAP[goodbye_type](chat.id, cust_goodbye)
                 return
 
             first_name = (
@@ -665,7 +666,7 @@ async def welcome(update: Update, context: ContextTypes.DEFAULT_TYPE):
             buttons = sql.get_welc_buttons(chat.id)
             if noformat:
                 welcome_m += revert_buttons(buttons)
-                ENUM_FUNC_MAP[welcome_type](chat.id, cust_content, caption=welcome_m)
+                await ENUM_FUNC_MAP[welcome_type](chat.id, cust_content, caption=welcome_m)
 
             else:
                 keyb = build_keyboard(buttons)
@@ -727,10 +728,10 @@ async def goodbye(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         else:
             if noformat:
-                ENUM_FUNC_MAP[goodbye_type](chat.id, goodbye_m)
+                await ENUM_FUNC_MAP[goodbye_type](chat.id, goodbye_m)
 
             else:
-                ENUM_FUNC_MAP[goodbye_type](
+                await ENUM_FUNC_MAP[goodbye_type](
                     chat.id, goodbye_m, parse_mode=ParseMode.MARKDOWN,
                 )
 
@@ -1009,7 +1010,7 @@ async def user_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             pass
         if member_dict["should_welc"]:
             if member_dict["media_wel"]:
-                sent = ENUM_FUNC_MAP[member_dict["welc_type"]](
+                sent = await ENUM_FUNC_MAP[member_dict["welc_type"]](
                     member_dict["chat_id"],
                     member_dict["cust_content"],
                     caption=member_dict["res"],

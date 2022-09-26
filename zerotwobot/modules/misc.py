@@ -14,6 +14,7 @@ saved messages are correctly parsed, and to allow you to create buttons.
 • <code>_italic_</code>: wrapping text with '_' will produce italic text
 • <code>*bold*</code>: wrapping text with '*' will produce bold text
 • <code>`code`</code>: wrapping text with '`' will produce monospaced text, also known as 'code'
+• <code>||spoiler||</code>: wrapping text with `||` will produce spoiler text.
 • <code>[sometext](someURL)</code>: this will create a link - the message will just show <code>sometext</code>, \
 and tapping on it will open the page at <code>someURL</code>.
 <b>Example:</b><code>[test](example.com)</code>
@@ -55,7 +56,7 @@ async def markdown_help_sender(update: Update):
         "Try forwarding the following message to me, and you'll see, and Use #test!",
     )
     await update.effective_message.reply_text(
-        "/save test This is a markdown test. _italics_, *bold*, code, "
+        "/save test This is a markdown test. _italics_, *bold*, `code`, ||test|| "
         "[URL](example.com) [button](buttonurl:github.com) "
         "[button2](buttonurl://google.com:same)",
     )

@@ -89,7 +89,7 @@ def markdown_parser(
         end = ent.offset + offset + ent.length - 1  # end of entity
 
         # we only care about code, url, text links
-        if ent.type in ("code", "url", "text_link"):
+        if ent.type in ("code", "url", "text_link", "spoiler"):
             # count emoji to switch counter
             count = _calc_emoji_offset(txt[:start])
             start -= count
@@ -106,7 +106,7 @@ def markdown_parser(
                 else:
                     # TODO: investigate possible offset bug when lots of emoji are present
                     res += _selective_escape(txt[prev:start] or "") + escape_markdown(
-                        ent_text,
+                        ent_text, 2
                     )
 
             # code handling
@@ -118,6 +118,9 @@ def markdown_parser(
                 res += _selective_escape(txt[prev:start]) + "[{}]({})".format(
                     ent_text, ent.url,
                 )
+            # handle spoiler
+            elif ent.type == "spoiler":
+                res += _selective_escape(txt[prev:start]) + "||"+ent_text+"||"
 
             end += 1
 
@@ -278,11 +281,17 @@ async def extract_time(message, time_val):
         return ""
 
 
-def markdown_to_html(text):
+
+def markdown_to_html(text:str):
     text = text.replace("*", "**")
     text = text.replace("`", "```")
     text = text.replace("~", "~~")
+
+    spoiler_pattern = re.compile(r"\|\|(?=\S)(.+?)(?<=\S)\|\|", re.S)
+    text = spoiler_pattern.sub(r"<tg-spoiler>\1</tg-spoiler>", text)
+
+
     _html = markdown2.markdown(text, extras=["strike", "underline"])
     return bleach.clean(
-        _html, tags=["strong", "em", "a", "code", "pre", "strike", "u"], strip=True,
+        _html, tags=["strong", "em", "a", "code", "pre", "strike", "u", "tg-spoiler"], strip=True,
     )[:-1]

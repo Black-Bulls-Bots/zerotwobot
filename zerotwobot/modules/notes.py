@@ -12,6 +12,7 @@ from zerotwobot.modules.helper_funcs.misc import build_keyboard, revert_buttons
 from zerotwobot.modules.helper_funcs.msg_types import get_note_type
 from zerotwobot.modules.helper_funcs.string_handling import (
     escape_invalid_curly_brackets,
+    markdown_to_html,
 )
 from telegram import (
     InlineKeyboardMarkup,
@@ -86,7 +87,7 @@ async def get(update: Update, context: ContextTypes.DEFAULT_TYPE, notename, show
             else:
                 try:
                     await bot.forward_message(
-                        chat_id=chat_id, from_chat_id=chat_id, message_id=note.value,
+                        chat_id=chat_id, from_chat_id=chat_id, message_id=markdown_to_html(note.value),
                     )
                 except BadRequest as excp:
                     if excp.message == "Message to forward not found":
@@ -155,7 +156,7 @@ async def get(update: Update, context: ContextTypes.DEFAULT_TYPE, notename, show
                 text = ""
 
             keyb = []
-            parseMode = ParseMode.MARKDOWN
+            parseMode = ParseMode.HTML
             buttons = sql.get_buttons(note_chat_id, notename)
             if no_format:
                 parseMode = None
@@ -169,17 +170,17 @@ async def get(update: Update, context: ContextTypes.DEFAULT_TYPE, notename, show
                 if note.msgtype in (sql.Types.BUTTON_TEXT, sql.Types.TEXT):
                     await bot.send_message(
                         chat_id,
-                        text,
+                        markdown_to_html(text),
                         reply_to_message_id=reply_id,
                         parse_mode=parseMode,
                         disable_web_page_preview=True,
                         reply_markup=keyboard,
                     )
                 else:
-                    ENUM_FUNC_MAP[note.msgtype](
+                    await ENUM_FUNC_MAP[note.msgtype](
                         chat_id,
                         note.file,
-                        caption=text,
+                        caption=markdown_to_html(text),
                         reply_to_message_id=reply_id,
                         parse_mode=parseMode,
                         disable_web_page_preview=True,

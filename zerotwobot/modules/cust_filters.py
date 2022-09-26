@@ -420,8 +420,8 @@ async def reply_filter(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     try:
                         await context.bot.send_message(
                             chat.id,
-                            filt.reply,
-                            parse_mode=ParseMode.MARKDOWN,
+                            markdown_to_html(filt.reply),
+                            parse_mode=ParseMode.HTML,
                             disable_web_page_preview=True,
                             reply_markup=keyboard,
                         )

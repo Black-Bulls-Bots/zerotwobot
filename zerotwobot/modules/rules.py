@@ -3,7 +3,7 @@ from typing import Optional
 import zerotwobot.modules.sql.rules_sql as sql
 from zerotwobot import application
 from zerotwobot.modules.helper_funcs.chat_status import user_admin
-from zerotwobot.modules.helper_funcs.string_handling import markdown_parser
+from zerotwobot.modules.helper_funcs.string_handling import markdown_parser, markdown_to_html
 from telegram import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
@@ -41,11 +41,11 @@ async def send_rules(update, chat_id, from_pm=False):
             raise
 
     rules = sql.get_rules(chat_id)
-    text = f"The rules for *{escape_markdown(chat.title)}* are:\n\n{rules}"
+    text = f"The rules for <b>{escape_markdown(chat.title, 2)}</b> are:\n\n{markdown_to_html(rules)}"
 
     if from_pm and rules:
         await bot.send_message(
-            user.id, text, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True,
+            user.id, text, parse_mode=ParseMode.HTML, disable_web_page_preview=True,
         )
     elif from_pm:
         await bot.send_message(
