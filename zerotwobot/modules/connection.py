@@ -73,7 +73,8 @@ async def connection_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if conn:
         chat = await application.bot.getChat(conn)
-        chat_name = await application.bot.getChat(conn).title
+        chat_obj = await application.bot.getChat(conn)
+        chat_name = chat_obj.title
     else:
         if update.effective_message.chat.type != "private":
             return
@@ -220,7 +221,8 @@ async def connect_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 update.effective_message.from_user.id, chat.id,
             )
             if connection_status:
-                chat_name = await application.bot.getChat(chat.id).title
+                chat_obj = await application.bot.getChat(conn)
+                chat_name = chat_obj.title
                 await send_message(
                     update.effective_message,
                     "Successfully connected to *{}*.".format(chat_name),

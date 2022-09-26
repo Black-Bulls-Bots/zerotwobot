@@ -38,7 +38,8 @@ async def import_data(update: Update, context: ContextTypes.DEFAULT_TYPE):
     conn = await connected(context.bot, update, chat, user.id, need_admin=True)
     if conn:
         chat = await application.bot.getChat(conn)
-        chat_name = await application.bot.getChat(conn).title
+        chat_obj = await application.bot.getChat(conn)
+        chat_name = chat_obj.title
     else:
         if update.effective_message.chat.type == "private":
             await update.effective_message.reply_text("This is a group only command!")

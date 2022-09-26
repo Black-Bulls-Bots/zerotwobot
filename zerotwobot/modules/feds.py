@@ -1598,7 +1598,8 @@ async def fed_chats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = "<b>New chat joined the federation {}:</b>\n".format(info["fname"])
     for chats in getlist:
         try:
-            chat_name = await application.bot.getChat(chats).title
+            chat_obj = await application.bot.getChat(chats)
+            chat_name = chat_obj.title
         except Forbidden:
             sql.chat_leave_fed(chats)
             LOGGER.info(

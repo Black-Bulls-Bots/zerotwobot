@@ -60,7 +60,8 @@ async def list_handlers(update: Update, context: ContextTypes.DEFAULT_TYPE):
     conn = await connected(context.bot, update, chat, user.id, need_admin=False)
     if not conn is False:
         chat_id = conn
-        chat_name = await application.bot.getChat(conn).title
+        chat_obj = await application.bot.getChat(conn)
+        chat_name = chat_obj.title
         filter_list = "*Filter in {}:*\n"
     else:
         chat_id = update.effective_chat.id
@@ -111,7 +112,8 @@ async def filters(update: Update, context: ContextTypes.DEFAULT_TYPE):
     conn = await connected(context.bot, update, chat, user.id)
     if not conn is False:
         chat_id = conn
-        chat_name = await application.bot.getChat(conn).title
+        chat_obj = await application.bot.getChat(conn)
+        chat_name = chat_obj.title
     else:
         chat_id = update.effective_chat.id
         if chat.type == "private":
@@ -234,7 +236,8 @@ async def stop_filter(update: Update, context: ContextTypes.DEFAULT_TYPE):
     conn = await connected(context.bot, update, chat, user.id)
     if not conn is False:
         chat_id = conn
-        chat_name = await application.bot.getChat(conn).title
+        chat_obj = await application.bot.getChat(conn)
+        chat_name = chat_obj.title
     else:
         chat_id = update.effective_chat.id
         if chat.type == "private":

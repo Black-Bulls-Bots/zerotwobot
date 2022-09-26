@@ -483,7 +483,8 @@ async def send_settings(chat_id, user_id, user=False):
 
     else:
         if CHAT_SETTINGS:
-            chat_name = await application.bot.getChat(chat_id).title
+            chat_obj = await application.bot.getChat(conn)
+            chat_name = chat_obj.title
             await application.bot.send_message(
                 user_id,
                 text="Which module would you like to check {}'s settings for Darling?".format(
