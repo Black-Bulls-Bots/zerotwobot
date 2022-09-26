@@ -89,7 +89,7 @@ tqdm==4.62.3
 typing-extensions==3.10.0.2
 tzdata==2021.5
 tzlocal==4.1
-ujson==4.2.0
+ujson==5.4.0
 urllib3==1.26.9
 webencodings==0.5.1
 wikipedia==1.4.0
