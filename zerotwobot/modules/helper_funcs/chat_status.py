@@ -79,7 +79,7 @@ async def is_bot_admin(chat: Chat, bot_id: int, bot_member: ChatMember = None) -
 async def can_delete(chat: Chat, bot_id: int) -> bool:
     chat_member = await chat.get_member(bot_id)
     if isinstance(chat_member, ChatMemberAdministrator):
-        return await chat_member.can_delete_messages
+        return chat_member.can_delete_messages
 
 
 async def is_user_ban_protected(chat: Chat, user_id: int, member: ChatMember = None) -> bool:
