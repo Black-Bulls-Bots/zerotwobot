@@ -560,7 +560,7 @@ async def build_lock_message(chat_id):
             locklist.append("forwardchannel = `{}`".format(locks.forwardchannel))
             locklist.append("forwardbot = `{}`".format(locks.forwardbot))
             locklist.append("videonote = `{}`".format(locks.videonote))
-            locklist.append("emojicustom = `{}`".format(locks.customemoji))
+            locklist.append("emojicustom = `{}`".format(locks.emojicustom))
             locklist.append("stickerpremium = `{}`".format(locks.stickerpremium))
             locklist.append("stickeranimated = `{}`".format(locks.stickeranimated))
 
