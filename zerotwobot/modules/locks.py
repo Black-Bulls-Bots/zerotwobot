@@ -560,6 +560,9 @@ async def build_lock_message(chat_id):
             locklist.append("forwardchannel = `{}`".format(locks.forwardchannel))
             locklist.append("forwardbot = `{}`".format(locks.forwardbot))
             locklist.append("videonote = `{}`".format(locks.videonote))
+            locklist.append("emojicustom = `{}`".format(locks.customemoji))
+            locklist.append("stickerpremium = `{}`".format(locks.stickerpremium))
+            locklist.append("stickeranimated = `{}`".format(locks.stickeranimated))
 
     permissions = await application.bot.get_chat(chat_id)
     if isinstance(permissions, Chat):

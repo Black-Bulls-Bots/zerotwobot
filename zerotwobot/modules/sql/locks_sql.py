@@ -34,6 +34,9 @@ class Permissions(BASE):
     forwardchannel = Column(Boolean, default=False)
     forwardbot = Column(Boolean, default=False)
     videonote = Column(Boolean, default=False)
+    emojicustom = Column(Boolean, default=False)
+    stickerpremium = Column(Boolean, default=False)
+    stickeranimated = Column(Boolean, default=False)
 
     def __init__(self, chat_id):
         self.chat_id = str(chat_id)  # ensure string
@@ -61,6 +64,9 @@ class Permissions(BASE):
         self.forwardchannel = False
         self.forwardbot = False
         self.videonote = False
+        self.emojicustom = False
+        self.stickerpremium = False
+        self.stickeranimated = False
 
     def __repr__(self):
         return "<Permissions for %s>" % self.chat_id
@@ -173,6 +179,12 @@ def update_lock(chat_id, lock_type, locked):
             curr_perm.forwardbot = locked
         elif lock_type == "videonote":
             curr_perm.videonote = locked
+        elif lock_type == "emojicustom":
+            curr_perm.emojicustom = locked
+        elif lock_type == "stickerpremium":
+            curr_perm.stickerpremium = locked
+        elif lock_type == "stickeranimated":
+            curr_perm.stickeranimated = locked
 
         SESSION.add(curr_perm)
         SESSION.commit()
@@ -256,6 +268,12 @@ def is_locked(chat_id, lock_type):
         return curr_perm.forwardbot
     elif lock_type == "videonote":
         return curr_perm.videonote
+    elif lock_type == "emojicustom":
+        return curr_perm.emojicustom
+    elif lock_type == "stickerpremium":
+        return curr_perm.stickerpremium
+    elif lock_type == "stickeranimated0":
+        return curr_perm.stickeranimated
 
 
 def is_restr_locked(chat_id, lock_type):
