@@ -8,7 +8,7 @@
          "manager",
          "Mizuhara"
       ],
-   "repository": "https://github.com/Black-Bulls-Bots/zerotwobot",
+   "repository": "https://github.com/Princessgirlxd/zerotwobot",
    "addons": [
       {
          "options": {
@@ -48,8 +48,8 @@
          "required": true,
          "value": "blackbulls_support"
       },
-      "EVENT_LOGS": {
-         "description": "Event logs channel to note down important bot level events, recommend to make this public. ex: '-123456'",
+      "SQLALCHEMY_DATABASE_URI": {
+         "description": "database dal de bsdk",
          "required": true,
          "value": "-1001252338411"
       },
@@ -125,7 +125,7 @@
          "description": "Set this to True if you want ! to be a command prefix along with /. Recommended is True",
          "value": "True"
       },
-      "DONATION_LINK": {
+      "INFOPIC": {
          "description": "Optional: link where you would like to receive donations. If you are a noob, better leave it linking to paul",
          "required": false,
          "value": "https://0.0.0.0"
@@ -139,7 +139,7 @@
          "required": false,
          "value": ""
    },
-      "BAN_STICKER": {
+      "LOAD": {
          "description": "ID of the sticker you want to use when banning people.",
          "required": false,
          "value": "CAACAgUAAxkBAAIMVGC1rp7F2XSv8ttNztq0ZjUeaDpjAAL-AQAC8Z-AVTXmdVZmQ2UkHwQ"
