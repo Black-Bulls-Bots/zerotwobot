@@ -5,11 +5,12 @@ import sys
 import time
 import asyncio
 import telegram.ext as tg
+
+
 from telegram.ext import Application
 from telegram.error import BadRequest, Forbidden
-from telegram import __version__ as ptb_version
-from telegram import __bot_api_version__
-from telethon import TelegramClient
+from telethon.sessions import MemorySession
+from telegram import TelegramClient, __bot_api_version__, __version__ as ptb_version
 from dotenv import load_dotenv
 
 try:
@@ -183,7 +184,7 @@ else:
 DRAGONS.add(OWNER_ID)
 DEV_USERS.add(OWNER_ID)
 
-telethn = TelegramClient("zero-two", API_ID, API_HASH)
+telethn = TelegramClient(MemorySession(), API_ID, API_HASH)
 
 async def post_init(application: Application):
     try:
