@@ -355,7 +355,7 @@ async def user_join_fed(update: Update, context: ContextTypes.DEFAULT_TYPE):
     fed_id = sql.get_fed_id(chat.id)
 
     if is_user_fed_owner(fed_id, user.id) or user.id in DRAGONS:
-        user_id = await extract_user(msg, context,  args)
+        user_id = await extract_user(msg, context, args)
         if user_id:
             user = await bot.get_chat(user_id)
         elif not msg.reply_to_message and not args:
@@ -420,7 +420,7 @@ async def user_demote_fed(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if is_user_fed_owner(fed_id, user.id):
         msg = update.effective_message
-        user_id = await extract_user(msg, context,  args)
+        user_id = await extract_user(msg, context, args)
         if user_id:
             user = await bot.get_chat(user_id)
 
@@ -1887,9 +1887,9 @@ async def fed_stat_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if args[0].isdigit():
             user_id = args[0]
         else:
-            user_id = await extract_user(msg, context,  args)
+            user_id = await extract_user(msg, context, args)
     else:
-        user_id = await extract_user(msg, context,  args)
+        user_id = await extract_user(msg, context, args)
 
     if user_id:
         if len(args) == 2 and args[0].isdigit():
