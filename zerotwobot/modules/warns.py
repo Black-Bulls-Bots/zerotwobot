@@ -15,7 +15,7 @@ from zerotwobot.modules.helper_funcs.extraction import (
     extract_user,
     extract_user_and_text,
 )
-from zerotwobot.modules.helper_funcs.filters import CustomFilters
+
 from zerotwobot.modules.helper_funcs.misc import split_message
 from zerotwobot.modules.helper_funcs.string_handling import split_quotes
 from zerotwobot.modules.log_channel import loggable
@@ -527,7 +527,7 @@ LIST_WARN_HANDLER = DisableAbleCommandHandler(
     ["warnlist", "warnfilters"], list_warn_filters, filters=filters.ChatType.GROUPS, admin_ok=True, block=False
 )
 WARN_FILTER_HANDLER = MessageHandler(
-    CustomFilters.has_text & filters.ChatType.GROUPS, reply_filter, block=False
+    filters.TEXT & filters.ChatType.GROUPS, reply_filter, block=False
 )
 WARN_LIMIT_HANDLER = CommandHandler("warnlimit", set_warn_limit, filters=filters.ChatType.GROUPS, block=False)
 WARN_STRENGTH_HANDLER = CommandHandler(

@@ -6,10 +6,10 @@ from zerotwobot.modules.helper_funcs.chat_status import (
     is_user_in_chat,
 )
 from zerotwobot.modules.helper_funcs.extraction import extract_user_and_text
-from zerotwobot.modules.helper_funcs.filters import CustomFilters
+
 from telegram import Update, ChatPermissions, ChatMemberAdministrator, ChatMemberRestricted
 from telegram.error import BadRequest
-from telegram.ext import ContextTypes, CommandHandler
+from telegram.ext import filters, ContextTypes, CommandHandler
 
 RBAN_ERRORS = {
     "User is an administrator of the chat",
@@ -542,11 +542,11 @@ async def runmute(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await message.reply_text("Well damn, I can't unmute that user.")
 
 
-RBAN_HANDLER = CommandHandler("rban", rban, filters=CustomFilters.sudo_filter, block=False)
-RUNBAN_HANDLER = CommandHandler("runban", runban, filters=CustomFilters.sudo_filter, block=False)
-RKICK_HANDLER = CommandHandler("rkick", rkick, filters=CustomFilters.sudo_filter, block=False)
-RMUTE_HANDLER = CommandHandler("rmute", rmute, filters=CustomFilters.sudo_filter, block=False)
-RUNMUTE_HANDLER = CommandHandler("runmute", runmute, filters=CustomFilters.sudo_filter, block=False)
+RBAN_HANDLER = CommandHandler("rban", rban, filters=filters.User(SUDO_USERS), block=False)
+RUNBAN_HANDLER = CommandHandler("runban", runban, filters=filters.User(SUDO_USERS), block=False)
+RKICK_HANDLER = CommandHandler("rkick", rkick, filters=filters.User(SUDO_USERS), block=False)
+RMUTE_HANDLER = CommandHandler("rmute", rmute, filters=filters.User(SUDO_USERS), block=False)
+RUNMUTE_HANDLER = CommandHandler("runmute", runmute, filters=filters.User(SUDO_USERS), block=False)
 
 application.add_handler(RBAN_HANDLER)
 application.add_handler(RUNBAN_HANDLER)
