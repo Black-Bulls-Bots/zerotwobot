@@ -21,7 +21,7 @@ from zerotwobot.modules.disable import DisableAbleCommandHandler
 from zerotwobot.modules.helper_funcs.handlers import MessageHandlerChecker
 from zerotwobot.modules.helper_funcs.chat_status import user_admin
 from zerotwobot.modules.helper_funcs.extraction import extract_text
-from zerotwobot.modules.helper_funcs.filters import CustomFilters
+
 from zerotwobot.modules.helper_funcs.misc import build_keyboard_parser
 from zerotwobot.modules.helper_funcs.msg_types import get_filter_type
 from zerotwobot.modules.helper_funcs.string_handling import (
@@ -613,7 +613,7 @@ RMALLFILTER_HANDLER = CommandHandler(
 RMALLFILTER_CALLBACK = CallbackQueryHandler(rmall_callback, pattern=r"filters_.*", block=False)
 LIST_HANDLER = DisableAbleCommandHandler("filters", list_handlers, admin_ok=True, block=False)
 CUST_FILTER_HANDLER = MessageHandler(
-    CustomFilters.has_text & ~filters_module.UpdateType.EDITED_MESSAGE, reply_filter, block=False
+    filters_module.TEXT & ~filters_module.UpdateType.EDITED_MESSAGE, reply_filter, block=False
 )
 
 application.add_handler(FILTER_HANDLER)
