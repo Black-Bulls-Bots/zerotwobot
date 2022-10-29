@@ -11,7 +11,7 @@ from telegram.ext import ContextTypes, CommandHandler, filters
 async def get_user_common_chats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, args = context.bot, context.args
     msg = update.effective_message
-    user = await extract_user(msg, context,  args)
+    user = await extract_user(msg, context, args)
     if not user:
         await msg.reply_text("I share no common chats with the void.")
         return

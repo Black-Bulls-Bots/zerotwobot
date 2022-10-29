@@ -29,7 +29,7 @@ async def get_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
     chat = update.effective_chat
     msg = update.effective_message
-    user_id = await extract_user(msg, context,  args)
+    user_id = await extract_user(msg, context, args)
 
     if user_id:
 
