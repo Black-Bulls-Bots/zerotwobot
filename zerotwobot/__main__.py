@@ -1,9 +1,8 @@
 import importlib
+import contextlib
 import time
 import re
 import asyncio
-from sys import argv
-from typing import Optional
 
 from zerotwobot import (
     ALLOW_EXCL,
@@ -48,6 +47,8 @@ from telegram.ext import (
 from telegram.constants import ParseMode
 from telegram.ext import ApplicationHandlerStop
 from telegram.helpers import escape_markdown
+from sys import argv
+from typing import Optional
 
 def get_readable_time(seconds: int) -> str:
     count = 0
@@ -652,7 +653,7 @@ async def donate(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
 
 
-async def migrate_chats(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def migrate_chats(update: Update, _: ContextTypes.DEFAULT_TYPE):
     msg = update.effective_message  # type: Optional[Message]
     if msg.migrate_to_chat_id:
         old_chat = update.effective_chat.id
@@ -665,11 +666,12 @@ async def migrate_chats(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     LOGGER.info("Migrating from %s, to %s", str(old_chat), str(new_chat))
     for mod in MIGRATEABLE:
-        mod.__migrate__(old_chat, new_chat)
+        with contextlib.suppress(KeyError, AttributeError):
+            mod.__migrate__(old_chat, new_chat)
+
 
     LOGGER.info("Successfully migrated!")
     raise ApplicationHandlerStop
-
 
 def main():
 
