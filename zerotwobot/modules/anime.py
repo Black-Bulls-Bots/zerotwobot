@@ -7,6 +7,7 @@ import jikanpy
 from httpx import AsyncClient
 from zerotwobot import application
 from zerotwobot.modules.disable import DisableAbleCommandHandler
+from zerotwobot.modules.helper_funcs.string_handling import markdown_parser, markdown_to_html
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, Message
 from telegram.ext import ContextTypes
 from telegram.constants import ParseMode
@@ -23,9 +24,9 @@ def shorten(description, info="anilist.co"):
     msg = ""
     if len(description) > 700:
         description = description[0:500] + "...."
-        msg += f"\n*Description*: _{description}_[Read More]({info})"
+        msg += f"\n*Description*: {description} [Read More]({info})"
     else:
-        msg += f"\n*Description*:_{description}_"
+        msg += f"\n*Description*:{description}"
     return msg
 
 
@@ -96,6 +97,7 @@ query ($id: Int,$search: String) {
         season
         type
         format
+        isAdult
         status
         duration
         siteUrl
@@ -126,10 +128,11 @@ query ($query: String) {
             full
         }
         siteUrl
+        gender
         image {
             large
         }
-        description
+        description (asHtml : true)
     }
 }
 """
@@ -216,6 +219,7 @@ async def anime(update: Update, context: ContextTypes.DEFAULT_TYPE):
         for x in json["genres"]:
             msg += f"{x}, "
         msg = msg[:-2] + "`\n"
+        msg += "➢ *Adult*: True 🔞 \n" if json['isAdult'] else "➢ *Adult*: False\n"
         msg += "➢ *Studios*: `"
         for x in json["studios"]["nodes"]:
             msg += f"{x['name']}, "
@@ -287,6 +291,7 @@ async def character(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if json:
         json = json["data"]["Character"]
         msg = f"*{json.get('name').get('full')}*(`{json.get('name').get('native')}`)\n"
+        msg += f"*Gender*: {json.get('gender', 'N/A')}\n"
         description = f"{json['description']}"
         site_url = json.get("siteUrl")
         msg += shorten(description, site_url)
@@ -295,12 +300,12 @@ async def character(update: Update, context: ContextTypes.DEFAULT_TYPE):
             image = image.get("large")
             await update.effective_message.reply_photo(
                 photo=image,
-                caption=msg.replace("<b>", "</b>"),
-                parse_mode=ParseMode.MARKDOWN,
+                caption=markdown_to_html(markdown_parser(msg)),
+                parse_mode=ParseMode.HTML,
             )
         else:
             await update.effective_message.reply_text(
-                msg.replace("<b>", "</b>"), parse_mode=ParseMode.MARKDOWN,
+                markdown_to_html(markdown_parser(msg)), parse_mode=ParseMode.HTML,
             )
 
 
