@@ -1,4 +1,4 @@
-from zerotwobot import application, LOGGER
+from zerotwobot import application, LOGGER, DRAGONS
 from zerotwobot.modules.helper_funcs.chat_status import (
     bot_admin,
     is_bot_admin,
@@ -124,8 +124,8 @@ async def rban(update: Update, context: ContextTypes.DEFAULT_TYPE):
         bot_can_restrict_members = bot_member.can_restrict_members
 
         if (
-            not await is_bot_admin(chat, bot.id)
-            or not await bot_can_restrict_members
+            not is_bot_admin(chat, bot.id)
+            or not bot_can_restrict_members
         ):
             await message.reply_text(
                 "I can't restrict people there! Make sure I'm admin and can ban users.",
@@ -212,8 +212,8 @@ async def runban(update: Update, context: ContextTypes.DEFAULT_TYPE):
         bot_can_restrict_members = bot_member.can_restrict_members
 
         if (
-            not await is_bot_admin(chat, bot.id)
-            or not await bot_can_restrict_members
+            not is_bot_admin(chat, bot.id)
+            or not bot_can_restrict_members
         ):
             await message.reply_text(
                 "I can't unrestrict people there! Make sure I'm admin and can unban users.",
@@ -302,8 +302,8 @@ async def rkick(update: Update, context: ContextTypes.DEFAULT_TYPE):
         bot_can_restrict_members = bot_member.can_restrict_members
 
         if (
-            not await is_bot_admin(chat, bot.id)
-            or not await bot_can_restrict_members
+            not is_bot_admin(chat, bot.id)
+            or not bot_can_restrict_members
         ):
             await message.reply_text(
                 "I can't restrict people there! Make sure I'm admin and can kick users.",
@@ -390,8 +390,8 @@ async def rmute(update: Update, context: ContextTypes.DEFAULT_TYPE):
         bot_can_restrict_members = bot_member.can_restrict_members
 
         if (
-            not await is_bot_admin(chat, bot.id)
-            or not await bot_can_restrict_members
+            not is_bot_admin(chat, bot.id)
+            or not bot_can_restrict_members
         ):
             await message.reply_text(
                 "I can't restrict people there! Make sure I'm admin and can mute users.",
@@ -480,8 +480,8 @@ async def runmute(update: Update, context: ContextTypes.DEFAULT_TYPE):
         bot_can_restrict_members = bot_member.can_restrict_members
 
         if (
-            not await is_bot_admin(chat, bot.id)
-            or not await bot_can_restrict_members
+            not is_bot_admin(chat, bot.id)
+            or not bot_can_restrict_members
         ):
             await message.reply_text(
                 "I can't unrestrict people there! Make sure I'm admin and can unban users.",
@@ -542,11 +542,11 @@ async def runmute(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await message.reply_text("Well damn, I can't unmute that user.")
 
 
-RBAN_HANDLER = CommandHandler("rban", rban, filters=filters.User(SUDO_USERS), block=False)
-RUNBAN_HANDLER = CommandHandler("runban", runban, filters=filters.User(SUDO_USERS), block=False)
-RKICK_HANDLER = CommandHandler("rkick", rkick, filters=filters.User(SUDO_USERS), block=False)
-RMUTE_HANDLER = CommandHandler("rmute", rmute, filters=filters.User(SUDO_USERS), block=False)
-RUNMUTE_HANDLER = CommandHandler("runmute", runmute, filters=filters.User(SUDO_USERS), block=False)
+RBAN_HANDLER = CommandHandler("rban", rban, filters=filters.User(DRAGONS), block=False)
+RUNBAN_HANDLER = CommandHandler("runban", runban, filters=filters.User(DRAGONS), block=False)
+RKICK_HANDLER = CommandHandler("rkick", rkick, filters=filters.User(DRAGONS), block=False)
+RMUTE_HANDLER = CommandHandler("rmute", rmute, filters=filters.User(DRAGONS), block=False)
+RUNMUTE_HANDLER = CommandHandler("runmute", runmute, filters=filters.User(DRAGONS), block=False)
 
 application.add_handler(RBAN_HANDLER)
 application.add_handler(RUNBAN_HANDLER)
