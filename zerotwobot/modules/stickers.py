@@ -350,7 +350,11 @@ async def kang(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 sticker_emoji = urlemoji[2]
             except IndexError:
                 sticker_emoji = "🃏"
-            urllib.urlretrieve(png_sticker, kangsticker)
+            try:
+                urllib.urlretrieve(png_sticker, kangsticker)
+            except ValueError:
+                msg.reply_text("Please provide valid image URL.")
+                return
             im = Image.open(kangsticker)
             maxsize = (512, 512)
             if (im.width and im.height) < 512:
