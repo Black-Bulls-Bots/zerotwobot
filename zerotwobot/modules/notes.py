@@ -259,11 +259,15 @@ async def slash_get(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def save(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     msg = update.effective_message  # type: Optional[Message]
+    if len(context.args) < 1 :
+        await msg.reply_text("You should give the note a name.")
+        return
+    
 
     note_name, text, data_type, content, buttons = get_note_type(msg)
     note_name = note_name.lower()
     if data_type is None:
-        await msg.reply_text("Dude, there's no note")
+        await msg.reply_text("Dude, there's no note content")
         return
 
     sql.add_note_to_db(
