@@ -5,6 +5,7 @@ import os
 from GoogleSearch import Search
 from telegram import (InlineKeyboardButton, InlineKeyboardMarkup,
                       MessageEntity, Update)
+from telegram.error import BadRequest
 from telegram.ext import ContextTypes
 from zerotwobot import application
 from zerotwobot.modules.disable import DisableAbleCommandHandler
@@ -43,7 +44,10 @@ async def reverse(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await message.reply_text("Command must be used with a reply to an image or should give url")
     
     elif message.reply_to_message and message.reply_to_message.photo:
-        edit = await message.reply_text("Downloading Image")
+        try:
+            edit = await message.reply_text("Downloading Image")
+        except BadRequest:
+            edit = await context.bot.send_message(update.effective_chat.id, "Downloading Image")
 
         photo = message.reply_to_message.photo[-1]
         file = await context.bot.get_file(photo.file_id)
