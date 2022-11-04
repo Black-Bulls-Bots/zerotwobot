@@ -51,7 +51,7 @@ async def warn(
     user: User, chat: Chat, reason: str, message: Message, warner: User = None,
 ) -> str:
     if await is_user_admin(chat, user.id):
-        # await message.reply_text("Damn admins, They are too far to be One Punched!")
+        await message.reply_text("Damn admins, They are too far to be Warned")
         return
 
     if user.id in TIGERS:
@@ -210,7 +210,8 @@ async def warn_user(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
                 warner,
             )
         else:
-            return await warn(await chat.get_member(user_id).user, chat, reason, message, warner)
+            member = await chat.get_member(user_id)
+            return await warn(member.user, chat, reason, message, warner)
     else:
         await message.reply_text("That looks like an invalid User ID to me.")
     return ""
