@@ -186,7 +186,11 @@ async def airing(update: Update, context: ContextTypes.DEFAULT_TYPE):
         r = await client.post(
         url, json={"query": airing_query, "variables": variables},
     )
-    response = r.json()["data"]["Media"]
+    if not r.status_code in [401, 404, 500, 503]:
+        response = r.json()["data"]["Media"]
+    else:
+        await update.effective_message.reply_text("Umm that didn't work!")
+        return
     msg = f"*Name*: *{response['title']['romaji']}*(`{response['title']['native']}`)\n*ID*: `{response['id']}`"
     if response["nextAiringEpisode"]:
         time = response["nextAiringEpisode"]["timeUntilAiring"] * 1000
