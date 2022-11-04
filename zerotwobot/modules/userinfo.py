@@ -163,7 +163,7 @@ async def info(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     try:
         chat_obj = await bot.get_chat(userid)
-    except BadRequest:
+    except (BadRequest, UnboundLocalError):
         await reply.edit_text("I can't get information about this user/channel/group.")
         return
     
