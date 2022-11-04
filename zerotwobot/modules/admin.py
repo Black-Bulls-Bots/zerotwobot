@@ -641,7 +641,10 @@ async def admin_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         promoter = await chat.get_member(admin_user.id)
 
         if (
-            not (promoter.can_promote_members or promoter.status == ChatMemberStatus.OWNER)
+            not (
+                promoter.can_promote_members if isinstance(promoter, ChatMemberAdministrator) else None 
+                or promoter.status == ChatMemberStatus.OWNER
+            )
             and admin_user.id not in DRAGONS
         ):
             await query.answer("You don't have the necessary rights to do that!", show_alert=True)
@@ -709,8 +712,10 @@ async def admin_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         demoter = await chat.get_member(admin_user.id)
 
         if (
-            not (demoter.can_promote_members or demoter.status == ChatMemberStatus.OWNER)
-            and admin_user.id not in DRAGONS
+            not (
+                demoter.can_promote_members if isinstance(demoter, ChatMemberAdministrator) else None 
+                or demoter.status == ChatMemberStatus.OWNER
+            )
         ):
             await query.answer("You don't have the necessary rights to do that!", show_alert=True)
             return
