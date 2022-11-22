@@ -1697,7 +1697,7 @@ async def fed_import_bans(update: Update, context: ContextTypes.DEFAULT_TYPE):
             multi_import_username = []
             multi_import_reason = []
             with BytesIO() as file:
-                file_info.download(out=file)
+                file_info.download_to_object(out=file)
                 file.seek(0)
                 reading = file.read().decode("UTF-8")
                 splitting = reading.split("\n")
@@ -1776,7 +1776,7 @@ async def fed_import_bans(update: Update, context: ContextTypes.DEFAULT_TYPE):
             multi_import_lastname = []
             multi_import_username = []
             multi_import_reason = []
-            file_info.download(
+            file_info.download_to_memory(
                 "fban_{}.csv".format(msg.reply_to_message.document.file_id),
             )
             with open(

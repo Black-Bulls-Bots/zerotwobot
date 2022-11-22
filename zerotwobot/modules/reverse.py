@@ -51,7 +51,7 @@ async def reverse(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         photo = message.reply_to_message.photo[-1]
         file = await context.bot.get_file(photo.file_id)
-        await file.download("reverse.jpg")
+        await file.download_to_memory("reverse.jpg")
 
         await edit.edit_text("Downloaded Image, uploading to google...")
 
