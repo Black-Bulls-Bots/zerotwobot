@@ -108,7 +108,8 @@ async def promote(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
                 can_restrict_members=bot_member.can_restrict_members,
                 can_pin_messages=bot_member.can_pin_messages,
                 can_manage_chat=bot_member.can_manage_chat,
-                can_manage_video_chats=bot_member.can_manage_video_chats
+                can_manage_video_chats=bot_member.can_manage_video_chats,
+                can_manage_topics=bot_member.can_manage_topics
             )
         except BadRequest as err:
             if err.message == "User_not_mutual_contact":
@@ -215,6 +216,7 @@ async def demote(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
             can_promote_members=False,
             can_manage_chat=False,
             can_manage_video_chats=False,
+            can_manage_topics=False
         )
 
         await bot.sendMessage(

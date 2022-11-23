@@ -70,6 +70,8 @@ LOCK_CHAT_RESTRICTION = {
         "can_change_info": False,
         "can_invite_users": False,
         "can_pin_messages": False,
+        "can_manage_topics": False,
+
     },
     "messages": {"can_send_messages": False},
     "media": {"can_send_media_messages": False},
@@ -81,6 +83,8 @@ LOCK_CHAT_RESTRICTION = {
     "info": {"can_change_info": False},
     "invite": {"can_invite_users": False},
     "pin": {"can_pin_messages": False},
+    "topics": {"can_manage_topics": False},
+
 }
 
 UNLOCK_CHAT_RESTRICTION = {
@@ -91,6 +95,7 @@ UNLOCK_CHAT_RESTRICTION = {
         "can_send_other_messages": True,
         "can_add_web_page_previews": True,
         "can_invite_users": True,
+        "can_manage_topics": True,
     },
     "messages": {"can_send_messages": True},
     "media": {"can_send_media_messages": True},
@@ -102,6 +107,7 @@ UNLOCK_CHAT_RESTRICTION = {
     "info": {"can_change_info": True},
     "invite": {"can_invite_users": True},
     "pin": {"can_pin_messages": True},
+    "topics": {"can_manage_topics": True},
 }
 
 PERM_GROUP = 1
@@ -577,6 +583,8 @@ async def build_lock_message(chat_id):
         permslist.append("info = `{}`".format(permissions.can_change_info))
         permslist.append("invite = `{}`".format(permissions.can_invite_users))
         permslist.append("pin = `{}`".format(permissions.can_pin_messages))
+        permslist.append("topics = `{}`".format(permissions.can_manage_topics))
+
 
     if locklist:
         # Ordering lock list
@@ -629,6 +637,7 @@ def get_permission_list(current, new):
         "can_change_info": None,
         "can_invite_users": None,
         "can_pin_messages": None,
+        "can_manage_topics": None,
     }
     permissions.update(current)
     permissions.update(new)
