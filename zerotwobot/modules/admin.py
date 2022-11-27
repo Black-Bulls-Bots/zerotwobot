@@ -487,7 +487,10 @@ async def unpinall(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
 
 
     try:
-        await bot.unpin_all_chat_messages(chat.id)
+        if chat.is_forum:
+            await bot.unpin_all_forum_topic_messages(chat.id, message.message_thread_id)
+        else:
+            await bot.unpin_all_chat_messages(chat.id)
     except BadRequest as excp:
         if excp.message == "Chat_not_modified":
             pass
@@ -945,7 +948,10 @@ async def admin_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
 
         try:
-            await bot.unpin_all_chat_messages(chat.id)
+            if chat.is_forum:
+                await bot.unpin_all_forum_topic_messages(chat.id, message.message_thread_id)
+            else:
+                await bot.unpin_all_chat_messages(chat.id)
         except BadRequest as excp:
             if excp.message == "Chat_not_modified":
                 pass
@@ -968,7 +974,7 @@ __help__ = """
 *Admins only:*
  • `/pin`*:* silently pins the message replied to - add `'loud'` or `'notify'` to give notifs to users
  • `/unpin`*:* unpins the currently pinned message
- • `/unpinall`*:* unpins all the pinned message (only OWNER can do.)
+ • `/unpinall`*:* unpins all the pinned message, works in topics too (only OWNER can do.)
  • `/invitelink`*:* gets invitelink
  • `/promote`*:* promotes the user replied to
  • `/demote`*:* demotes the user replied to
