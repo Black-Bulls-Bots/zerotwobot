@@ -1,11 +1,10 @@
 import html
 
-from telegram import ChatMemberAdministrator, Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.constants import ParseMode, ChatMemberStatus
+from telegram import ChatMemberAdministrator, Update, InlineKeyboardButton, InlineKeyboardMarkup, ChatMemberOwner
+from telegram.constants import ParseMode, ChatMemberStatus, ChatID, ChatType
 from telegram.error import BadRequest
 from telegram.ext import ContextTypes, CommandHandler, filters, CallbackQueryHandler
 from telegram.helpers import mention_html
-from telegram import constants
 
 from zerotwobot import DRAGONS, application
 from zerotwobot.modules.disable import DisableAbleCommandHandler
@@ -44,7 +43,7 @@ async def promote(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     promoter = await chat.get_member(user.id)
 
 
-    if message.from_user.id == constants.ChatID.ANONYMOUS_ADMIN:
+    if message.from_user.id == ChatID.ANONYMOUS_ADMIN:
         
         await message.reply_text(
             text="You are an anonymous admin.",
@@ -122,6 +121,7 @@ async def promote(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
         chat.id,
         f"Successfully promoted <b>{user_member.user.first_name or user_id}</b>!",
         parse_mode=ParseMode.HTML,
+        message_thread_id=message.message_thread_id if chat.is_forum else None
     )
 
     log_message = (
@@ -151,7 +151,7 @@ async def demote(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     user_id = await extract_user(message, context, args)
     demoter = await chat.get_member(user.id)
 
-    if message.from_user.id == constants.ChatID.ANONYMOUS_ADMIN:
+    if message.from_user.id == ChatID.ANONYMOUS_ADMIN:
     
         await message.reply_text(
             text="You are an anonymous admin.",
@@ -203,7 +203,7 @@ async def demote(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
         return
 
     try:
-        await bot.promoteChatMember(
+        await bot.promote_chat_member(
             chat.id,
             user_id,
             can_change_info=False,
@@ -223,6 +223,7 @@ async def demote(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
             chat.id,
             f"Sucessfully demoted <b>{user_member.user.first_name or user_id}</b>!",
             parse_mode=ParseMode.HTML,
+            message_thread_id=message.message_thread_id if chat.is_forum else None
         )
 
         log_message = (
@@ -238,7 +239,7 @@ async def demote(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
             "Could not demote. I might not be admin, or the admin status was appointed by another"
             " user, so I can't act upon them!",
         )
-        return
+        raise
 
 
 
@@ -326,13 +327,14 @@ async def set_title(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await bot.setChatAdministratorCustomTitle(chat.id, user_id, title)
     except BadRequest:
         await message.reply_text("Either they aren't promoted by me or you set a title text that is impossible to set.")
-        return
+        raise
 
     await bot.sendMessage(
         chat.id,
         f"Successfully set title for <code>{user_member.user.first_name or user_id}</code> "
         f"to <code>{html.escape(title[:16])}</code>!",
         parse_mode=ParseMode.HTML,
+        message_thread_id=message.message_thread_id if chat.is_forum else None
     )
 
 
@@ -514,7 +516,7 @@ async def invite(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if chat.username:
         await update.effective_message.reply_text(f"https://t.me/{chat.username}")
-    elif chat.type in [chat.SUPERGROUP, chat.CHANNEL]:
+    elif chat.type in [ChatType.SUPERGROUP, ChatType.CHANNEL]:
         bot_member = await chat.get_member(bot.id)
         if (bot_member.can_invite_users if isinstance(bot_member, ChatMemberAdministrator) else None):
             invitelink = await bot.exportChatInviteLink(chat.id)
@@ -553,61 +555,43 @@ async def adminlist(update: Update, context: ContextTypes.DEFAULT_TYPE):
     administrators = await bot.getChatAdministrators(chat_id)
     text = "Admins in <b>{}</b>:".format(html.escape(update.effective_chat.title))
 
-    for admin in administrators:
-        user = admin.user
-        status = admin.status
-        custom_title = admin.custom_title
-
-        if user.first_name == "":
-            name = "☠ Deleted Account"
-        else:
-            name = "{}".format(
-                mention_html(
-                    user.id, html.escape(user.first_name + " " + (user.last_name or "")),
-                ),
-            )
-
-        if user.is_bot:
-            administrators.remove(admin)
-            continue
-
-        # if user.username:
-        #    name = escape_markdown("@" + user.username)
-        if status == ChatMemberStatus.OWNER:
-            text += "\n 👑 Creator:"
-            text += "\n<code> • </code>{}\n".format(name)
-
-            if custom_title:
-                text += f"<code> ┗━ {html.escape(custom_title)}</code>\n"
-
-    text += "\n🔱 Admins:"
-
     custom_admin_list = {}
     normal_admin_list = []
 
     for admin in administrators:
-        user = admin.user
-        status = admin.status
-        custom_title = admin.custom_title
+        if isinstance(admin, (ChatMemberAdministrator, ChatMemberOwner)):
+            user = admin.user
+            status = admin.status
+            custom_title = admin.custom_title
 
-        if user.first_name == "":
-            name = "☠ Deleted Account"
-        else:
-            name = "{}".format(
-                mention_html(
-                    user.id, html.escape(user.first_name + " " + (user.last_name or "")),
-                ),
-            )
-        # if user.username:
-        #    name = escape_markdown("@" + user.username)
-        if status == ChatMemberStatus.ADMINISTRATOR:
-            if custom_title:
-                try:
-                    custom_admin_list[custom_title].append(name)
-                except KeyError:
-                    custom_admin_list.update({custom_title: [name]})
+            if user.first_name == "":
+                name = "☠ Deleted Account"
             else:
-                normal_admin_list.append(name)
+                name = "{}".format(
+                    mention_html(
+                        user.id, html.escape(user.first_name + " " + (user.last_name or "")),
+                    ),
+                )
+
+            # if user.username:
+            #    name = escape_markdown("@" + user.username)
+            if status == ChatMemberStatus.OWNER:
+                text += "\n 👑 Creator:"
+                text += "\n<code> • </code>{}\n".format(name)
+
+                if custom_title:
+                    text += f"<code> ┗━ {html.escape(custom_title)}</code>\n"
+            
+            if status == ChatMemberStatus.ADMINISTRATOR:
+                if custom_title:
+                    try:
+                        custom_admin_list[custom_title].append(name)
+                    except KeyError:
+                        custom_admin_list.update({custom_title: [name]})
+                else:
+                    normal_admin_list.append(name)
+
+    text += "\n🔱 Admins:"
 
     for admin in normal_admin_list:
         text += "\n<code> • </code>{}".format(admin)
