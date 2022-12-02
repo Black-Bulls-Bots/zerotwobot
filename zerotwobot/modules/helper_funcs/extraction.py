@@ -9,7 +9,7 @@ from telegram.error import BadRequest
 
 async def id_from_reply(message: Message):
     prev_message = message.reply_to_message
-    if not prev_message:
+    if not prev_message or prev_message.forum_topic_created:
         return None, None
     user_id = prev_message.from_user.id
     #if user id is from channel bot, then fetch channel id from sender_chat 

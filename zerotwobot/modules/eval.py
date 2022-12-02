@@ -39,13 +39,18 @@ async def send(msg, bot, update):
     if len(str(msg)) > 2000:
         with io.BytesIO(str.encode(msg)) as out_file:
             out_file.name = "output.txt"
-            await bot.send_document(chat_id=update.effective_chat.id, document=out_file)
+            await bot.send_document(
+                chat_id=update.effective_chat.id, 
+                document=out_file, 
+                message_thread_id=update.effective_message.message_thread_id if update.effective_chat.is_forum else None
+            )
     else:
         LOGGER.info(f"OUT: '{msg}'")
         await bot.send_message(
             chat_id=update.effective_chat.id,
             text=f"`{msg}`",
             parse_mode=ParseMode.MARKDOWN,
+            message_thread_id=update.effective_message.message_thread_id if update.effective_chat.is_forum else None
         )
 
 

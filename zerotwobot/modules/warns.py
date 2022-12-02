@@ -195,7 +195,7 @@ async def warn_user(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     warner: Optional[User] = update.effective_user
 
     user_id, reason = await extract_user_and_text(message, context, args)
-    if message.text.startswith("/d") and message.reply_to_message:
+    if message.text.startswith("/d") and message.reply_to_message and not message.reply_to_message.forum_topic_created:
         await message.reply_to_message.delete()
     if user_id:
         if (
@@ -356,7 +356,7 @@ async def list_warn_filters(update: Update, context: ContextTypes.DEFAULT_TYPE):
     filter_list = CURRENT_WARNING_FILTER_STRING
     for keyword in all_handlers:
         entry = f" - {html.escape(keyword)}\n"
-        if len(entry) + len(filter_list) > MessageLimit.TEXT_LENGHT:
+        if len(entry) + len(filter_list) > MessageLimit.MAX_TEXT_LENGTH:
             await update.effective_message.reply_text(filter_list, parse_mode=ParseMode.HTML)
             filter_list = entry
         else:
@@ -478,7 +478,7 @@ def __stats__():
     )
 
 
-def __import_data__(chat_id, data):
+async def __import_data__(chat_id, data, message):
     for user_id, count in data.get("warns", {}).items():
         for x in range(int(count)):
             sql.warn_user(user_id, chat_id)

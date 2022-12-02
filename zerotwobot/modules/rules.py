@@ -35,6 +35,7 @@ async def send_rules(update, chat_id, from_pm=False):
                 user.id,
                 "The rules shortcut for this chat hasn't been set properly! Ask admins to "
                 "fix this.\nMaybe they forgot the hyphen in ID",
+                message_thread_id= update.effective_message.message_thread_id if chat.is_forum else None,
             )
             return
         else:
@@ -53,7 +54,7 @@ async def send_rules(update, chat_id, from_pm=False):
             "The group admins haven't set any rules for this chat yet. "
             "This probably doesn't mean it's lawless though...!",
         )
-    elif rules and reply_msg:
+    elif rules and reply_msg and not reply_msg.forum_topic_created:
         await reply_msg.reply_text(
             "Please click the button below to see the rules.",
             reply_markup=InlineKeyboardMarkup(
@@ -114,7 +115,7 @@ def __stats__():
     return f"• {sql.num_chats()} chats have rules set."
 
 
-def __import_data__(chat_id, data):
+async def __import_data__(chat_id, data, message):
     # set chat rules
     rules = data.get("info", {}).get("rules", "")
     sql.set_rules(chat_id, rules)

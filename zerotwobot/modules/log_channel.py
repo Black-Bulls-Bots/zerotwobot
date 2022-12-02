@@ -2,8 +2,9 @@ from datetime import datetime
 from functools import wraps
 
 from telegram.ext import ContextTypes
-
+from telegram.constants import ChatType
 from zerotwobot.modules.helper_funcs.misc import is_module_loaded
+from zerotwobot.modules.sql.topics_sql import get_action_topic
 
 FILENAME = __name__.rsplit(".", 1)[-1]
 
@@ -39,7 +40,9 @@ if is_module_loaded(FILENAME):
                 datetime_fmt = "%H:%M - %d-%m-%Y"
                 result += f"\n<b>Event Stamp</b>: <code>{datetime.utcnow().strftime(datetime_fmt)}</code>"
 
-                if message.chat.type == chat.SUPERGROUP and message.chat.username:
+                if chat.is_forum and chat.username:
+                    result += f'\n<b>Link:</b> <a href="https://t.me/{chat.username}/{message.message_thread_id}/{message.message_id}">click here</a>'
+                elif message.chat.type == chat.SUPERGROUP and message.chat.username:
                     result += f'\n<b>Link:</b> <a href="https://t.me/{chat.username}/{message.message_id}">click here</a>'
                 log_chat = sql.get_chat_log_channel(chat.id)
                 if log_chat:
@@ -61,8 +64,9 @@ if is_module_loaded(FILENAME):
                 result += "\n<b>Event Stamp</b>: <code>{}</code>".format(
                     datetime.utcnow().strftime(datetime_fmt),
                 )
-
-                if message.chat.type == chat.SUPERGROUP and message.chat.username:
+                if chat.is_forum and chat.username:
+                    result += f'\n<b>Link:</b> <a href="https://t.me/{chat.username}/{message.message_thread_id}/{message.message_id}">click here</a>'
+                elif message.chat.type == chat.SUPERGROUP and message.chat.username:
                     result += f'\n<b>Link:</b> <a href="https://t.me/{chat.username}/{message.message_id}">click here</a>'
                 log_chat = str(EVENT_LOGS)
                 if log_chat:
@@ -76,6 +80,7 @@ if is_module_loaded(FILENAME):
         context: ContextTypes.DEFAULT_TYPE, log_chat_id: str, orig_chat_id: str, result: str,
     ):
         bot = context.bot
+        topic_chat = get_action_topic(orig_chat_id)
         try:
             await bot.send_message(
                 log_chat_id,
@@ -87,6 +92,7 @@ if is_module_loaded(FILENAME):
             if excp.message == "Chat not found":
                 await bot.send_message(
                     orig_chat_id, "This log channel has been deleted - unsetting.",
+                    message_thread_id= topic_chat if topic_chat else None
                 )
                 sql.stop_chat_logging(orig_chat_id)
             else:
@@ -125,22 +131,14 @@ if is_module_loaded(FILENAME):
         bot = context.bot
         message = update.effective_message
         chat = update.effective_chat
-        if chat.type == chat.CHANNEL:
-            await message.reply_text(
+        if chat.type == ChatType.CHANNEL:
+            await bot.send_message(
+                chat.id,
                 "Now, forward the /setlog to the group you want to tie this channel to!",
             )
 
         elif message.forward_from_chat:
             sql.set_chat_log_channel(chat.id, message.forward_from_chat.id)
-            try:
-                await message.delete()
-            except BadRequest as excp:
-                if excp.message == "Message to delete not found":
-                    pass
-                else:
-                    LOGGER.exception(
-                        "Error deleting message in log channel. Should work anyway though.",
-                    )
 
             try:
                 await bot.send_message(
@@ -149,11 +147,17 @@ if is_module_loaded(FILENAME):
                 )
             except Forbidden as excp:
                 if excp.message == "Forbidden: bot is not a member of the channel chat":
-                    await bot.send_message(chat.id, "Successfully set log channel!")
+                    if chat.is_forum:
+                        await bot.send_message(chat.id, "Successfully set log channel!", message_thread_id=message.message_thread_id)
+                    else:
+                        await bot.send_message(chat.id, "Successfully set log channel!")
                 else:
                     LOGGER.exception("ERROR in setting the log channel.")
 
-            await bot.send_message(chat.id, "Successfully set log channel!")
+            if chat.is_forum:
+                await bot.send_message(chat.id, "Successfully set log channel!", message_thread_id=message.message_thread_id)
+            else:
+                await bot.send_message(chat.id, "Successfully set log channel!")
 
         else:
             await message.reply_text(

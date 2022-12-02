@@ -31,6 +31,8 @@ from telegram.ext import (
     MessageHandler,
 )
 
+from zerotwobot.modules.sql.topics_sql import get_action_topic
+
 FILE_MATCHER = re.compile(r"^###file_id(!photo)?###:(.*?)(?:\s|$)")
 STICKER_MATCHER = re.compile(r"^###sticker(!photo)?###:")
 BUTTON_MATCHER = re.compile(r"^###button(!photo)?###:(.*?)(?:\s|$)")
@@ -57,6 +59,7 @@ ENUM_FUNC_MAP = {
 async def get(update: Update, context: ContextTypes.DEFAULT_TYPE, notename, show_none=True, no_format=False):
     bot = context.bot
     chat_id = update.effective_message.chat.id
+    chat = update.effective_chat
     note_chat_id = update.effective_chat.id
     note = sql.get_note(note_chat_id, notename)
     message = update.effective_message  # type: Optional[Message]
@@ -65,7 +68,7 @@ async def get(update: Update, context: ContextTypes.DEFAULT_TYPE, notename, show
         if MessageHandlerChecker.check_user(update.effective_user.id):
             return
         # If we're replying to a message, reply to that message (unless it's an error)
-        if message.reply_to_message:
+        if message.reply_to_message and not message.reply_to_message.forum_topic_created:
             reply_id = message.reply_to_message.message_id
         else:
             reply_id = message.message_id
@@ -175,6 +178,7 @@ async def get(update: Update, context: ContextTypes.DEFAULT_TYPE, notename, show
                         parse_mode=parseMode,
                         disable_web_page_preview=True,
                         reply_markup=keyboard,
+                        message_thread_id=message.message_thread_id if chat.is_forum else None
                     )
                 else:
                     await ENUM_FUNC_MAP[note.msgtype](
@@ -185,6 +189,7 @@ async def get(update: Update, context: ContextTypes.DEFAULT_TYPE, notename, show
                         parse_mode=parseMode,
                         disable_web_page_preview=True,
                         reply_markup=keyboard,
+                        message_thread_id=message.message_thread_id if chat.is_forum else None
                     )
 
             except BadRequest as excp:
@@ -279,7 +284,7 @@ async def save(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode=ParseMode.MARKDOWN,
     )
 
-    if msg.reply_to_message and msg.reply_to_message.from_user.is_bot:
+    if msg.reply_to_message and msg.reply_to_message.from_user.is_bot and not msg.reply_to_message.forum_topic_created:
         if text:
             await msg.reply_text(
                 "Seems like you're trying to save a message from a bot. Unfortunately, "
@@ -383,7 +388,7 @@ async def list_notes(update: Update, context: ContextTypes.DEFAULT_TYPE):
             note_name = f"`{note_id:2}.`  `#{(note.name.lower())}`\n"
         else:
             note_name = f"`{note_id}.`  `#{(note.name.lower())}`\n"
-        if len(msg) + len(note_name) > MessageLimit.TEXT_LENGTH:
+        if len(msg) + len(note_name) > MessageLimit.MAX_TEXT_LENGTH:
             await update.effective_message.reply_text(msg, parse_mode=ParseMode.MARKDOWN)
             msg = ""
         msg += note_name
@@ -398,7 +403,7 @@ async def list_notes(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.effective_message.reply_text(msg, parse_mode=ParseMode.MARKDOWN)
 
 
-async def __import_data__(chat_id, data):
+async def __import_data__(chat_id, data, message: Message):
     failures = []
     for notename, notedata in data.get("extra", {}).items():
         match = FILE_MATCHER.match(notedata)
@@ -502,6 +507,7 @@ async def __import_data__(chat_id, data):
                 caption="These files/photos failed to import due to originating "
                 "from another bot. This is a telegram API restriction, and can't "
                 "be avoided. Sorry for the inconvenience!",
+                message_thread_id=message.message_thread_id if message.chat.is_forum else None
             )
 
 

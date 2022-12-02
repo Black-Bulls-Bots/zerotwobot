@@ -97,7 +97,10 @@ async def import_data(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         try:
             for mod in DATA_IMPORT:
-                await mod.__import_data__(str(chat.id), data)
+                try:
+                    await mod.__import_data__(str(chat.id), data, message)
+                except TypeError:
+                    pass
         except Exception:
             await msg.reply_text(
                 f"An error occurred while recovering your data. The process failed. If you experience a problem with this, please take it to @{SUPPORT_CHAT}",
@@ -351,6 +354,7 @@ async def export_data(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ),
         reply_to_message_id=msg.message_id,
         parse_mode=ParseMode.MARKDOWN,
+        message_thread_id=msg.message_thread_id if chat.is_forum else None
     )
     os.remove("zerotwobot{}.backup".format(chat_id))  # Cleaning file
 

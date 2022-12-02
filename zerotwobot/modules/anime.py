@@ -168,7 +168,7 @@ async def extract_arg(message: Message):
     if len(split) > 1:
         return split[1]
     reply = message.reply_to_message
-    if reply is not None:
+    if reply is not None and not reply.forum_topic_created:
         return reply.text
     return None
 

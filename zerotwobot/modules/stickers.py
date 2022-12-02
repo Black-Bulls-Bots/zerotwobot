@@ -21,7 +21,7 @@ combot_stickers_url = "https://combot.org/telegram/stickers?q="
 
 async def stickerid(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.effective_message
-    if msg.reply_to_message and msg.reply_to_message.sticker:
+    if msg.reply_to_message and msg.reply_to_message.sticker and not msg.reply_to_message.forum_topic_created:
         await update.effective_message.reply_text(
             "Hello "
             + f"{mention_html(msg.from_user.id, msg.from_user.first_name)}"
@@ -64,14 +64,19 @@ async def cb_sticker(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def getsticker(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
     msg = update.effective_message
-    chat_id = update.effective_chat.id
+    chat = update.effective_chat
     user = update.effective_user
     if msg.reply_to_message and msg.reply_to_message.sticker:
         file_id = msg.reply_to_message.sticker.file_id
         new_file = await bot.get_file(file_id)
         await new_file.download_to_memory(f"sticker_{user.id}.png")
-        await bot.send_document(chat_id, document=open(f"sticker_{user.id}.png", "rb"))
-        os.remove("sticker_{user.id}.png")
+        await bot.send_document(
+            chat.id, 
+            document=open(f"sticker_{user.id}.png", "rb"),
+            reply_to_message_id=msg.message_id,
+            message_thread_id=msg.message_thread_id if chat.is_forum else None
+            )
+        os.remove(f"sticker_{user.id}.png")
     else:
         await update.effective_message.reply_text(
             "Please reply to a sticker for me to upload its PNG.",
@@ -110,7 +115,7 @@ async def kang(update: Update, context: ContextTypes.DEFAULT_TYPE):
     is_gif = False
     file_id = ""
 
-    if msg.reply_to_message:
+    if msg.reply_to_message and not msg.reply_to_message.forum_topic_created:
         if msg.reply_to_message.sticker:
             if msg.reply_to_message.sticker.is_animated:
                 is_animated = True
@@ -462,7 +467,11 @@ async def delsticker(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     check = "_by_" + context.bot.username
 
-    if not update.effective_message.reply_to_message or not context.args:
+    if (
+        not update.effective_message.reply_to_message
+        and not update.effetive_message.reply_to_message.forum_topic_created
+        or not context.args
+        ):
         await update.effective_message.reply_text("Sorry but you have to reply to a sticker to delete.")
         return
 

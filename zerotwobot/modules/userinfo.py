@@ -110,7 +110,7 @@ async def group_info(event) -> None:
 
 async def gifid(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.effective_message
-    if msg.reply_to_message and msg.reply_to_message.animation:
+    if msg.reply_to_message and msg.reply_to_message.animation and not msg.reply_to_message.forum_topic_created:
         await update.effective_message.reply_text(
             f"Gif ID:\n<code>{msg.reply_to_message.animation.file_id}</code>",
             parse_mode=ParseMode.HTML,
@@ -145,7 +145,7 @@ async def info(update: Update, context: ContextTypes.DEFAULT_TYPE):
             userid = user_id
     elif len(args) >= 1 and args[0].lstrip("-").isdigit():
         userid = int(args[0])
-    elif message.reply_to_message:
+    elif message.reply_to_message and not message.reply_to_message.forum_topic_created:
         if message.reply_to_message.sender_chat:
             userid = message.reply_to_message.sender_chat.id
         elif message.reply_to_message.from_user:
@@ -237,8 +237,6 @@ async def info(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 bot.username,
             )
 
-
-                
         for mod in USER_INFO:
             try:
                 mod_info = mod.__user_info__(chat_obj.id).strip()

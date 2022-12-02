@@ -40,7 +40,7 @@ async def telegraph(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
     if len(args) >= 1:
-        if message.reply_to_message:
+        if message.reply_to_message and not message.reply_to_message.forum_topic_created:
             start = datetime.now()
             reply_msg = message.reply_to_message
 
