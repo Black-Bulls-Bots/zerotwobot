@@ -241,7 +241,7 @@ async def lock(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
                 await context.bot.set_chat_permissions(
                     chat_id=chat_id,
                     permissions=get_permission_list(
-                        eval(str(current_permission)),
+                        current_permission.to_dict(),
                         LOCK_CHAT_RESTRICTION[ltype.lower()],
                     ),
                 )
@@ -373,7 +373,7 @@ async def unlock(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
                 await context.bot.set_chat_permissions(
                     chat_id=chat_id,
                     permissions=get_permission_list(
-                        eval(str(current_permission)),
+                        current_permission.to_dict(),
                         UNLOCK_CHAT_RESTRICTION[ltype.lower()],
                     ),
                 )
@@ -645,7 +645,7 @@ def get_permission_list(current, new):
     return new_permissions
 
 
-def __import_data__(chat_id, data):
+async def __import_data__(chat_id, data, message):
     # set chat locks
     locks = data.get("locks", {})
     for itemlock in locks:

@@ -287,7 +287,7 @@ def is_locked(chat_id, lock_type):
         return curr_perm.emojicustom
     elif lock_type == "stickerpremium":
         return curr_perm.stickerpremium
-    elif lock_type == "stickeranimated0":
+    elif lock_type == "stickeranimated":
         return curr_perm.stickeranimated
 
 
