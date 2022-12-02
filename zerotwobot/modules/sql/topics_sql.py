@@ -32,7 +32,7 @@ def set_action_topic(chat_id: int, action_chat: int) -> int:
         SESSION.commit()
 
 
-def get_action_topic(chat_id: int) -> int:
+def get_action_topic(chat_id: int) -> int | None:
     action_topic = SESSION.query(TopicsAction).get(str(chat_id))
     ret = None
     if action_topic:
