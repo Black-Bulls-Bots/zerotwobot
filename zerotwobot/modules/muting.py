@@ -86,6 +86,7 @@ async def mute(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
             chat.id,
             f"Muted <b>{html.escape(member.user.first_name)}</b> with no expiration date!",
             parse_mode=ParseMode.HTML,
+            message_thread_id=message.message_thread_id if chat.is_forum else None
         )
         return log
 
@@ -137,6 +138,7 @@ async def unmute(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
                 chat.id,
                 f"I shall allow <b>{html.escape(member.user.first_name)}</b> to text!",
                 parse_mode=ParseMode.HTML,
+                message_thread_id=message.message_thread_id if chat.is_forum else None
             )
             return (
                 f"<b>{html.escape(chat.title)}:</b>\n"
@@ -211,6 +213,7 @@ async def temp_mute(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
                 chat.id,
                 f"Muted <b>{html.escape(member.user.first_name)}</b> for {time_val}!",
                 parse_mode=ParseMode.HTML,
+                message_thread_id=message.message_thread_id if chat.is_forum else None
             )
             return log
         else:

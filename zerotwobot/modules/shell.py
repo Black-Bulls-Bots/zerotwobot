@@ -10,6 +10,7 @@ from telegram.ext import ContextTypes, CommandHandler
 @dev_plus
 async def shell(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
+    chat = update.effective_chat
     cmd = message.text.split(" ", 1)
     if len(cmd) == 1:
         await message.reply_text("No command to execute was given.")
@@ -37,6 +38,7 @@ async def shell(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 filename=doc.name,
                 reply_to_message_id=message.message_id,
                 chat_id=message.chat_id,
+                message_thread_id=message.message_thread_id if chat.is_forum else None
             )
     else:
         await message.reply_text(reply, parse_mode=ParseMode.MARKDOWN)

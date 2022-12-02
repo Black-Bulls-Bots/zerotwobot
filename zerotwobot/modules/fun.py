@@ -15,8 +15,6 @@ from telegram.ext import ContextTypes
 
 async def runs(update: Update, context: ContextTypes.DEFAULT_TYPE):
     temp = random.choice(fun_strings.RUN_STRINGS)
-    if update.effective_user.id == 1170714920:
-        temp = "Run everyone, they just dropped a bomb 💣💣"
     await update.effective_message.reply_text(temp)
 
 
@@ -85,9 +83,6 @@ async def slap(update: Update, context: ContextTypes.DEFAULT_TYPE):
     item = random.choice(fun_strings.ITEMS)
     hit = random.choice(fun_strings.HIT)
     throw = random.choice(fun_strings.THROW)
-
-    if update.effective_user.id == 1096215023:
-        temp = "@NeoTheKitty scratches {user2}"
 
     reply = temp.format(user1=user1, user2=user2, item=item, hits=hit, throws=throw)
 

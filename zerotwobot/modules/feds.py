@@ -289,6 +289,7 @@ async def join_fed(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         chat.title, getfed["fname"],
                     ),
                     parse_mode="markdown",
+                    message_thread_id=message.message_thread_id if chat.is_forum else None
                 )
 
         await message.reply_text(
@@ -325,6 +326,7 @@ async def leave_fed(update: Update, context: ContextTypes.DEFAULT_TYPE):
                             chat.title, fed_info["fname"],
                         ),
                         parse_mode="markdown",
+                        message_thread_id=update.effective_message.message_thread_id if chat.is_forum else None
                     )
             await send_message(
                 update.effective_message,
@@ -710,6 +712,7 @@ async def fed_ban(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 reason,
             ),
             parse_mode="HTML",
+            message_thread_id=message.message_thread_id if chat.is_forum else None
         )
         # Send message to owner if fednotif is enabled
         if getfednotif:
@@ -748,6 +751,7 @@ async def fed_ban(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         reason,
                     ),
                     parse_mode="HTML",
+                    message_thread_id=message.message_thread_id if chat.is_forum else None
                 )
         for fedschat in fed_chats:
             try:
@@ -868,6 +872,7 @@ async def fed_ban(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reason,
         ),
         parse_mode="HTML",
+        message_thread_id=message.message_thread_id if chat.is_forum else None
     )
     # Send message to owner if fednotif is enabled
     if getfednotif:
@@ -906,6 +911,7 @@ async def fed_ban(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     reason,
                 ),
                 parse_mode="HTML",
+                message_thread_id=message.message_thread_id if chat.is_forum else None
             )
     chats_in_fed = 0
     for fedschat in fed_chats:
@@ -1070,6 +1076,7 @@ async def unfban(update: Update, context: ContextTypes.DEFAULT_TYPE):
             fban_user_id,
         ),
         parse_mode="HTML",
+        message_thread_id=message.message_thread_id if chat.is_forum else None
     )
     # Send message to owner if fednotif is enabled
     if getfednotif:
@@ -1104,6 +1111,7 @@ async def unfban(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     fban_user_id,
                 ),
                 parse_mode="HTML",
+                message_thread_id=message.message_thread_id if chat.is_forum else None
             )
     unfbanned_in_chats = 0
     for fedchats in chat_list:
@@ -1254,6 +1262,7 @@ async def set_frules(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         user.first_name, getfed["fname"],
                     ),
                     parse_mode="markdown",
+                    message_thread_id=update.effective_message.message_thread_id if chat.is_forum else None
                 )
         await update.effective_message.reply_text(f"Rules have been changed to :\n{rules}!")
     else:
@@ -1321,7 +1330,12 @@ async def fed_broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
         for chat in chat_list:
             title = "*New broadcast from Fed {}*\n".format(fedinfo["fname"])
             try:
-                await bot.sendMessage(chat, title + text, parse_mode="markdown")
+                await bot.sendMessage(
+                    chat, 
+                    title + text, 
+                    parse_mode="markdown",
+                    message_thread_id=msg.message_thread_id if chat.is_forum else None
+                )
             except TelegramError:
                 try:
                     await application.bot.getChat(chat)
@@ -1697,7 +1711,7 @@ async def fed_import_bans(update: Update, context: ContextTypes.DEFAULT_TYPE):
             multi_import_username = []
             multi_import_reason = []
             with BytesIO() as file:
-                file_info.download(out=file)
+                file_info.download_to_object(out=file)
                 file.seek(0)
                 reading = file.read().decode("UTF-8")
                 splitting = reading.split("\n")
@@ -1768,7 +1782,12 @@ async def fed_import_bans(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     )
                     if failed >= 1:
                         teks += " {} Failed to import.".format(failed)
-                    await bot.send_message(get_fedlog, teks, parse_mode="markdown")
+                    await bot.send_message(
+                        get_fedlog, 
+                        teks, 
+                        parse_mode="markdown",
+                        message_thread_id=update.effective_message.message_thread_id if chat.is_forum else None
+                    )
         elif fileformat == "csv":
             multi_fed_id = []
             multi_import_userid = []
@@ -1776,7 +1795,7 @@ async def fed_import_bans(update: Update, context: ContextTypes.DEFAULT_TYPE):
             multi_import_lastname = []
             multi_import_username = []
             multi_import_reason = []
-            file_info.download(
+            file_info.download_to_drive(
                 "fban_{}.csv".format(msg.reply_to_message.document.file_id),
             )
             with open(
@@ -1847,7 +1866,12 @@ async def fed_import_bans(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     )
                     if failed >= 1:
                         teks += " {} Failed to import.".format(failed)
-                    await bot.send_message(get_fedlog, teks, parse_mode="markdown")
+                    await bot.send_message(
+                        get_fedlog, 
+                        teks, 
+                        parse_mode="markdown",
+                        message_thread_id=update.effective_message.message_thread_id if chat.is_forum else None
+                    )
         else:
             await send_message(update.effective_message, "This file is not supported.")
             return
@@ -2119,6 +2143,7 @@ async def subs_feds(update: Update, context: ContextTypes.DEFAULT_TYPE):
                             fedinfo["fname"], getfed["fname"],
                         ),
                         parse_mode="markdown",
+                        message_thread_id=update.effective_message.message_thread_id if chat.is_forum else None
                     )
         else:
             await send_message(
@@ -2184,6 +2209,7 @@ async def unsubs_feds(update: Update, context: ContextTypes.DEFAULT_TYPE):
                             fedinfo["fname"], getfed["fname"],
                         ),
                         parse_mode="markdown",
+                        message_thread_id=update.effective_message.message_thread_id if chat.is_forum else None
                     )
         else:
             await send_message(

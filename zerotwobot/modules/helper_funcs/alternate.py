@@ -1,11 +1,11 @@
 from telegram.error import BadRequest
 from functools import wraps
-from telegram import Update
+from telegram import Update, Message
 from telegram.ext import ContextTypes
 from telegram.constants import ChatAction
 
 
-async def send_message(message, text, *args, **kwargs):
+async def send_message(message: Message, text, *args, **kwargs):
     try:
         return await message.reply_text(text, *args, **kwargs)
     except BadRequest as err:

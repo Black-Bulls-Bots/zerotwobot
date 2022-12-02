@@ -71,7 +71,12 @@ async def report(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     chat = update.effective_chat
     user = update.effective_user
 
-    if chat and message.reply_to_message and sql.chat_should_report(chat.id):
+    if (
+        chat 
+        and message.reply_to_message 
+        and not message.reply_to_message.forum_topic_created 
+        and sql.chat_should_report(chat.id)
+        ):
         reported_user = message.reply_to_message.from_user
         chat_name = chat.title or chat.first or chat.username
         admin_list = await chat.get_administrators()

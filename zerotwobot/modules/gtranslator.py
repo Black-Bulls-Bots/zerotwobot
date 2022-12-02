@@ -15,7 +15,7 @@ async def totranslate(update: Update, context: ContextTypes.DEFAULT_TYPE):
             problem_lang_code.append(key)
 
     try:
-        if message.reply_to_message:
+        if message.reply_to_message and not message.reply_to_message.forum_topic_created:
             args = update.effective_message.text.split(None, 1)
             if message.reply_to_message.text:
                 text = message.reply_to_message.text

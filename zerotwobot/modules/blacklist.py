@@ -384,6 +384,7 @@ async def del_blacklist(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     await bot.sendMessage(
                         chat.id,
                         f"Muted {user.first_name} for using Blacklisted word: {trigger}!",
+                        message_thread_id=message.message_thread_id if chat.is_forum else None
                     )
                     return
                 elif getmode == 4:
@@ -393,6 +394,7 @@ async def del_blacklist(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         await bot.sendMessage(
                             chat.id,
                             f"Kicked {user.first_name} for using Blacklisted word: {trigger}!",
+                            message_thread_id=message.message_thread_id if chat.is_forum else None
                         )
                     return
                 elif getmode == 5:
@@ -401,6 +403,7 @@ async def del_blacklist(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     await bot.sendMessage(
                         chat.id,
                         f"Banned {user.first_name} for using Blacklisted word: {trigger}",
+                        message_thread_id=message.message_thread_id if chat.is_forum else None
                     )
                     return
                 elif getmode == 6:
@@ -410,6 +413,7 @@ async def del_blacklist(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     await bot.sendMessage(
                         chat.id,
                         f"Banned {user.first_name} until '{value}' for using Blacklisted word: {trigger}!",
+                        message_thread_id=message.message_thread_id if chat.is_forum else None
                     )
                     return
                 elif getmode == 7:
@@ -424,6 +428,7 @@ async def del_blacklist(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     await bot.sendMessage(
                         chat.id,
                         f"Muted {user.first_name} until '{value}' for using Blacklisted word: {trigger}!",
+                        message_thread_id=message.message_thread_id if chat.is_forum else None
                     )
                     return
             except BadRequest as excp:
@@ -432,7 +437,7 @@ async def del_blacklist(update: Update, context: ContextTypes.DEFAULT_TYPE):
             break
 
 
-def __import_data__(chat_id, data):
+async def __import_data__(chat_id, data, message):
     # set chat blacklist
     blacklist = data.get("blacklist", {})
     for trigger in blacklist:

@@ -178,11 +178,11 @@ async def ban(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
             await message.delete()
             return log
 
-        await bot.send_sticker(chat.id, BAN_STICKER)  # banhammer marie sticker
+        await bot.send_sticker(chat.id, BAN_STICKER, message_thread_id=message.message_thread_id if chat.is_forum else None)  # banhammer marie sticker
         
         if reason:
             reply += f"\n<code> </code><b>•  Reason:</b> \n{html.escape(reason)}"
-        await bot.sendMessage(chat.id, reply, parse_mode=ParseMode.HTML)
+        await bot.sendMessage(chat.id, reply, parse_mode=ParseMode.HTML, message_thread_id=message.message_thread_id if chat.is_forum else None)
         return log
 
     except BadRequest as excp:
@@ -264,12 +264,13 @@ async def temp_ban(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
 
     try:
         await chat.ban_member(user_id, until_date=bantime)
-        await bot.send_sticker(chat.id, BAN_STICKER)  # banhammer marie sticker
+        await bot.send_sticker(chat.id, BAN_STICKER, message_thread_id=message.message_thread_id if chat.is_forum else None)  # banhammer marie sticker
         await bot.sendMessage(
             chat.id,
             f"Banned! User {mention_html(member.user.id, html.escape(member.user.first_name))} "
             f"will be banned for {time_val}.",
             parse_mode=ParseMode.HTML,
+            message_thread_id=message.message_thread_id if chat.is_forum else None
         )
         return log
 
@@ -330,11 +331,12 @@ async def kick(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
 
     res = chat.unban_member(user_id)  # unban on current user = kick
     if res:
-        await bot.send_sticker(chat.id, BAN_STICKER)  # banhammer marie sticker
+        await bot.send_sticker(chat.id, BAN_STICKER, message_thread_id=message.message_thread_id if chat.is_forum else None)  # banhammer marie sticker
         await bot.sendMessage(
             chat.id,
             f"Capitain I have kicked, {mention_html(member.user.id, html.escape(member.user.first_name))}.",
             parse_mode=ParseMode.HTML,
+            message_thread_id=message.message_thread_id if chat.is_forum else None
         )
         log = (
             f"<b>{html.escape(chat.title)}:</b>\n"
@@ -610,11 +612,11 @@ async def bans_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             else:
                 await chat.ban_member(user_id)
 
-            await bot.send_sticker(chat.id, BAN_STICKER)  # banhammer marie sticker
+            await bot.send_sticker(chat.id, BAN_STICKER, message_thread_id=message.message_thread_id if chat.is_forum else None)  # banhammer marie sticker
 
             if reason:
                 reply += f"\n<code> </code><b>•  Reason:</b> \n{html.escape(reason)}"
-            await bot.sendMessage(chat.id, reply, parse_mode=ParseMode.HTML)
+            await bot.sendMessage(chat.id, reply, parse_mode=ParseMode.HTML,message_thread_id=message.message_thread_id if chat.is_forum else None)
             await query.answer(f"Done Banned User.")
             return log
 

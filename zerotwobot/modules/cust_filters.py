@@ -2,9 +2,8 @@ import re
 import random
 from html import escape
 
-import telegram
 from telegram import InlineKeyboardMarkup, Message, InlineKeyboardButton, Update
-from telegram.constants import ParseMode, MessageLimit
+from telegram.constants import ParseMode, MessageLimit, ChatMemberStatus
 from telegram.error import BadRequest
 from telegram.ext import (
     CommandHandler,
@@ -82,7 +81,7 @@ async def list_handlers(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     for keyword in all_handlers:
         entry = " • `{}`\n".format(escape_markdown(keyword))
-        if len(entry) + len(filter_list) > MessageLimit.TEXT_LENGTH:
+        if len(entry) + len(filter_list) > MessageLimit.MAX_TEXT_LENGTH:
             await send_message(
                 update.effective_message,
                 filter_list.format(chat_name),
@@ -105,9 +104,7 @@ async def filters(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat = update.effective_chat
     user = update.effective_user
     msg = update.effective_message
-    args = msg.text.split(
-        None, 1,
-    )  # use python's maxsplit to separate Cmd, keyword, and reply_text
+    args = msg.text.split(" ")  # use python's maxsplit to separate Cmd, keyword, and reply_text
 
     conn = await connected(context.bot, update, chat, user.id)
     if not conn is False:
@@ -166,7 +163,7 @@ async def filters(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             return
 
-    elif msg.reply_to_message and len(args) >= 2:
+    elif (msg.reply_to_message and msg.reply_to_message.forum_topic_created) and len(args) >= 2:
         if msg.reply_to_message.text:
             text_to_parsing = msg.reply_to_message.text
         elif msg.reply_to_message.caption:
@@ -188,7 +185,7 @@ async def filters(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    elif msg.reply_to_message:
+    elif msg.reply_to_message and not msg.reply_to_message.forum_topic_created:
         if msg.reply_to_message.text:
             text_to_parsing = msg.reply_to_message.text
         elif msg.reply_to_message.caption:
@@ -273,8 +270,8 @@ async def stop_filter(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def reply_filter(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat = update.effective_chat  # type: Optional[Chat]
-    message = update.effective_message  # type: Optional[Message]
+    chat = update.effective_chat  
+    message = update.effective_message  
 
     if not update.effective_user or update.effective_user.id == 777000:
         return
@@ -319,6 +316,7 @@ async def reply_filter(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                 chat.id,
                                 sticker_id,
                                 reply_to_message_id=message.message_id,
+                                message_thread_id=message.message_thread_id if chat.is_forum else None
                             )
                             return
                         except BadRequest as excp:
@@ -329,6 +327,7 @@ async def reply_filter(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                 await context.bot.send_message(
                                     chat.id,
                                     "Message couldn't be sent, Is the sticker id valid?",
+                                    message_thread_id=message.message_thread_id if chat.is_forum else None
                                 )
                                 return
                             else:
@@ -395,6 +394,8 @@ async def reply_filter(update: Update, context: ContextTypes.DEFAULT_TYPE):
                             chat.id,
                             filt.file_id,
                             reply_markup=keyboard,
+                            reply_to_message_id=message.message_id,
+                            message_thread_id=message.message_thread_id if chat.is_forum else None
                         )
                     except BadRequest:
                         await send_message(
@@ -427,6 +428,7 @@ async def reply_filter(update: Update, context: ContextTypes.DEFAULT_TYPE):
                             parse_mode=ParseMode.HTML,
                             disable_web_page_preview=True,
                             reply_markup=keyboard,
+                            message_thread_id=message.message_thread_id if chat.is_forum else None
                         )
                     except BadRequest as excp:
                         if excp.message == "Unsupported url protocol":
@@ -459,7 +461,11 @@ async def reply_filter(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 else:
                     # LEGACY - all new filters will have has_markdown set to True.
                     try:
-                        await context.bot.send_message(chat.id, filt.reply)
+                        await context.bot.send_message(
+                            chat.id, 
+                            filt.reply, 
+                            message_thread_id=message.message_thread_id if chat.is_forum else None
+                        )
                     except BadRequest as excp:
                         LOGGER.exception("Error in filters: " + excp.message)
                 break
@@ -470,7 +476,7 @@ async def rmall_filters(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat = update.effective_chat
     user = update.effective_user
     member = await chat.get_member(user.id)
-    if member.status != "creator" and user.id not in DRAGONS:
+    if member.status != ChatMemberStatus.OWNER and user.id not in DRAGONS:
         await update.effective_message.reply_text(
             "Only the chat owner can clear all notes at once.",
         )
@@ -561,7 +567,7 @@ def __stats__():
     return "• {} filters, across {} chats.".format(sql.num_filters(), sql.num_chats())
 
 
-def __import_data__(chat_id, data):
+async def __import_data__(chat_id, data, message):
     # set chat filters
     filters = data.get("filters", {})
     for trigger in filters:

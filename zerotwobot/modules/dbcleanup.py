@@ -33,7 +33,10 @@ async def get_invalid_chats(update: Update, context: ContextTypes.DEFAULT_TYPE, 
                 except:
                     pass
             else:
-                progress_message = await bot.sendMessage(chat_id, progress_bar)
+                progress_message = await bot.sendMessage(
+                    chat_id, progress_bar, 
+                    message_thread_id=update.effective_message.message_thread_id if chat.is_forum else None
+                )
             progress += 5
 
         cid = chat.chat_id
@@ -122,8 +125,12 @@ async def callback_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if query_type == "db_leave_chat":
         if query.from_user.id in admin_list:
             await bot.editMessageText("Leaving chats ...", chat_id, message.message_id)
-            chat_count = get_muted_chats(update, context, True)
-            await bot.sendMessage(chat_id, f"Left {chat_count} chats.")
+            chat_count = get_invalid_chats(update, context, True)
+            await bot.sendMessage(
+                chat_id, 
+                f"Left {chat_count} chats.",
+                message_thread_id=message.message_thread_id if update.effective_chat.is_forum else None
+            )
         else:
             await query.answer("You are not allowed to use this.")
     elif query_type == "db_cleanup":
@@ -134,7 +141,11 @@ async def callback_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply = "Cleaned up {} chats and {} gbanned users from db.".format(
                 invalid_chat_count, invalid_gban_count,
             )
-            await bot.sendMessage(chat_id, reply)
+            await bot.sendMessage(
+                chat_id, 
+                reply,
+                message_thread_id=message.message_thread_id if update.effective_chat.is_forum else None
+            )
         else:
             await query.answer("You are not allowed to use this.")
 

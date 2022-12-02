@@ -80,6 +80,9 @@ class Restrictions(BASE):
     media = Column(Boolean, default=False)
     other = Column(Boolean, default=False)
     preview = Column(Boolean, default=False)
+    info = Column(Boolean, default=False)
+    invite = Column(Boolean, default=False)
+    topics = Column(Boolean, default=False)
 
     def __init__(self, chat_id):
         self.chat_id = str(chat_id)  # ensure string
@@ -87,6 +90,9 @@ class Restrictions(BASE):
         self.media = False
         self.other = False
         self.preview = False
+        self.info = False
+        self.invite = False
+        self.topics = False
 
     def __repr__(self):
         return "<Restrictions for %s>" % self.chat_id
@@ -204,11 +210,20 @@ def update_restriction(chat_id, restr_type, locked):
             curr_restr.other = locked
         elif restr_type == "previews":
             curr_restr.preview = locked
+        elif restr_type == "info":
+            curr_restr.info = locked
+        elif restr_type == "invite":
+            curr_restr.invite = locked
+        elif restr_type == "topics":
+            curr_restr.topics = locked
         elif restr_type == "all":
             curr_restr.messages = locked
             curr_restr.media = locked
             curr_restr.other = locked
             curr_restr.preview = locked
+            curr_restr.info = locked
+            curr_restr.invite = locked
+            curr_restr.topcis = locked
         SESSION.add(curr_restr)
         SESSION.commit()
 
@@ -272,7 +287,7 @@ def is_locked(chat_id, lock_type):
         return curr_perm.emojicustom
     elif lock_type == "stickerpremium":
         return curr_perm.stickerpremium
-    elif lock_type == "stickeranimated0":
+    elif lock_type == "stickeranimated":
         return curr_perm.stickeranimated
 
 
@@ -291,12 +306,21 @@ def is_restr_locked(chat_id, lock_type):
         return curr_restr.other
     elif lock_type == "previews":
         return curr_restr.preview
+    elif lock_type == "info":
+        return curr_restr.info
+    elif lock_type == "invite":
+        return curr_restr.invite
+    elif lock_type == "topics":
+        return curr_restr.topics
     elif lock_type == "all":
         return (
             curr_restr.messages
             and curr_restr.media
             and curr_restr.other
             and curr_restr.preview
+            and curr_restr.info
+            and curr_restr.invite
+            and curr_restr.topics
         )
 
 

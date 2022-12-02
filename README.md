@@ -20,15 +20,6 @@
 
   *I'm making this note to whoever comes to see this repo. (I came through a lot to make this bot) - I would not say such dumb thing like this, the whole credits goes to [SaitamaRobot](https://github.com/AnimeKaizoku/SaitamaRobot). You might ask me what you did?, well i did some edits with my knowledge to make this bot like my own. I don't give a shit about any illegal problems if anyone comes with that GPLv3 license stuff. After all i came through a lot from many developers, No one ever told me/us anything not even a simple guide. So i will make this repo public so anyone can learn or get code from here for my future updates.*
 
-## Contributing
-[Contributing.md](https://github.com/Black-Bulls-Bots/zerotwobot/blob/main/CONTRIBUTING.md)
-
-## Code Of Conduct
-[Code_Of_Conduct.md](https://github.com/Black-Bulls-Bots/zerotwobot/blob/main/CODE_OF_CONDUCT.md)
-
-## Security Policy
-[Security_Policy.md](https://github.com/Black-Bulls-Bots/zerotwobot/blob/main/SECURITY.md)
-
 ## Bot stuff
 
 * Bot link : [Zero Two](https://t.me/joker_zero_two_bot)
@@ -36,6 +27,12 @@
 * Bot News/Updates : [News](https://t.me/blackbull_bots)
 * Me(Repo Owner) : [Joker Hacker](https://t.me/kishoreee)
 * Wiki : [Checkout Our Wiki](https://github.com/Black-Bulls-Bots/zerotwobot/wiki)
+  
+## Useful Links
+[Contributing](https://github.com/Black-Bulls-Bots/zerotwobot/blob/main/CONTRIBUTING.md)
+[Code of Conduct](https://github.com/Black-Bulls-Bots/zerotwobot/blob/main/CODE_OF_CONDUCT.md)
+[Security Policy](https://github.com/Black-Bulls-Bots/zerotwobot/blob/main/SECURITY.md)
+
 
 ## CREDITS
 

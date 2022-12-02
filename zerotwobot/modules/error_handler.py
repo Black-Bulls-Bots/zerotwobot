@@ -121,6 +121,7 @@ async def list_errors(update: Update, context: ContextTypes.DEFAULT_TYPE):
             open("errors_msg.txt", "rb"),
             caption=f"Too many errors have occured..",
             parse_mode="html",
+            message_thread_id=update.effective_message.message_thread_id if update.effective_chat.is_forum else None
         )
         return
     await update.effective_message.reply_text(msg, parse_mode="html")

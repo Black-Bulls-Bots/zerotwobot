@@ -40,7 +40,7 @@ async def telegraph(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
     if len(args) >= 1:
-        if message.reply_to_message:
+        if message.reply_to_message and not message.reply_to_message.forum_topic_created:
             start = datetime.now()
             reply_msg = message.reply_to_message
 
@@ -52,7 +52,7 @@ async def telegraph(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     file = reply_msg.video.get_file()
                     file_name = reply_msg.video.file_name
 
-                downloaded_file = file.download(TEMP_DOWNLOAD_LOC + "/" + file_name)
+                downloaded_file = file.download_to_drive(TEMP_DOWNLOAD_LOC + "/" + file_name)
                 await msg.edit_text("<code>Downloaded image/video</code>", parse_mode="html")
 
                 try:

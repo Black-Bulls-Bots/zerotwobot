@@ -12,6 +12,7 @@ from telegram.ext import (
     MessageHandler,
 )
 from telegram.helpers import escape_markdown
+from zerotwobot.modules.sql.topics_sql import get_action_topic
 
 import zerotwobot.modules.sql.users_sql as sql
 from zerotwobot import DEV_USERS, LOGGER, OWNER_ID, application
@@ -76,11 +77,13 @@ async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if to_group:
             for chat in chats:
                 try:
+                    topic_chat = get_action_topic(chat.chat_id)
                     await context.bot.sendMessage(
                         int(chat.chat_id),
                         escape_markdown(to_send[1], 2),
                         parse_mode=ParseMode.MARKDOWN_V2,
                         disable_web_page_preview=True,
+                        message_thread_id=topic_chat if topic_chat else None
                     )
                     await asyncio.sleep(1)
                 except TelegramError as e:

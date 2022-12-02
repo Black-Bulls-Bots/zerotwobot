@@ -47,11 +47,11 @@ async def reverse(update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
             edit = await message.reply_text("Downloading Image")
         except BadRequest:
-            edit = await context.bot.send_message(update.effective_chat.id, "Downloading Image")
+            return
 
         photo = message.reply_to_message.photo[-1]
         file = await context.bot.get_file(photo.file_id)
-        await file.download("reverse.jpg")
+        await file.download_to_drive("reverse.jpg")
 
         await edit.edit_text("Downloaded Image, uploading to google...")
 

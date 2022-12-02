@@ -21,7 +21,7 @@ combot_stickers_url = "https://combot.org/telegram/stickers?q="
 
 async def stickerid(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.effective_message
-    if msg.reply_to_message and msg.reply_to_message.sticker:
+    if msg.reply_to_message and msg.reply_to_message.sticker and not msg.reply_to_message.forum_topic_created:
         await update.effective_message.reply_text(
             "Hello "
             + f"{mention_html(msg.from_user.id, msg.from_user.first_name)}"
@@ -64,13 +64,19 @@ async def cb_sticker(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def getsticker(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
     msg = update.effective_message
-    chat_id = update.effective_chat.id
+    chat = update.effective_chat
+    user = update.effective_user
     if msg.reply_to_message and msg.reply_to_message.sticker:
         file_id = msg.reply_to_message.sticker.file_id
         new_file = await bot.get_file(file_id)
-        await new_file.download("sticker.png")
-        await bot.send_document(chat_id, document=open("sticker.png", "rb"))
-        os.remove("sticker.png")
+        await new_file.download_to_drive(f"sticker_{user.id}.png")
+        await bot.send_document(
+            chat.id, 
+            document=open(f"sticker_{user.id}.png", "rb"),
+            reply_to_message_id=msg.message_id,
+            message_thread_id=msg.message_thread_id if chat.is_forum else None
+            )
+        os.remove(f"sticker_{user.id}.png")
     else:
         await update.effective_message.reply_text(
             "Please reply to a sticker for me to upload its PNG.",
@@ -103,13 +109,13 @@ async def kang(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except TelegramError as e:
             if e.message == "Stickerset_invalid":
                 packname_found = 1
-    kangsticker = "kangsticker.png"
+    kangsticker = f"kangsticker_{user.id}.png"
     is_animated = False
     is_video = False
     is_gif = False
     file_id = ""
 
-    if msg.reply_to_message:
+    if msg.reply_to_message and not msg.reply_to_message.forum_topic_created:
         if msg.reply_to_message.sticker:
             if msg.reply_to_message.sticker.is_animated:
                 is_animated = True
@@ -129,14 +135,14 @@ async def kang(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         kang_file = await context.bot.get_file(file_id)
         if not is_animated and not (is_video or is_gif):
-            await kang_file.download("kangsticker.png")
+            await kang_file.download_to_drive(f"kangsticker_{user.id}.png")
         elif is_animated:
-            await kang_file.download("kangsticker.tgs")
+            await kang_file.download_to_drive(f"kangsticker_{user.id}.tgs")
         elif is_video and not is_gif:
-            await kang_file.download("kangsticker.webm")
+            await kang_file.download_to_drive(f"kangsticker_{user.id}.webm")
         elif is_gif:
-            await kang_file.download("kang.mp4")
-            convert_gif("kang.mp4")
+            await kang_file.download_to_drive(f"kang_{user.id}.mp4")
+            convert_gif(f"kang_{user.id}.mp4")
 
         if args:
             sticker_emoji = str(args[0])
@@ -171,7 +177,7 @@ async def kang(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await context.bot.add_sticker_to_set(
                     user_id=user.id,
                     name=packname,
-                    png_sticker=open("kangsticker.png", "rb"),
+                    png_sticker=open(f"kangsticker_{user.id}.png", "rb"),
                     emojis=sticker_emoji,
                 )
                 await msg.reply_text(
@@ -195,14 +201,14 @@ async def kang(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         sticker_emoji,
                         packname,
                         packnum,
-                        png_sticker=open("kangsticker.png", "rb"),
+                        png_sticker=open(f"kangsticker_{user.id}.png", "rb"),
                     )
                 elif e.message == "Sticker_png_dimensions":
                     im.save(kangsticker, "PNG")
                     await context.bot.add_sticker_to_set(
                         user_id=user.id,
                         name=packname,
-                        png_sticker=open("kangsticker.png", "rb"),
+                        png_sticker=open(f"kangsticker_{user.id}.png", "rb"),
                         emojis=sticker_emoji,
                     )
                     await msg.reply_text(
@@ -250,7 +256,7 @@ async def kang(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await context.bot.add_sticker_to_set(
                     user_id=user.id,
                     name=packname,
-                    tgs_sticker=open("kangsticker.tgs", "rb"),
+                    tgs_sticker=open(f"kangsticker_{user.id}.tgs", "rb"),
                     emojis=sticker_emoji,
                 )
                 await msg.reply_text(
@@ -268,7 +274,7 @@ async def kang(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         sticker_emoji,
                         packname,
                         packnum,
-                        tgs_sticker=open("kangsticker.tgs", "rb"),
+                        tgs_sticker=open(f"kangsticker_{user.id}.tgs", "rb"),
                     )
                 elif e.message == "Invalid sticker emojis":
                     await msg.reply_text("Invalid emoji(s).")
@@ -330,7 +336,7 @@ async def kang(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         sticker_emoji,
                         packname,
                         packnum,
-                        webm_sticker=open("kangsticker.webm", "rb"),
+                        webm_sticker=open(f"kangsticker_{user.id}.webm", "rb"),
                     )
                 elif e.message == "Invalid sticker emojis":
                     await msg.reply_text("Invalid emoji(s)")
@@ -375,11 +381,11 @@ async def kang(update: Update, context: ContextTypes.DEFAULT_TYPE):
             else:
                 im.thumbnail(maxsize)
             im.save(kangsticker, "PNG")
-            await msg.reply_photo(photo=open("kangsticker.png", "rb"))
+            await msg.reply_photo(photo=open(f"kangsticker_{user.id}.png", "rb"))
             await context.bot.add_sticker_to_set(
                 user_id=user.id,
                 name=packname,
-                png_sticker=open("kangsticker.png", "rb"),
+                png_sticker=open(f"kangsticker_{user.id}.png", "rb"),
                 emojis=sticker_emoji,
             )
             await msg.reply_text(
@@ -401,14 +407,14 @@ async def kang(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     sticker_emoji,
                     packname,
                     packnum,
-                    png_sticker=open("kangsticker.png", "rb"),
+                    png_sticker=open(f"kangsticker_{user.id}.png", "rb"),
                 )
             elif e.message == "Sticker_png_dimensions":
                 im.save(kangsticker, "PNG")
                 await context.bot.add_sticker_to_set(
                     user_id=user.id,
                     name=packname,
-                    png_sticker=open("kangsticker.png", "rb"),
+                    png_sticker=open(f"kangsticker_{user.id}.png", "rb"),
                     emojis=sticker_emoji,
                 )
                 await msg.reply_text(
@@ -446,14 +452,14 @@ async def kang(update: Update, context: ContextTypes.DEFAULT_TYPE):
             packs += f"[pack](t.me/addstickers/{packname})"
         await msg.reply_text(packs, parse_mode=ParseMode.MARKDOWN)
     try:
-        if os.path.isfile("kangsticker.png"):
-            os.remove("kangsticker.png")
-        elif os.path.isfile("kangsticker.tgs"):
-            os.remove("kangsticker.tgs")
-        elif os.path.isfile("kangsticker.webm"):
-            os.remove("kangsticker.webm")
-        elif os.path.isfile("kang.mp4"):
-            os.remove("kang.mp4")
+        if os.path.isfile(f"kangsticker_{user.id}.png"):
+            os.remove(f"kangsticker_{user.id}.png")
+        elif os.path.isfile(f"kangsticker_{user.id}.tgs"):
+            os.remove(f"kangsticker_{user.id}.tgs")
+        elif os.path.isfile(f"kangsticker_{user.id}.webm"):
+            os.remove(f"kangsticker_{user.id}.webm")
+        elif os.path.isfile(f"kang_{user.id}.mp4"):
+            os.remove(f"kang_{user.id}.mp4")
     except:
         pass
 
@@ -461,7 +467,11 @@ async def delsticker(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     check = "_by_" + context.bot.username
 
-    if not update.effective_message.reply_to_message or not context.args:
+    if (
+        not update.effective_message.reply_to_message
+        and not update.effetive_message.reply_to_message.forum_topic_created
+        or not context.args
+        ):
         await update.effective_message.reply_text("Sorry but you have to reply to a sticker to delete.")
         return
 

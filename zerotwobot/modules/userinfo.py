@@ -26,45 +26,45 @@ from zerotwobot.modules.users import get_user_id
 
 async def get_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, args = context.bot, context.args
-    message = update.effective_message
     chat = update.effective_chat
-    msg = update.effective_message
-    user_id = await extract_user(msg, context, args)
+    message = update.effective_message
+    user_id = await extract_user(message, context, args)
+    print(len(args))
 
-    if user_id:
-
-        if msg.reply_to_message and msg.reply_to_message.forward_from:
-
-            user1 = message.reply_to_message.from_user
-            user2 = message.reply_to_message.forward_from
-
-            await msg.reply_text(
-                f"<b>Telegram ID:</b>,"
-                f"• {html.escape(user2.first_name)} - <code>{user2.id}</code>.\n"
-                f"• {html.escape(user1.first_name)} - <code>{user1.id}</code>.",
+    if chat.is_forum:
+        if message.reply_to_message.forum_topic_created:
+            await message.reply_text(
+                f"This group's id is <code>:{chat.id}</code> \nThis topic's id is <code>{message.message_thread_id}</code>",
                 parse_mode=ParseMode.HTML,
             )
+            return
+            
+    if message.reply_to_message and message.reply_to_message.forward_from:
 
-        else:
+        user1 = message.reply_to_message.from_user
+        user2 = message.reply_to_message.forward_from
 
-            user = await bot.get_chat(user_id)
-            await msg.reply_text(
-                f"{html.escape(user.first_name)}'s id is <code>{user.id}</code>.",
-                parse_mode=ParseMode.HTML,
-            )
-
+        await message.reply_text(
+            f"<b>Telegram ID:</b>,\n"
+            f"• {html.escape(user2.first_name)} - <code>{user2.id}</code>.\n"
+            f"• {html.escape(user1.first_name)} - <code>{user1.id}</code>.",
+            parse_mode=ParseMode.HTML,
+        )
+    elif len(args) >= 1 or message.reply_to_message:
+        user = await bot.get_chat(user_id)
+        await message.reply_text(
+            f"{html.escape(user.first_name)}'s id is <code>{user.id}</code>.",
+            parse_mode=ParseMode.HTML,
+        )
+    elif chat.type == "private":
+        await message.reply_text(
+            f"Your id is <code>{chat.id}</code>.", parse_mode=ParseMode.HTML,
+        )
     else:
-
-        if chat.type == "private":
-            await msg.reply_text(
-                f"Your id is <code>{chat.id}</code>.", parse_mode=ParseMode.HTML,
-            )
-
-        else:
-            await msg.reply_text(
-                f"This group's id is <code>{chat.id}</code>.", parse_mode=ParseMode.HTML,
-            )
-
+        await message.reply_text(
+        f"This group's id is <code>{chat.id}</code>.", parse_mode=ParseMode.HTML,
+        )
+    return
 
 @ZerotwoTelethonClient.on(
     events.NewMessage(
@@ -110,7 +110,7 @@ async def group_info(event) -> None:
 
 async def gifid(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.effective_message
-    if msg.reply_to_message and msg.reply_to_message.animation:
+    if msg.reply_to_message and msg.reply_to_message.animation and not msg.reply_to_message.forum_topic_created:
         await update.effective_message.reply_text(
             f"Gif ID:\n<code>{msg.reply_to_message.animation.file_id}</code>",
             parse_mode=ParseMode.HTML,
@@ -145,7 +145,7 @@ async def info(update: Update, context: ContextTypes.DEFAULT_TYPE):
             userid = user_id
     elif len(args) >= 1 and args[0].lstrip("-").isdigit():
         userid = int(args[0])
-    elif message.reply_to_message:
+    elif message.reply_to_message and not message.reply_to_message.forum_topic_created:
         if message.reply_to_message.sender_chat:
             userid = message.reply_to_message.sender_chat.id
         elif message.reply_to_message.from_user:
@@ -237,8 +237,6 @@ async def info(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 bot.username,
             )
 
-
-                
         for mod in USER_INFO:
             try:
                 mod_info = mod.__user_info__(chat_obj.id).strip()
@@ -290,7 +288,7 @@ async def info(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if chat_obj.photo:
                 _file = await chat_obj.photo.get_big_file()
                 # _file = await bot.get_file(file_id)
-                await _file.download(f"{chat_obj.id}.png")
+                await _file.download_to_drive(f"{chat_obj.id}.png")
 
                 await message.reply_photo(
                     photo=open(f"{chat_obj.id}.png", "rb"),

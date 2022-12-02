@@ -9,7 +9,7 @@ from wikipedia.exceptions import DisambiguationError, PageError
 async def wiki(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = (
         update.effective_message.reply_to_message
-        if update.effective_message.reply_to_message
+        if update.effective_message.reply_to_message and not update.effective_message.reply_to_message.forum_topic_created
         else update.effective_message
     )
     res = ""
