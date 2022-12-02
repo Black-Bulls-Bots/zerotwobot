@@ -17,7 +17,7 @@ from zerotwobot import (DEMONS, DEV_USERS, DRAGONS, INFOPIC, LOGGER, OWNER_ID,
 from zerotwobot import telethn as ZerotwoTelethonClient
 from zerotwobot.__main__ import STATS, TOKEN, USER_INFO
 from zerotwobot.modules.disable import DisableAbleCommandHandler
-from zerotwobot.modules.helper_funcs.chat_status import sudo_plus
+from zerotwobot.modules.helper_funcs.chat_status import check_admin
 from zerotwobot.modules.helper_funcs.extraction import extract_user
 from zerotwobot.modules.sql.afk_sql import check_afk_status, is_afk
 from zerotwobot.modules.sql.approve_sql import is_approved
@@ -312,7 +312,7 @@ async def info(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 
-@sudo_plus
+@check_admin(only_sudo=True)
 async def stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     stats = "<b>📊 Current stats:</b>\n" + "\n".join([mod.__stats__() for mod in STATS])
     result = re.sub(r"(\d+)", r"<code>\1</code>", stats)

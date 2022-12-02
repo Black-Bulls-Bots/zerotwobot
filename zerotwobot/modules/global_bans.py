@@ -31,7 +31,7 @@ from zerotwobot import (
 from zerotwobot.modules.helper_funcs.chat_status import (
     is_user_admin,
     support_plus,
-    user_admin,
+    check_admin
 )
 from zerotwobot.modules.helper_funcs.extraction import (
     extract_user,
@@ -475,7 +475,7 @@ async def enforce_gban(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 
-@user_admin
+@check_admin(is_user=True)
 async def gbanstat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = context.args
     if len(args) > 0:

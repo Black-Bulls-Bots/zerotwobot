@@ -6,7 +6,7 @@ from zerotwobot import LOGGER, application
 from zerotwobot.modules.connection import connected
 from zerotwobot.modules.disable import DisableAbleCommandHandler
 from zerotwobot.modules.helper_funcs.alternate import send_message
-from zerotwobot.modules.helper_funcs.chat_status import user_admin, user_not_admin
+from zerotwobot.modules.helper_funcs.chat_status import check_admin, user_not_admin
 from zerotwobot.modules.helper_funcs.misc import split_message
 from zerotwobot.modules.helper_funcs.string_handling import extract_time
 
@@ -70,7 +70,7 @@ async def blackliststicker(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 
-@user_admin
+@check_admin(is_user=True)
 async def add_blackliststicker(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
     msg = update.effective_message  # type: Optional[Message]
@@ -166,7 +166,7 @@ async def add_blackliststicker(update: Update, context: ContextTypes.DEFAULT_TYP
 
 
 
-@user_admin
+@check_admin(is_user=True)
 async def unblackliststicker(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
     msg = update.effective_message  # type: Optional[Message]
@@ -269,7 +269,7 @@ async def unblackliststicker(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
 
 @loggable
-@user_admin
+@check_admin(is_user=True)
 async def blacklist_mode(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]

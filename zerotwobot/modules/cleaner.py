@@ -3,10 +3,8 @@ import html
 from zerotwobot import ALLOW_EXCL, CustomCommandHandler, application
 from zerotwobot.modules.disable import DisableAbleCommandHandler
 from zerotwobot.modules.helper_funcs.chat_status import (
-    bot_can_delete,
     connection_status,
-    dev_plus,
-    user_admin,
+    check_admin
 )
 from zerotwobot.modules.sql import cleaner_sql as sql
 from telegram import Update, ChatMemberAdministrator
@@ -73,8 +71,7 @@ async def clean_blue_text_must_click(update: Update, context: ContextTypes.DEFAU
 
 
 @connection_status
-@bot_can_delete
-@user_admin
+@check_admin(permission="can_delete_messages", is_both=True)
 async def set_blue_text_must_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat = update.effective_chat
     message = update.effective_message
@@ -108,7 +105,7 @@ async def set_blue_text_must_click(update: Update, context: ContextTypes.DEFAULT
 
 
 
-@user_admin
+@check_admin(is_user=True)
 async def add_bluetext_ignore(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
     chat = update.effective_chat
@@ -130,7 +127,7 @@ async def add_bluetext_ignore(update: Update, context: ContextTypes.DEFAULT_TYPE
 
 
 
-@user_admin
+@check_admin(is_user=True)
 async def remove_bluetext_ignore(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
     chat = update.effective_chat
@@ -154,7 +151,7 @@ async def remove_bluetext_ignore(update: Update, context: ContextTypes.DEFAULT_T
 
 
 
-@user_admin
+@check_admin(is_user=True)
 async def add_bluetext_ignore_global(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
     args = context.args
@@ -175,7 +172,7 @@ async def add_bluetext_ignore_global(update: Update, context: ContextTypes.DEFAU
 
 
 
-@dev_plus
+@check_admin(only_dev=True)
 async def remove_bluetext_ignore_global(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
     args = context.args
@@ -196,7 +193,7 @@ async def remove_bluetext_ignore_global(update: Update, context: ContextTypes.DE
 
 
 
-@dev_plus
+@check_admin(only_dev=True)
 async def bluetext_ignore_list(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     message = update.effective_message

@@ -5,11 +5,9 @@ from typing import Optional
 from zerotwobot import TIGERS, WOLVES, application, BAN_STICKER
 from zerotwobot.modules.disable import DisableAbleCommandHandler
 from zerotwobot.modules.helper_funcs.chat_status import (
-    bot_admin,
-    can_restrict,
+    check_admin,
     is_user_admin,
-    user_admin,
-    user_admin_no_reply)
+)
 from zerotwobot.modules.helper_funcs.extraction import (
     extract_text,
     extract_user,
@@ -28,6 +26,8 @@ from telegram import (
     Message,
     Update,
     User,
+    ChatMemberAdministrator,
+    ChatMemberOwner
 )
 from telegram.constants import ParseMode, MessageLimit
 from telegram.error import BadRequest
@@ -152,9 +152,6 @@ async def warn(
     return log_reason
 
 
-
-@user_admin_no_reply
-@bot_admin
 @loggable
 async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     query: Optional[CallbackQuery] = update.callback_query
@@ -163,6 +160,12 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     if match:
         user_id = match.group(1)
         chat: Optional[Chat] = update.effective_chat
+        chat_member = await chat.get_member(user.id)
+        if isinstance(chat_member, (ChatMemberAdministrator, ChatMemberOwner)):
+            pass
+        else:
+            await query.answer("You need to be admin to do this!")
+            return
         res = sql.remove_warn(user_id, chat.id)
         if res:
             await update.effective_message.edit_text(
@@ -184,10 +187,8 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     return ""
 
 
-
-@user_admin
-@can_restrict
 @loggable
+@check_admin(permission="can_restrict_members", is_both=True)
 async def warn_user(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     args = context.args
     message: Optional[Message] = update.effective_message
@@ -217,10 +218,8 @@ async def warn_user(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     return ""
 
 
-
-@user_admin
-@bot_admin
 @loggable
+@check_admin(is_both=True)
 async def reset_warns(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     args = context.args
     message: Optional[Message] = update.effective_message
@@ -275,7 +274,7 @@ async def warns(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # Dispatcher handler stop - do not async
-@user_admin
+@check_admin(is_user=True)
 async def add_warn_filter(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat: Optional[Chat] = update.effective_chat
     msg: Optional[Message] = update.effective_message
@@ -308,7 +307,7 @@ async def add_warn_filter(update: Update, context: ContextTypes.DEFAULT_TYPE):
     raise ApplicationHandlerStop
 
 
-@user_admin
+@check_admin(is_user=True)
 async def remove_warn_filter(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat: Optional[Chat] = update.effective_chat
     msg: Optional[Message] = update.effective_message
@@ -393,9 +392,7 @@ async def reply_filter(update: Update, context: ContextTypes.DEFAULT_TYPE) -> st
             return await warn(user, chat, warn_filter.reply, message)
     return ""
 
-
-
-@user_admin
+@check_admin(is_user=True)
 @loggable
 async def set_warn_limit(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     args = context.args
@@ -424,9 +421,7 @@ async def set_warn_limit(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         await msg.reply_text("The current warn limit is {}".format(limit))
     return ""
 
-
-
-@user_admin
+@check_admin(is_user=True)
 async def set_warn_strength(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = context.args
     chat: Optional[Chat] = update.effective_chat

@@ -24,7 +24,7 @@ if is_module_loaded(FILENAME):
     from zerotwobot.modules.helper_funcs.chat_status import (
         connection_status,
         is_user_admin,
-        user_admin,
+        check_admin,
     )
     from zerotwobot.modules.sql import disable_sql as sql
 
@@ -129,7 +129,7 @@ if is_module_loaded(FILENAME):
 
     
     @connection_status
-    @user_admin
+    @check_admin(is_user=True)
     async def disable(update: Update, context: ContextTypes.DEFAULT_TYPE):
         args = context.args
         chat = update.effective_chat
@@ -152,7 +152,7 @@ if is_module_loaded(FILENAME):
 
     
     @connection_status
-    @user_admin
+    @check_admin(is_user=True)
     async def disable_module(update: Update, context: ContextTypes.DEFAULT_TYPE):
         args = context.args
         chat = update.effective_chat
@@ -205,7 +205,7 @@ if is_module_loaded(FILENAME):
 
     
     @connection_status
-    @user_admin
+    @check_admin(is_user=True)
     async def enable(update: Update, context: ContextTypes.DEFAULT_TYPE):
         args = context.args
         chat = update.effective_chat
@@ -226,7 +226,7 @@ if is_module_loaded(FILENAME):
 
     
     @connection_status
-    @user_admin
+    @check_admin(is_user=True)
     async def enable_module(update: Update, context: ContextTypes.DEFAULT_TYPE):
         args = context.args
         chat = update.effective_chat
@@ -279,7 +279,7 @@ if is_module_loaded(FILENAME):
 
     
     @connection_status
-    @user_admin
+    @check_admin(is_user=True)
     async def list_cmds(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if DISABLE_CMDS + DISABLE_OTHER:
             result = ""

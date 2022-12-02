@@ -9,7 +9,7 @@ from telegram.ext import CommandHandler, ContextTypes
 import zerotwobot.modules.sql.notes_sql as sql
 from zerotwobot import application, LOGGER, OWNER_ID, JOIN_LOGGER, SUPPORT_CHAT
 from zerotwobot.__main__ import DATA_IMPORT
-from zerotwobot.modules.helper_funcs.chat_status import user_admin
+from zerotwobot.modules.helper_funcs.chat_status import check_admin
 from zerotwobot.modules.helper_funcs.alternate import typing_action
 
 # from zerotwobot.modules.rules import get_rules
@@ -98,7 +98,7 @@ async def import_data(update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
             for mod in DATA_IMPORT:
                 try:
-                    await mod.__import_data__(str(chat.id), data, message)
+                    await mod.__import_data__(str(chat.id), data, msg)
                 except TypeError:
                     pass
         except Exception:
@@ -126,7 +126,7 @@ async def import_data(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
 
-@user_admin
+@check_admin(is_user=True)
 async def export_data(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_data = context.chat_data
     msg = update.effective_message  # type: Optional[Message]

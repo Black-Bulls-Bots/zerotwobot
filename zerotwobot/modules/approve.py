@@ -4,7 +4,7 @@ from zerotwobot import application, DRAGONS
 from zerotwobot.modules.helper_funcs.extraction import extract_user
 from telegram.ext import ContextTypes, CallbackQueryHandler
 import zerotwobot.modules.sql.approve_sql as sql
-from zerotwobot.modules.helper_funcs.chat_status import user_admin
+from zerotwobot.modules.helper_funcs.chat_status import check_admin
 from zerotwobot.modules.log_channel import loggable
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton, Update
 from telegram.constants import ParseMode, ChatMemberStatus
@@ -13,7 +13,7 @@ from telegram.error import BadRequest
 
 
 @loggable
-@user_admin
+@check_admin(is_user=True)
 async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
     chat_title = message.chat.title
@@ -57,7 +57,7 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 @loggable
-@user_admin
+@check_admin(is_user=True)
 async def disapprove(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
     chat_title = message.chat.title
@@ -94,7 +94,7 @@ async def disapprove(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return log_message
 
 
-@user_admin
+@check_admin(is_user=True)
 async def approved(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
     chat_title = message.chat.title
@@ -114,7 +114,7 @@ async def approved(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await message.reply_text(msg, parse_mode=ParseMode.MARKDOWN)
 
 
-@user_admin
+@check_admin(is_user=True)
 async def approval(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
     chat = update.effective_chat

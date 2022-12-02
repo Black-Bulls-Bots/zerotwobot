@@ -16,7 +16,7 @@ from zerotwobot.modules.sql.topics_sql import get_action_topic
 
 import zerotwobot.modules.sql.users_sql as sql
 from zerotwobot import DEV_USERS, LOGGER, OWNER_ID, application
-from zerotwobot.modules.helper_funcs.chat_status import dev_plus, sudo_plus
+from zerotwobot.modules.helper_funcs.chat_status import check_admin
 from zerotwobot.modules.sql.users_sql import get_all_users
 
 USERS_GROUP = 4
@@ -57,7 +57,7 @@ async def get_user_id(username: str) -> Union[int, None]:
 
 
 
-@dev_plus
+@check_admin(only_dev=True)
 async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
     to_send = update.effective_message.text.split(None, 1)
 
@@ -125,7 +125,7 @@ async def log_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 
-@sudo_plus
+@check_admin(only_sudo=True)
 async def chats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     all_chats = sql.get_all_chats() or []
     chatfile = "List of chats.\n0. Chat name | Chat ID | Members count\n"

@@ -1,13 +1,12 @@
 import subprocess
 
 from zerotwobot import LOGGER, application
-from zerotwobot.modules.helper_funcs.chat_status import dev_plus
+from zerotwobot.modules.helper_funcs.chat_status import check_admin
 from telegram import Update
 from telegram.constants import ParseMode
 from telegram.ext import ContextTypes, CommandHandler
 
-
-@dev_plus
+@check_admin(only_dev=True)
 async def shell(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
     chat = update.effective_chat

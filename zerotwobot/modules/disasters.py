@@ -14,9 +14,8 @@ from zerotwobot import (
     application,
 )
 from zerotwobot.modules.helper_funcs.chat_status import (
-    dev_plus,
-    sudo_plus,
     whitelist_plus,
+    check_admin
 )
 from zerotwobot.modules.helper_funcs.extraction import extract_user
 from zerotwobot.modules.log_channel import gloggable
@@ -41,11 +40,8 @@ def check_user_id(user_id: int, context: ContextTypes.DEFAULT_TYPE) -> Optional[
         reply = None
     return reply
 
-
-
-
-@dev_plus
 @gloggable
+@check_admin(only_dev=True)
 async def addsudo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     message = update.effective_message
     user = update.effective_user
@@ -101,10 +97,8 @@ async def addsudo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
 
     return log_message
 
-
-
-@sudo_plus
 @gloggable
+@check_admin(only_sudo=True)
 async def addsupport(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
@@ -160,10 +154,8 @@ async def addsupport(
 
     return log_message
 
-
-
-@sudo_plus
 @gloggable
+@check_admin(only_sudo=True)
 async def addwhitelist(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     message = update.effective_message
     user = update.effective_user
@@ -216,10 +208,8 @@ async def addwhitelist(update: Update, context: ContextTypes.DEFAULT_TYPE) -> st
 
     return log_message
 
-
-
-@sudo_plus
 @gloggable
+@check_admin(only_sudo=True)
 async def addtiger(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     message = update.effective_message
     user = update.effective_user
@@ -277,10 +267,8 @@ async def addtiger(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
 
     return log_message
 
-
-
-@dev_plus
 @gloggable
+@check_admin(only_dev=True)
 async def removesudo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     message = update.effective_message
     user = update.effective_user
@@ -320,10 +308,8 @@ async def removesudo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
         await message.reply_text("This user is not a Dragon Disaster!")
         return ""
 
-
-
-@sudo_plus
 @gloggable
+@check_admin(only_sudo=True)
 async def removesupport(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     message = update.effective_message
     user = update.effective_user
@@ -363,10 +349,8 @@ async def removesupport(update: Update, context: ContextTypes.DEFAULT_TYPE) -> s
         await message.reply_text("This user is not a Demon level Disaster!")
         return ""
 
-
-
-@sudo_plus
 @gloggable
+@check_admin(only_sudo=True)
 async def removewhitelist(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     message = update.effective_message
     user = update.effective_user
@@ -405,10 +389,8 @@ async def removewhitelist(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         await message.reply_text("This user is not a Wolf Disaster!")
         return ""
 
-
-
-@sudo_plus
 @gloggable
+@check_admin(only_sudo=True)
 async def removetiger(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     message = update.effective_message
     user = update.effective_user

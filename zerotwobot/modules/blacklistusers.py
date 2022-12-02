@@ -10,7 +10,7 @@ from zerotwobot import (
     WOLVES,
     application,
 )
-from zerotwobot.modules.helper_funcs.chat_status import dev_plus
+from zerotwobot.modules.helper_funcs.chat_status import check_admin
 from zerotwobot.modules.helper_funcs.extraction import (
     extract_user,
     extract_user_and_text,
@@ -27,8 +27,8 @@ BLABLEUSERS = [OWNER_ID] + DEV_USERS
 
 
 
-@dev_plus
 @gloggable
+@check_admin(only_dev=True)
 async def bl_user(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     message = update.effective_message
     user = update.effective_user
@@ -70,7 +70,7 @@ async def bl_user(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
 
 
 
-@dev_plus
+@check_admin(only_dev=True)
 @gloggable
 async def unbl_user(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     message = update.effective_message
@@ -113,7 +113,7 @@ async def unbl_user(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
 
 
 
-@dev_plus
+@check_admin(only_dev=True)
 async def bl_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
     users = []
     bot = context.bot
