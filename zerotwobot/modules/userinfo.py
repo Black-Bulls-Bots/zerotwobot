@@ -288,7 +288,7 @@ async def info(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if chat_obj.photo:
                 _file = await chat_obj.photo.get_big_file()
                 # _file = await bot.get_file(file_id)
-                await _file.download_to_memory(f"{chat_obj.id}.png")
+                await _file.download_to_drive(f"{chat_obj.id}.png")
 
                 await message.reply_photo(
                     photo=open(f"{chat_obj.id}.png", "rb"),

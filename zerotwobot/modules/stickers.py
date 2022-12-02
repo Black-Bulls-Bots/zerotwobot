@@ -69,7 +69,7 @@ async def getsticker(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if msg.reply_to_message and msg.reply_to_message.sticker:
         file_id = msg.reply_to_message.sticker.file_id
         new_file = await bot.get_file(file_id)
-        await new_file.download_to_memory(f"sticker_{user.id}.png")
+        await new_file.download_to_drive(f"sticker_{user.id}.png")
         await bot.send_document(
             chat.id, 
             document=open(f"sticker_{user.id}.png", "rb"),
@@ -135,13 +135,13 @@ async def kang(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         kang_file = await context.bot.get_file(file_id)
         if not is_animated and not (is_video or is_gif):
-            await kang_file.download_to_memory(f"kangsticker_{user.id}.png")
+            await kang_file.download_to_drive(f"kangsticker_{user.id}.png")
         elif is_animated:
-            await kang_file.download_to_memory(f"kangsticker_{user.id}.tgs")
+            await kang_file.download_to_drive(f"kangsticker_{user.id}.tgs")
         elif is_video and not is_gif:
-            await kang_file.download_to_memory(f"kangsticker_{user.id}.webm")
+            await kang_file.download_to_drive(f"kangsticker_{user.id}.webm")
         elif is_gif:
-            await kang_file.download_to_memory(f"kang_{user.id}.mp4")
+            await kang_file.download_to_drive(f"kang_{user.id}.mp4")
             convert_gif(f"kang_{user.id}.mp4")
 
         if args:

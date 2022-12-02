@@ -1795,7 +1795,7 @@ async def fed_import_bans(update: Update, context: ContextTypes.DEFAULT_TYPE):
             multi_import_lastname = []
             multi_import_username = []
             multi_import_reason = []
-            file_info.download_to_memory(
+            file_info.download_to_drive(
                 "fban_{}.csv".format(msg.reply_to_message.document.file_id),
             )
             with open(

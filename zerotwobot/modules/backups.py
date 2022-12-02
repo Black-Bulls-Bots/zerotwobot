@@ -58,7 +58,7 @@ async def import_data(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
 
         with BytesIO() as file:
-            await file_info.download_to_object(out=file)
+            await file_info.download_to_memory(out=file)
             file.seek(0)
             data = json.load(file)
 
