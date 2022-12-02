@@ -37,6 +37,7 @@ from telegram import (
     InlineKeyboardMarkup,
     Update,
 )
+from zerotwobot.modules.sql.topics_sql import get_action_topic
 from telegram.constants import ParseMode
 from telegram.error import BadRequest
 from telegram.ext import (
@@ -74,10 +75,11 @@ VERIFIED_USER_WAITLIST = {}
 
 
 # do not async
-async def send(update, message, keyboard, backup_message):
+async def send(update: Update, message, keyboard, backup_message):
     chat = update.effective_chat
     cleanserv = sql.clean_service(chat.id)
-    reply = update.message.message_id
+    reply = update.effective_message.message_id
+    topic_chat = get_action_topic(chat.id)
     # Clean service welcome
     if cleanserv:
         try:
@@ -86,12 +88,21 @@ async def send(update, message, keyboard, backup_message):
             pass
         reply = False
     try:
-        msg = await update.effective_message.reply_text(
-            markdown_to_html(message),
-            parse_mode=ParseMode.HTML,
-            reply_markup=keyboard,
-            reply_to_message_id=reply,
-        )
+        if topic_chat:
+            msg = await application.bot.send_message(
+                chat.id,
+                markdown_to_html(message),
+                parse_mode=ParseMode.HTML,
+                reply_markup=keyboard,
+                message_thread_id=topic_chat
+            )
+        else:
+            msg = await update.effective_message.reply_text(
+                markdown_to_html(message),
+                parse_mode=ParseMode.HTML,
+                reply_markup=keyboard,
+                reply_to_message_id=reply,
+            )
     except BadRequest as excp:
         if excp.message == "Reply message not found":
             msg = await update.effective_message.reply_text(
@@ -101,47 +112,92 @@ async def send(update, message, keyboard, backup_message):
                 quote=False,
             )
         elif excp.message == "Button_url_invalid":
-            msg = await update.effective_message.reply_text(
-                markdown_parser(
-                    backup_message + "\nNote: the current message has an invalid url "
-                    "in one of its buttons. Please update.",
-                ),
-                parse_mode=ParseMode.MARKDOWN,
-                reply_to_message_id=reply,
-            )
+            if topic_chat:
+                msg = await application.bot.send_message(
+                    chat.id,
+                    markdown_parser(
+                        backup_message + "\nNote: the current message has an invalid url "
+                        "in one of its buttons. Please update.",
+                    ),
+                    parse_mode=ParseMode.MARKDOWN,
+                    message_thread_id=topic_chat
+                )
+            else:
+                msg = await update.effective_message.reply_text(
+                    markdown_parser(
+                        backup_message + "\nNote: the current message has an invalid url "
+                        "in one of its buttons. Please update.",
+                    ),
+                    parse_mode=ParseMode.MARKDOWN,
+                    reply_to_message_id=reply,
+                )
         elif excp.message == "Unsupported url protocol":
-            msg = await update.effective_message.reply_text(
-                markdown_parser(
-                    backup_message + "\nNote: the current message has buttons which "
-                    "use url protocols that are unsupported by "
-                    "telegram. Please update.",
-                ),
-                parse_mode=ParseMode.MARKDOWN,
-                reply_to_message_id=reply,
-            )
+            if topic_chat:
+                msg = await application.bot.send_message(
+                    chat.id,
+                    markdown_parser(
+                        backup_message + "\nNote: the current message has buttons which "
+                        "use url protocols that are unsupported by "
+                        "telegram. Please update.",
+                    ),
+                    parse_mode=ParseMode.MARKDOWN,
+                    message_thread_id=topic_chat
+                )
+            else:
+                msg = await update.effective_message.reply_text(
+                    markdown_parser(
+                        backup_message + "\nNote: the current message has buttons which "
+                        "use url protocols that are unsupported by "
+                        "telegram. Please update.",
+                    ),
+                    parse_mode=ParseMode.MARKDOWN,
+                    reply_to_message_id=reply,
+                )
         elif excp.message == "Wrong url host":
-            msg = await update.effective_message.reply_text(
-                markdown_parser(
-                    backup_message + "\nNote: the current message has some bad urls. "
-                    "Please update.",
-                ),
-                parse_mode=ParseMode.MARKDOWN,
-                reply_to_message_id=reply,
-            )
+            if topic_chat:
+                msg = await application.bot.send_message(
+                    chat.id,
+                    markdown_parser(
+                        backup_message + "\nNote: the current message has some bad urls. "
+                        "Please update.",
+                    ),
+                    parse_mode=ParseMode.MARKDOWN,
+                    message_thread_id=topic_chat
+                )
+            else:
+                msg = await update.effective_message.reply_text(
+                    markdown_parser(
+                        backup_message + "\nNote: the current message has some bad urls. "
+                        "Please update.",
+                    ),
+                    parse_mode=ParseMode.MARKDOWN,
+                    reply_to_message_id=reply,
+                )
             LOGGER.warning(message)
             LOGGER.warning(keyboard)
             LOGGER.exception("Could not parse! got invalid url host errors")
         elif excp.message == "Have no rights to send a message":
             return
         else:
-            msg = await update.effective_message.reply_text(
-                markdown_parser(
-                    backup_message + "\nNote: An error occured when sending the "
-                    "custom message. Please update.",
-                ),
-                parse_mode=ParseMode.MARKDOWN,
-                reply_to_message_id=reply,
-            )
+            if topic_chat:
+                msg = await application.bot.send_message(
+                    chat.id,
+                    markdown_parser(
+                        backup_message + "\nNote: An error occured when sending the "
+                        "custom message. Please update.",
+                    ),
+                    parse_mode=ParseMode.MARKDOWN,
+                    message_thread_id=topic_chat
+                )
+            else:
+                msg = await update.effective_message.reply_text(
+                    markdown_parser(
+                        backup_message + "\nNote: An error occured when sending the "
+                        "custom message. Please update.",
+                    ),
+                    parse_mode=ParseMode.MARKDOWN,
+                    reply_to_message_id=reply,
+                )
             LOGGER.exception()
     return msg
 
@@ -153,6 +209,8 @@ async def new_member(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat = update.effective_chat
     user = update.effective_user
     msg = update.effective_message
+
+    topic_chat = get_action_topic(chat.id)
 
     should_welc, cust_welcome, cust_content, welc_type = sql.get_welc_pref(chat.id)
     welc_mutes = sql.welcome_mutes(chat.id)
@@ -179,7 +237,7 @@ async def new_member(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
 
         if should_welc:
-
+            
             reply = update.message.message_id
             cleanserv = sql.clean_service(chat.id)
             # Clean service welcome
@@ -303,7 +361,7 @@ async def new_member(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         parse_mode=ParseMode.HTML,
                     )
                 await update.effective_message.reply_text(
-                    "I feel like I'm gonna suffocate in here.", reply_to_message_id=reply,
+                    "I feel like I'm gonna suffocate in here.", reply_to_message_id=reply if not topic_chat else None,
                 )
                 continue
 
@@ -392,6 +450,7 @@ async def new_member(update: Update, context: ContextTypes.DEFAULT_TYPE):
                             can_send_polls=False,
                             can_change_info=False,
                             can_add_web_page_previews=False,
+                            can_manage_topics=False,
                         ),
                         until_date=(int(time.time() + 24 * 60 * 60)),
                     )
@@ -454,6 +513,7 @@ async def new_member(update: Update, context: ContextTypes.DEFAULT_TYPE):
                             can_send_media_messages=False,
                             can_send_other_messages=False,
                             can_add_web_page_previews=False,
+                            can_manage_topics=False,
                         ),
                     )
                     job_queue.run_once(
@@ -469,9 +529,10 @@ async def new_member(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     cust_content,
                     caption=res,
                     reply_markup=keyboard,
-                    reply_to_message_id=reply,
+                    reply_to_message_id=reply if not topic_chat else None,
                     parse_mode="markdown",
-                )
+                    message_thread_id=topic_chat if topic_chat else None
+                ) 
             else:
                 sent = await send(update, res, keyboard, backup_message)
             prev_welc = sql.get_clean_pref(chat.id)
@@ -582,7 +643,8 @@ async def left_member(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
             # if media goodbye, use appropriate function for it
             if goodbye_type != sql.Types.TEXT and goodbye_type != sql.Types.BUTTON_TEXT:
-                await ENUM_FUNC_MAP[goodbye_type](chat.id, cust_goodbye)
+                topic_chat = get_action_topic(chat.id)
+                await ENUM_FUNC_MAP[goodbye_type](chat.id, cust_goodbye, message_thread_id=topic_chat if topic_chat else None)
                 return
 
             first_name = (
@@ -641,6 +703,7 @@ async def left_member(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def welcome(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = context.args
     chat = update.effective_chat
+    topic_chat = get_action_topic(chat.id)
     # if no args, show current replies.
     if not args or args[0].lower() == "noformat":
         noformat = True
@@ -666,7 +729,7 @@ async def welcome(update: Update, context: ContextTypes.DEFAULT_TYPE):
             buttons = sql.get_welc_buttons(chat.id)
             if noformat:
                 welcome_m += revert_buttons(buttons)
-                await ENUM_FUNC_MAP[welcome_type](chat.id, cust_content, caption=welcome_m)
+                await ENUM_FUNC_MAP[welcome_type](chat.id, cust_content, caption=welcome_m, message_thread_id=topic_chat if topic_chat else None)
 
             else:
                 keyb = build_keyboard(buttons)
@@ -678,6 +741,7 @@ async def welcome(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     reply_markup=keyboard,
                     parse_mode=ParseMode.MARKDOWN,
                     disable_web_page_preview=True,
+                    message_thread_id=topic_chat if topic_chat else None
                 )
 
     elif len(args) >= 1:
@@ -704,6 +768,7 @@ async def welcome(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def goodbye(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = context.args
     chat = update.effective_chat
+    topic_chat = get_action_topic(chat.id)
 
     if not args or args[0] == "noformat":
         noformat = True
@@ -728,11 +793,11 @@ async def goodbye(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         else:
             if noformat:
-                await ENUM_FUNC_MAP[goodbye_type](chat.id, goodbye_m)
+                await ENUM_FUNC_MAP[goodbye_type](chat.id, goodbye_m, message_thread_id=topic_chat if topic_chat else None)
 
             else:
                 await ENUM_FUNC_MAP[goodbye_type](
-                    chat.id, goodbye_m, parse_mode=ParseMode.MARKDOWN,
+                    chat.id, goodbye_m, parse_mode=ParseMode.MARKDOWN, message_thread_id=topic_chat if topic_chat else None
                 )
 
     elif len(args) >= 1:
@@ -1002,6 +1067,7 @@ async def user_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 can_send_media_messages=True,
                 can_send_other_messages=True,
                 can_add_web_page_previews=True,
+                can_manage_topics=False
             ),
         )
         try:
@@ -1010,12 +1076,14 @@ async def user_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             pass
         if member_dict["should_welc"]:
             if member_dict["media_wel"]:
+                topic_chat = get_action_topic(chat.id)
                 sent = await ENUM_FUNC_MAP[member_dict["welc_type"]](
                     member_dict["chat_id"],
                     member_dict["cust_content"],
                     caption=member_dict["res"],
                     reply_markup=member_dict["keyboard"],
                     parse_mode="markdown",
+                    message_thread_id=topic_chat if topic_chat else None
                 )
             else:
                 sent = await send(
