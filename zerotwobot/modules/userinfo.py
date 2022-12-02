@@ -12,8 +12,8 @@ from telegram.helpers import mention_html
 from telethon import events
 from telethon.tl.functions.channels import GetFullChannelRequest
 from telethon.tl.types import ChannelParticipantsAdmins
-from zerotwobot import (DEMONS, DEV_USERS, DRAGONS, INFOPIC, LOGGER, OWNER_ID,
-                        TIGERS, WOLVES, application)
+from zerotwobot import (DEV_USERS, DRAGONS, INFOPIC, LOGGER, OWNER_ID,
+                        application)
 from zerotwobot import telethn as ZerotwoTelethonClient
 from zerotwobot.__main__ import STATS, TOKEN, USER_INFO
 from zerotwobot.modules.disable import DisableAbleCommandHandler
@@ -68,7 +68,7 @@ async def get_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 @ZerotwoTelethonClient.on(
     events.NewMessage(
-        pattern="/ginfo ", from_users=(TIGERS or []) + (DRAGONS or []) + (DEMONS or []),
+        pattern="/ginfo ", from_users=(DRAGONS or []),
     ),
 )
 async def group_info(event) -> None:
@@ -222,16 +222,6 @@ async def info(update: Update, context: ContextTypes.DEFAULT_TYPE):
         elif chat_obj.id in DRAGONS:
             head += "\n\nThe Disaster level of this person is 'Dragon'."
             disaster_level_present = True
-        elif chat_obj.id in DEMONS:
-            head += "\n\nThe Disaster level of this person is 'Demon'."
-            disaster_level_present = True
-        elif chat_obj.id in TIGERS:
-            head += "\n\nThe Disaster level of this person is 'Tiger'."
-            disaster_level_present = True
-        elif chat_obj.id in WOLVES:
-            head += "\n\nThe Disaster level of this person is 'Wolf'."
-            disaster_level_present = True
-
         if disaster_level_present:
             head += ' [<a href="https://t.me/blackbull_bots/49">?</a>]'.format(
                 bot.username,

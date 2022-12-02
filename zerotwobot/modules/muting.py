@@ -1,7 +1,7 @@
 import html
 from typing import Optional, Union
 
-from zerotwobot import LOGGER, TIGERS, application
+from zerotwobot import LOGGER, application
 from zerotwobot.modules.helper_funcs.chat_status import (
     connection_status,
     is_user_admin,
@@ -38,7 +38,7 @@ async def check_user(user_id: int, bot: Bot, chat: Chat) -> Union[str, None]:
         reply = "I'm not gonna MUTE myself, How high are you?"
         return reply
 
-    if await is_user_admin(chat, user_id, member) or user_id in TIGERS:
+    if await is_user_admin(chat, user_id, member):
         reply = "Can't. Find someone else to mute but not this one."
         return reply
 

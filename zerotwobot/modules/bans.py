@@ -13,9 +13,6 @@ from zerotwobot import (
     LOGGER,
     OWNER_ID,
     DRAGONS,
-    DEMONS,
-    TIGERS,
-    WOLVES,
     application,
 )
 from zerotwobot.modules.disable import DisableAbleCommandHandler
@@ -122,16 +119,6 @@ async def ban(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
                 await message.reply_text(
                     "Fighting this Dragon here will put me and my people's at risk.",
                 )
-            elif user_id in DEMONS:
-                await message.reply_text(
-                    "Bring an order from Black Bulls to fight a Demon disaster.",
-                )
-            elif user_id in TIGERS:
-                await message.reply_text(
-                    "Bring an order from Black Bulls to fight a Tiger disaster.",
-                )
-            elif user_id in WOLVES:
-                await message.reply_text("Wolf abilities make them ban immune!")
             else:
                 await message.reply_text("This user has immunity and cannot be banned.")
             return log_message
@@ -470,7 +457,7 @@ async def selfunban(context: ContextTypes.DEFAULT_TYPE, update: Update) -> str:
     message = update.effective_message
     user = update.effective_user
     bot, args = context.bot, context.args
-    if user.id not in DRAGONS or user.id not in TIGERS:
+    if user.id not in DRAGONS:
         return
 
     try:
@@ -570,16 +557,6 @@ async def bans_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     await message.edit_text(
                         "Fighting this Dragon here will put me and my people's at risk.",
                     )
-                elif user_id in DEMONS:
-                    await message.edit_text(
-                        "Bring an order from Black Bulls to fight a Demon disaster.",
-                    )
-                elif user_id in TIGERS:
-                    await message.edit_text(
-                        "Bring an order from Black Bulls to fight a Tiger disaster.",
-                    )
-                elif user_id in WOLVES:
-                    await message.edit_text("Wolf abilities make them ban immune!")
                 else:
                     await message.edit_text("This user has immunity and cannot be banned.")
                 return log_message

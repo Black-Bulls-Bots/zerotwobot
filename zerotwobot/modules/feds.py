@@ -14,8 +14,6 @@ from zerotwobot import (
     SUPPORT_CHAT,
     OWNER_ID,
     DRAGONS,
-    TIGERS,
-    WOLVES,
     application,
 )
 from zerotwobot.modules.disable import DisableAbleCommandHandler
@@ -624,14 +622,6 @@ async def fed_ban(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if int(user_id) in DRAGONS:
         await message.reply_text("Dragons cannot be fed banned!")
-        return
-
-    if int(user_id) in TIGERS:
-        await message.reply_text("Tigers cannot be fed banned!")
-        return
-
-    if int(user_id) in WOLVES:
-        await message.reply_text("Wolves cannot be fed banned!")
         return
 
     if user_id in [777000, 1087968824]:
@@ -1748,12 +1738,6 @@ async def fed_import_bans(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     if int(import_userid) in DRAGONS:
                         failed += 1
                         continue
-                    if int(import_userid) in TIGERS:
-                        failed += 1
-                        continue
-                    if int(import_userid) in WOLVES:
-                        failed += 1
-                        continue
                     multi_fed_id.append(fed_id)
                     multi_import_userid.append(str(import_userid))
                     multi_import_firstname.append(import_firstname)
@@ -1830,12 +1814,7 @@ async def fed_import_bans(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     if int(import_userid) in DRAGONS:
                         failed += 1
                         continue
-                    if int(import_userid) in TIGERS:
-                        failed += 1
-                        continue
-                    if int(import_userid) in WOLVES:
-                        failed += 1
-                        continue
+
                     multi_fed_id.append(fed_id)
                     multi_import_userid.append(str(import_userid))
                     multi_import_firstname.append(import_firstname)

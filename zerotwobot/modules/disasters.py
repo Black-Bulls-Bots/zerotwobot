@@ -8,9 +8,6 @@ from zerotwobot import (
     OWNER_ID,
     DRAGONS,
     SUPPORT_CHAT,
-    DEMONS,
-    TIGERS,
-    WOLVES,
     application,
 )
 from zerotwobot.modules.helper_funcs.chat_status import (
@@ -63,16 +60,6 @@ async def addsudo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
         await message.reply_text("This member is already a Dragon Disaster")
         return ""
 
-    if user_id in DEMONS:
-        rt += "Requested God to promote a Demon Disaster to Dragon."
-        data["supports"].remove(user_id)
-        DEMONS.remove(user_id)
-
-    if user_id in WOLVES:
-        rt += "Requested God to promote a Wolf Disaster to Dragon."
-        data["whitelists"].remove(user_id)
-        WOLVES.remove(user_id)
-
     data["sudos"].append(user_id)
     DRAGONS.append(user_id)
 
@@ -89,176 +76,6 @@ async def addsudo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     log_message = (
         f"#SUDO\n"
         f"<b>Admin:</b> {mention_html(user.id, html.escape(user.first_name))}\n"
-        f"<b>User:</b> {mention_html(user_member.id, html.escape(user_member.first_name))}"
-    )
-
-    if chat.type != "private":
-        log_message = f"<b>{html.escape(chat.title)}:</b>\n" + log_message
-
-    return log_message
-
-@gloggable
-@check_admin(only_sudo=True)
-async def addsupport(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE,
-) -> str:
-    message = update.effective_message
-    user = update.effective_user
-    chat = update.effective_chat
-    bot, args = context.bot, context.args
-    user_id = await extract_user(message, context, args)
-    user_member = await bot.getChat(user_id)
-    rt = ""
-
-    reply = check_user_id(user_id, bot)
-    if reply:
-        await message.reply_text(reply)
-        return ""
-
-    with open(ELEVATED_USERS_FILE, "r") as infile:
-        data = json.load(infile)
-
-    if user_id in DRAGONS:
-        rt += "Requested God to demote this Dragon to Demon"
-        data["sudos"].remove(user_id)
-        DRAGONS.remove(user_id)
-
-    if user_id in DEMONS:
-        await message.reply_text("This user is already a Demon Disaster.")
-        return ""
-
-    if user_id in WOLVES:
-        rt += "Requested God to promote this Wolf Disaster to Demon"
-        data["whitelists"].remove(user_id)
-        WOLVES.remove(user_id)
-
-    data["supports"].append(user_id)
-    DEMONS.append(user_id)
-
-    with open(ELEVATED_USERS_FILE, "w") as outfile:
-        json.dump(data, outfile, indent=4)
-
-    await update.effective_message.reply_text(
-        rt + f"\n{user_member.first_name} was added as a Demon Disaster!",
-    )
-
-    log_message = (
-        f"#SUPPORT\n"
-        f"<b>Admin:</b> {mention_html(user.id, html.escape(user.first_name))}\n"
-        f"<b>User:</b> {mention_html(user_member.id, html.escape(user_member.first_name))}"
-    )
-
-    if chat.type != "private":
-        log_message = f"<b>{html.escape(chat.title)}:</b>\n" + log_message
-
-    return log_message
-
-@gloggable
-@check_admin(only_sudo=True)
-async def addwhitelist(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
-    message = update.effective_message
-    user = update.effective_user
-    chat = update.effective_chat
-    bot, args = context.bot, context.args
-    user_id = await extract_user(message, context, args)
-    user_member = await bot.getChat(user_id)
-    rt = ""
-
-    reply = check_user_id(user_id, bot)
-    if reply:
-        await message.reply_text(reply)
-        return ""
-
-    with open(ELEVATED_USERS_FILE, "r") as infile:
-        data = json.load(infile)
-
-    if user_id in DRAGONS:
-        rt += "This member is a Dragon Disaster, Demoting to Wolf."
-        data["sudos"].remove(user_id)
-        DRAGONS.remove(user_id)
-
-    if user_id in DEMONS:
-        rt += "This user is already a Demon Disaster, Demoting to Wolf."
-        data["supports"].remove(user_id)
-        DEMONS.remove(user_id)
-
-    if user_id in WOLVES:
-        await message.reply_text("This user is already a Wolf Disaster.")
-        return ""
-
-    data["whitelists"].append(user_id)
-    WOLVES.append(user_id)
-
-    with open(ELEVATED_USERS_FILE, "w") as outfile:
-        json.dump(data, outfile, indent=4)
-
-    await update.effective_message.reply_text(
-        rt + f"\nSuccessfully promoted {user_member.first_name} to a Wolf Disaster!",
-    )
-
-    log_message = (
-        f"#WHITELIST\n"
-        f"<b>Admin:</b> {mention_html(user.id, html.escape(user.first_name))} \n"
-        f"<b>User:</b> {mention_html(user_member.id, html.escape(user_member.first_name))}"
-    )
-
-    if chat.type != "private":
-        log_message = f"<b>{html.escape(chat.title)}:</b>\n" + log_message
-
-    return log_message
-
-@gloggable
-@check_admin(only_sudo=True)
-async def addtiger(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
-    message = update.effective_message
-    user = update.effective_user
-    chat = update.effective_chat
-    bot, args = context.bot, context.args
-    user_id = await extract_user(message, context, args)
-    user_member = await bot.getChat(user_id)
-    rt = ""
-
-    reply = check_user_id(user_id, bot)
-    if reply:
-        await message.reply_text(reply)
-        return ""
-
-    with open(ELEVATED_USERS_FILE, "r") as infile:
-        data = json.load(infile)
-
-    if user_id in DRAGONS:
-        rt += "This member is a Dragon Disaster, Demoting to Tiger."
-        data["sudos"].remove(user_id)
-        DRAGONS.remove(user_id)
-
-    if user_id in DEMONS:
-        rt += "This user is already a Demon Disaster, Demoting to Tiger."
-        data["supports"].remove(user_id)
-        DEMONS.remove(user_id)
-
-    if user_id in WOLVES:
-        rt += "This user is already a Wolf Disaster, Demoting to Tiger."
-        data["whitelists"].remove(user_id)
-        WOLVES.remove(user_id)
-
-    if user_id in TIGERS:
-        await message.reply_text("This user is already a Tiger.")
-        return ""
-
-    data["tigers"].append(user_id)
-    TIGERS.append(user_id)
-
-    with open(ELEVATED_USERS_FILE, "w") as outfile:
-        json.dump(data, outfile, indent=4)
-
-    await update.effective_message.reply_text(
-        rt + f"\nSuccessfully promoted {user_member.first_name} to a Tiger Disaster!",
-    )
-
-    log_message = (
-        f"#TIGER\n"
-        f"<b>Admin:</b> {mention_html(user.id, html.escape(user.first_name))} \n"
         f"<b>User:</b> {mention_html(user_member.id, html.escape(user_member.first_name))}"
     )
 
@@ -307,184 +124,6 @@ async def removesudo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     else:
         await message.reply_text("This user is not a Dragon Disaster!")
         return ""
-
-@gloggable
-@check_admin(only_sudo=True)
-async def removesupport(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
-    message = update.effective_message
-    user = update.effective_user
-    chat = update.effective_chat
-    bot, args = context.bot, context.args
-    user_id = await extract_user(message, context, args)
-    user_member = await bot.getChat(user_id)
-
-    reply = check_user_id(user_id, bot)
-    if reply:
-        await message.reply_text(reply)
-        return ""
-
-    with open(ELEVATED_USERS_FILE, "r") as infile:
-        data = json.load(infile)
-
-    if user_id in DEMONS:
-        await message.reply_text("Requested HA to demote this user to Civilian")
-        DEMONS.remove(user_id)
-        data["supports"].remove(user_id)
-
-        with open(ELEVATED_USERS_FILE, "w") as outfile:
-            json.dump(data, outfile, indent=4)
-
-        log_message = (
-            f"#UNSUPPORT\n"
-            f"<b>Admin:</b> {mention_html(user.id, html.escape(user.first_name))}\n"
-            f"<b>User:</b> {mention_html(user_member.id, html.escape(user_member.first_name))}"
-        )
-
-        if chat.type != "private":
-            log_message = f"<b>{html.escape(chat.title)}:</b>\n" + log_message
-
-        return log_message
-
-    else:
-        await message.reply_text("This user is not a Demon level Disaster!")
-        return ""
-
-@gloggable
-@check_admin(only_sudo=True)
-async def removewhitelist(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
-    message = update.effective_message
-    user = update.effective_user
-    chat = update.effective_chat
-    bot, args = context.bot, context.args
-    user_id = await extract_user(message, context, args)
-    user_member = await bot.getChat(user_id)
-
-    reply = check_user_id(user_id, bot)
-    if reply:
-        await message.reply_text(reply)
-        return ""
-
-    with open(ELEVATED_USERS_FILE, "r") as infile:
-        data = json.load(infile)
-
-    if user_id in WOLVES:
-        await message.reply_text("Demoting to normal user")
-        WOLVES.remove(user_id)
-        data["whitelists"].remove(user_id)
-
-        with open(ELEVATED_USERS_FILE, "w") as outfile:
-            json.dump(data, outfile, indent=4)
-
-        log_message = (
-            f"#UNWHITELIST\n"
-            f"<b>Admin:</b> {mention_html(user.id, html.escape(user.first_name))}\n"
-            f"<b>User:</b> {mention_html(user_member.id, html.escape(user_member.first_name))}"
-        )
-
-        if chat.type != "private":
-            log_message = f"<b>{html.escape(chat.title)}:</b>\n" + log_message
-
-        return log_message
-    else:
-        await message.reply_text("This user is not a Wolf Disaster!")
-        return ""
-
-@gloggable
-@check_admin(only_sudo=True)
-async def removetiger(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
-    message = update.effective_message
-    user = update.effective_user
-    chat = update.effective_chat
-    bot, args = context.bot, context.args
-    user_id = await extract_user(message, context, args)
-    user_member = await bot.getChat(user_id)
-
-    reply = check_user_id(user_id, bot)
-    if reply:
-        await message.reply_text(reply)
-        return ""
-
-    with open(ELEVATED_USERS_FILE, "r") as infile:
-        data = json.load(infile)
-
-    if user_id in TIGERS:
-        await message.reply_text("Demoting to normal user")
-        TIGERS.remove(user_id)
-        data["tigers"].remove(user_id)
-
-        with open(ELEVATED_USERS_FILE, "w") as outfile:
-            json.dump(data, outfile, indent=4)
-
-        log_message = (
-            f"#UNTIGER\n"
-            f"<b>Admin:</b> {mention_html(user.id, html.escape(user.first_name))}\n"
-            f"<b>User:</b> {mention_html(user_member.id, html.escape(user_member.first_name))}"
-        )
-
-        if chat.type != "private":
-            log_message = f"<b>{html.escape(chat.title)}:</b>\n" + log_message
-
-        return log_message
-    else:
-        await message.reply_text("This user is not a Tiger Disaster!")
-        return ""
-
-
-
-@whitelist_plus
-async def whitelistlist(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    reply = "<b>Known Wolf Disasters 🐺:</b>\n"
-    m = await update.effective_message.reply_text(
-        "<code>Gathering intel..</code>", parse_mode=ParseMode.HTML,
-    )
-    bot = context.bot
-    for each_user in WOLVES:
-        user_id = int(each_user)
-        try:
-            user = await bot.get_chat(user_id)
-
-            reply += f"• {mention_html(user_id, html.escape(user.first_name))}\n"
-        except TelegramError:
-            pass
-    await m.edit_text(reply, parse_mode=ParseMode.HTML)
-
-
-
-@whitelist_plus
-async def tigerlist(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    reply = "<b>Known Tiger Disasters 🐯:</b>\n"
-    m = await update.effective_message.reply_text(
-        "<code>Gathering intel..</code>", parse_mode=ParseMode.HTML,
-    )
-    bot = context.bot
-    for each_user in TIGERS:
-        user_id = int(each_user)
-        try:
-            user = await bot.get_chat(user_id)
-            reply += f"• {mention_html(user_id, html.escape(user.first_name))}\n"
-        except TelegramError:
-            pass
-    await m.edit_text(reply, parse_mode=ParseMode.HTML)
-
-
-
-@whitelist_plus
-async def supportlist(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    bot = context.bot
-    m = await update.effective_message.reply_text(
-        "<code>Gathering intel..</code>", parse_mode=ParseMode.HTML,
-    )
-    reply = "<b>Known Demon Disasters 👹:</b>\n"
-    for each_user in DEMONS:
-        user_id = int(each_user)
-        try:
-            user = await bot.get_chat(user_id)
-            reply += f"• {mention_html(user_id, html.escape(user.first_name))}\n"
-        except TelegramError:
-            pass
-    await m.edit_text(reply, parse_mode=ParseMode.HTML)
-
-
 
 @whitelist_plus
 async def sudolist(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -535,9 +174,6 @@ Group admins/group owners do not need these commands.
  ╠ `/wolves`*:* Lists all Wolf disasters
  ╠ `/darlings`*:* Lists all Black Bulls members
  ╠ `/adddragon`*:* Adds a user to Dragon
- ╠ `/adddemon`*:* Adds a user to Demon
- ╠ `/addtiger`*:* Adds a user to Tiger
- ╠ `/addwolf`*:* Adds a user to Wolf
  ╚ `Add dev doesn't exist, devs should know how to add themselves`
 
  ╔ *Ping:*
@@ -614,31 +250,12 @@ Visit @blackbulls\_support for more information.
 
 SUDO_HANDLER = CommandHandler(("addsudo", "adddragon"), addsudo, block=False)
 SUPPORT_HANDLER = CommandHandler(("addsupport", "adddemon"), addsupport, block=False)
-TIGER_HANDLER = CommandHandler(("addtiger"), addtiger, block=False)
-WHITELIST_HANDLER = CommandHandler(("addwhitelist", "addwolf"), addwhitelist, block=False)
-UNSUDO_HANDLER = CommandHandler(("removesudo", "removedragon"), removesudo, block=False)
-UNSUPPORT_HANDLER = CommandHandler(("removesupport", "removedemon"), removesupport, block=False)
-UNTIGER_HANDLER = CommandHandler(("removetiger"), removetiger, block=False)
-UNWHITELIST_HANDLER = CommandHandler(("removewhitelist", "removewolf"), removewhitelist, block=False)
-
-WHITELISTLIST_HANDLER = CommandHandler(["whitelistlist", "wolves"], whitelistlist, block=False)
-TIGERLIST_HANDLER = CommandHandler(["tigers"], tigerlist, block=False)
-SUPPORTLIST_HANDLER = CommandHandler(["supportlist", "demons"], supportlist, block=False)
 SUDOLIST_HANDLER = CommandHandler(["sudolist", "dragons"], sudolist, block=False)
 DEVLIST_HANDLER = CommandHandler(["devlist", "darlings"], devlist, block=False)
 
 application.add_handler(SUDO_HANDLER)
 application.add_handler(SUPPORT_HANDLER)
-application.add_handler(TIGER_HANDLER)
-application.add_handler(WHITELIST_HANDLER)
-application.add_handler(UNSUDO_HANDLER)
-application.add_handler(UNSUPPORT_HANDLER)
-application.add_handler(UNTIGER_HANDLER)
-application.add_handler(UNWHITELIST_HANDLER)
 
-application.add_handler(WHITELISTLIST_HANDLER)
-application.add_handler(TIGERLIST_HANDLER)
-application.add_handler(SUPPORTLIST_HANDLER)
 application.add_handler(SUDOLIST_HANDLER)
 application.add_handler(DEVLIST_HANDLER)
 
@@ -646,15 +263,6 @@ __mod_name__ = "Disasters"
 __handlers__ = [
     SUDO_HANDLER,
     SUPPORT_HANDLER,
-    TIGER_HANDLER,
-    WHITELIST_HANDLER,
-    UNSUDO_HANDLER,
-    UNSUPPORT_HANDLER,
-    UNTIGER_HANDLER,
-    UNWHITELIST_HANDLER,
-    WHITELISTLIST_HANDLER,
-    TIGERLIST_HANDLER,
-    SUPPORTLIST_HANDLER,
     SUDOLIST_HANDLER,
     DEVLIST_HANDLER,
 ]

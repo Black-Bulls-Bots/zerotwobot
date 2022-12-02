@@ -4,7 +4,7 @@ import re
 
 from telegram import Message, Chat, Update, User, ChatPermissions
 
-from zerotwobot import TIGERS, WOLVES, application
+from zerotwobot import , application
 from zerotwobot.modules.helper_funcs.chat_status import (
     is_user_admin,
     check_admin
@@ -38,8 +38,8 @@ async def check_flood(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str
     if not user:  # ignore channels
         return ""
 
-    # ignore admins and whitelists
-    if await is_user_admin(chat, user.id) or user.id in WOLVES or user.id in TIGERS:
+    # ignore admins
+    if await is_user_admin(chat, user.id):
         sql.update_flood(chat.id, None)
         return ""
     # ignore approved users

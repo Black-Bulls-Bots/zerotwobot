@@ -12,9 +12,6 @@ from zerotwobot import (
     LOGGER,
     OWNER_ID,
     DRAGONS,
-    DEMONS,
-    TIGERS,
-    WOLVES,
     application,
     JOIN_LOGGER,
 )
@@ -283,43 +280,6 @@ async def new_member(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     f"{html.escape(chat.title)}\n"
                     f"#USER_JOINED\n"
                     f"Bot Sudo just joined the group"
-                )
-                continue
-
-            # Welcome Support
-            elif new_mem.id in DEMONS:
-                await update.effective_message.reply_text(
-                    "Huh! Someone with a Demon disaster level just joined!",
-                    reply_to_message_id=reply,
-                )
-                welcome_log = (
-                    f"{html.escape(chat.title)}\n"
-                    f"#USER_JOINED\n"
-                    f"Bot Support just joined the group"
-                )
-                continue
-
-            # Welcome Whitelisted
-            elif new_mem.id in TIGERS:
-                await update.effective_message.reply_text(
-                    "Roar! A Tiger disaster just joined!", reply_to_message_id=reply,
-                )
-                welcome_log = (
-                    f"{html.escape(chat.title)}\n"
-                    f"#USER_JOINED\n"
-                    f"A whitelisted user joined the chat"
-                )
-                continue
-
-            # Welcome Tigers
-            elif new_mem.id in WOLVES:
-                await update.effective_message.reply_text(
-                    "Awoo! A Wolf disaster just joined!", reply_to_message_id=reply,
-                )
-                welcome_log = (
-                    f"{html.escape(chat.title)}\n"
-                    f"#USER_JOINED\n"
-                    f"A whitelisted user joined the chat"
                 )
                 continue
 

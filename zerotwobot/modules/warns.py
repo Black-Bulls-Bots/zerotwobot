@@ -2,7 +2,7 @@ import html
 import re
 from typing import Optional
 
-from zerotwobot import TIGERS, WOLVES, application, BAN_STICKER
+from zerotwobot import application, BAN_STICKER
 from zerotwobot.modules.disable import DisableAbleCommandHandler
 from zerotwobot.modules.helper_funcs.chat_status import (
     check_admin,
@@ -52,24 +52,6 @@ async def warn(
 ) -> str:
     if await is_user_admin(chat, user.id):
         await message.reply_text("Damn admins, They are too far to be Warned")
-        return
-
-    if user.id in TIGERS:
-        if warner:
-            await message.reply_text("Tigers cant be warned.")
-        else:
-            await message.reply_text(
-                "Tiger triggered an auto warn filter!\n I can't warn tigers but they should avoid abusing this.",
-            )
-        return
-
-    if user.id in WOLVES:
-        if warner:
-            await message.reply_text("Wolf disasters are warn immune.")
-        else:
-            await message.reply_text(
-                "Wolf Disaster triggered an auto warn filter!\nI can't warn wolves but they should avoid abusing this.",
-            )
         return
 
     if warner:

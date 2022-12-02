@@ -7,8 +7,8 @@ from cachetools import TTLCache
 from telegram import Chat, ChatMember, ChatMemberAdministrator, Update, ChatMemberOwner
 from telegram.constants import ChatMemberStatus, ParseMode, ChatType
 from telegram.ext import ContextTypes
-from zerotwobot import (DEL_CMDS, DEMONS, DEV_USERS, DRAGONS, SUPPORT_CHAT,
-                        TIGERS, WOLVES, application)
+from zerotwobot import (DEL_CMDS, DEV_USERS, DRAGONS, SUPPORT_CHAT,
+                        application)
 
 # stores admemes in memory for 10 min.
 ADMIN_CACHE = TTLCache(maxsize=512, ttl=60 * 10, timer=perf_counter)
@@ -131,11 +131,11 @@ def check_admin(
 
 
 def is_whitelist_plus(chat: Chat, user_id: int, member: ChatMember = None) -> bool:
-    return any(user_id in user for user in [WOLVES, TIGERS, DEMONS, DRAGONS, DEV_USERS])
+    return any(user_id in user for user in [DRAGONS, DEV_USERS])
 
 
 def is_support_plus(chat: Chat, user_id: int, member: ChatMember = None) -> bool:
-    return user_id in DEMONS or user_id in DRAGONS or user_id in DEV_USERS
+    return user_id in DRAGONS or user_id in DEV_USERS
 
 
 async def is_user_admin(chat: Chat, user_id: int, member: ChatMember = None) -> bool:
@@ -184,8 +184,6 @@ async def is_user_ban_protected(chat: Chat, user_id: int, member: ChatMember = N
         chat.type == "private"
         or user_id in DRAGONS
         or user_id in DEV_USERS
-        or user_id in WOLVES
-        or user_id in TIGERS
         or user_id in [777000, 1087968824]
     ):  # Count telegram and Group Anonymous as admin
         return True

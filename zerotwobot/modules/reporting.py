@@ -1,6 +1,6 @@
 import html
 
-from zerotwobot import LOGGER, DRAGONS, TIGERS, WOLVES, application
+from zerotwobot import LOGGER, DRAGONS, application
 from zerotwobot.modules.helper_funcs.chat_status import check_admin, user_not_admin
 from zerotwobot.modules.log_channel import loggable
 from zerotwobot.modules.sql import reporting_sql as sql
@@ -17,7 +17,6 @@ from telegram.ext import (
 from telegram.helpers import mention_html
 
 REPORT_GROUP = 12
-REPORT_IMMUNE_USERS = DRAGONS + TIGERS + WOLVES
 
 @check_admin(is_user=True)
 async def report_setting(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -94,7 +93,7 @@ async def report(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
             await message.reply_text("Nice try.")
             return ""
 
-        if reported_user.id in REPORT_IMMUNE_USERS:
+        if reported_user.id in DRAGONS:
             await message.reply_text("Uh? You reporting a disaster?")
             return ""
 

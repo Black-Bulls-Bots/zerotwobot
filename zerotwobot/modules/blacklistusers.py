@@ -5,9 +5,6 @@ from zerotwobot import (
     DEV_USERS,
     OWNER_ID,
     DRAGONS,
-    DEMONS,
-    TIGERS,
-    WOLVES,
     application,
 )
 from zerotwobot.modules.helper_funcs.chat_status import check_admin
@@ -22,7 +19,7 @@ from telegram.error import BadRequest
 from telegram.ext import ContextTypes, CommandHandler
 from telegram.helpers import mention_html
 
-BLACKLISTWHITELIST = [OWNER_ID] + DEV_USERS + DRAGONS + WOLVES + DEMONS
+BLACKLISTWHITELIST = [OWNER_ID] + DEV_USERS + DRAGONS
 BLABLEUSERS = [OWNER_ID] + DEV_USERS
 
 
@@ -145,7 +142,7 @@ def __user_info__(user_id):
         return ""
     if user_id == application.bot.id:
         return ""
-    if int(user_id) in DRAGONS + TIGERS + WOLVES:
+    if int(user_id) in DRAGONS:
         return ""
     if is_blacklisted:
         text = text.format("Yes")
