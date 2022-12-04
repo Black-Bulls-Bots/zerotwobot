@@ -17,13 +17,11 @@ from zerotwobot import (
 )
 from zerotwobot.modules.disable import DisableAbleCommandHandler
 from zerotwobot.modules.helper_funcs.chat_status import (
-    bot_admin,
-    can_restrict,
+    check_admin,
     connection_status,
     is_user_admin,
     is_user_ban_protected,
     is_user_in_chat,
-    user_admin,
     can_delete,
 )
 from zerotwobot.modules.helper_funcs.extraction import extract_user_and_text
@@ -34,10 +32,8 @@ from zerotwobot.modules.log_channel import gloggable, loggable
 
 
 @connection_status
-@bot_admin
-@can_restrict
-@user_admin
 @loggable
+@check_admin(permission="can_restrict_members", is_both=True)
 async def ban(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     chat = update.effective_chat
     user = update.effective_user
@@ -195,10 +191,8 @@ async def ban(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
 
 
 @connection_status
-@bot_admin
-@can_restrict
-@user_admin
 @loggable
+@check_admin(permission="can_restrict_members", is_both=True)
 async def temp_ban(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     chat = update.effective_chat
     user = update.effective_user
@@ -284,10 +278,8 @@ async def temp_ban(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
 
 
 @connection_status
-@bot_admin
-@can_restrict
-@user_admin
 @loggable
+@check_admin(permission="can_restrict_members", is_both=True)
 async def kick(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     chat = update.effective_chat
     user = update.effective_user
@@ -343,8 +335,7 @@ async def kick(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
 
 
 
-@bot_admin
-@can_restrict
+@check_admin(permission="can_restrict_members", is_bot=True)
 async def kickme(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_message.from_user.id
     if await is_user_admin(update.effective_chat, user_id):
@@ -361,10 +352,8 @@ async def kickme(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 @connection_status
-@bot_admin
-@can_restrict
-@user_admin
 @loggable
+@check_admin(permission="can_restrict_members", is_both=True)
 async def unban(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     message = update.effective_message
     user = update.effective_user
@@ -450,9 +439,8 @@ async def unban(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
 
 
 @connection_status
-@bot_admin
-@can_restrict
 @gloggable
+@check_admin(permission="can_restrict_members", is_bot=True)
 async def selfunban(context: ContextTypes.DEFAULT_TYPE, update: Update) -> str:
     message = update.effective_message
     user = update.effective_user

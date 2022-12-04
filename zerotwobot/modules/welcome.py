@@ -1061,7 +1061,7 @@ WELC_MUTE_HELP_TXT = (
 
 
 
-@user_admin
+@check_admin(is_user=True)
 async def welcome_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     WELC_HELP_TXT = (
     "Your group's welcome/goodbye messages can be personalised in multiple ways. If you want the messages"
@@ -1093,7 +1093,7 @@ async def welcome_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 
-@user_admin
+@check_admin(is_user=True)
 async def welcome_mute_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.effective_message.reply_text(
         WELC_MUTE_HELP_TXT, parse_mode=ParseMode.MARKDOWN,

@@ -169,9 +169,6 @@ Group admins/group owners do not need these commands.
 
  ╔ *List all special users:*
  ╠ `/dragons`*:* Lists all Dragon disasters
- ╠ `/demons`*:* Lists all Demon disasters
- ╠ `/tigers`*:* Lists all Tigers disasters
- ╠ `/wolves`*:* Lists all Wolf disasters
  ╠ `/darlings`*:* Lists all Black Bulls members
  ╠ `/adddragon`*:* Adds a user to Dragon
  ╚ `Add dev doesn't exist, devs should know how to add themselves`
@@ -249,20 +246,16 @@ Visit @blackbulls\_support for more information.
 """
 
 SUDO_HANDLER = CommandHandler(("addsudo", "adddragon"), addsudo, block=False)
-SUPPORT_HANDLER = CommandHandler(("addsupport", "adddemon"), addsupport, block=False)
 SUDOLIST_HANDLER = CommandHandler(["sudolist", "dragons"], sudolist, block=False)
 DEVLIST_HANDLER = CommandHandler(["devlist", "darlings"], devlist, block=False)
 
 application.add_handler(SUDO_HANDLER)
-application.add_handler(SUPPORT_HANDLER)
-
 application.add_handler(SUDOLIST_HANDLER)
 application.add_handler(DEVLIST_HANDLER)
 
 __mod_name__ = "Disasters"
 __handlers__ = [
     SUDO_HANDLER,
-    SUPPORT_HANDLER,
     SUDOLIST_HANDLER,
     DEVLIST_HANDLER,
 ]

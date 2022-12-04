@@ -4,7 +4,7 @@ import re
 
 from telegram import Message, Chat, Update, User, ChatPermissions
 
-from zerotwobot import , application
+from zerotwobot import application
 from zerotwobot.modules.helper_funcs.chat_status import (
     is_user_admin,
     check_admin
@@ -110,7 +110,7 @@ async def check_flood(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str
             )
         )
 
-@check_admin(permissions="can_restrict_members", is_both=True)
+@check_admin(permission="can_restrict_members", is_both=True)
 async def flood_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
     query = update.callback_query

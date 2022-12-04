@@ -24,10 +24,8 @@ from zerotwobot.modules.sql import disable_sql as disabledsql
 import zerotwobot.modules.sql.locks_sql as locksql
 from zerotwobot.modules.connection import connected
 
-
-
-@user_admin
 @typing_action
+@check_admin(is_user=True)
 async def import_data(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.effective_message
     chat = update.effective_chat

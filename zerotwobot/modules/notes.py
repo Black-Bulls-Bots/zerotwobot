@@ -258,7 +258,7 @@ async def slash_get(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.effective_message.reply_text("Wrong Note ID 😾")
 
 @connection_status
-@check_admin(is_usr=True)
+@check_admin(is_user=True)
 async def save(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     msg = update.effective_message  # type: Optional[Message]
@@ -300,7 +300,7 @@ async def save(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
 @connection_status
-@check_admin(is_usr=True)
+@check_admin(is_user=True)
 async def clear(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = context.args
     chat_id = update.effective_chat.id
