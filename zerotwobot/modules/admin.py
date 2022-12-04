@@ -9,11 +9,8 @@ from telegram.helpers import mention_html
 from zerotwobot import DRAGONS, application
 from zerotwobot.modules.disable import DisableAbleCommandHandler
 from zerotwobot.modules.helper_funcs.chat_status import (
-    bot_admin,
-    can_pin,
-    can_promote,
+    check_admin,
     connection_status,
-    user_admin,
     ADMIN_CACHE,
 )
 
@@ -27,10 +24,8 @@ from zerotwobot.modules.helper_funcs.alternate import send_message
 
 
 @connection_status
-@bot_admin
-@can_promote
-@user_admin
 @loggable
+@check_admin(permission="can_promote_members", is_both=True)
 async def promote(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     bot = context.bot
     args = context.args
@@ -59,16 +54,6 @@ async def promote(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
             ),
         )
 
-        return
-
-    elif (
-        not (
-            (promoter.can_promote_members if isinstance(promoter, ChatMemberAdministrator) else None) 
-            or promoter.status == ChatMemberStatus.OWNER
-        )
-        and user.id not in DRAGONS
-    ):
-        await message.reply_text("You don't have the necessary rights to do that!")
         return
 
     if not user_id:
@@ -136,10 +121,8 @@ async def promote(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
 
 
 @connection_status
-@bot_admin
-@can_promote
-@user_admin
 @loggable
+@check_admin(permission="can_promote_members", is_both=True)
 async def demote(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     bot = context.bot
     args = context.args
@@ -168,16 +151,6 @@ async def demote(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
         )
 
         return
-    elif (
-        not (
-            (demoter.can_promote_members if isinstance(demoter, ChatMemberAdministrator) else None) 
-            or demoter.status == ChatMemberStatus.OWNER
-        )
-        and user.id not in DRAGONS
-    ):
-        await message.reply_text("You don't have the necessary rights to do that!")
-        return
-
 
     if not user_id:
         await message.reply_text(
@@ -243,7 +216,7 @@ async def demote(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
 
 
 
-@user_admin
+@check_admin(is_user=True)
 async def refresh_admin(update, _):
     try:
         ADMIN_CACHE.pop(update.effective_chat.id)
@@ -255,9 +228,7 @@ async def refresh_admin(update, _):
 
 
 @connection_status
-@bot_admin
-@can_promote
-@user_admin
+@check_admin(permission="can_promote_members", is_both=True)
 async def set_title(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
     args = context.args
@@ -338,11 +309,8 @@ async def set_title(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
-
-@bot_admin
-@can_pin
-@user_admin
 @loggable
+@check_admin(permission="can_pin_messages", is_both=True)
 async def pin(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     bot = context.bot
     args = context.args
@@ -403,11 +371,8 @@ async def pin(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
         return log_message
 
 
-
-@bot_admin
-@can_pin
-@user_admin
 @loggable
+@check_admin(permission="can_pin_messages", is_both=True)
 async def unpin(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     bot = context.bot
     chat = update.effective_chat
@@ -452,10 +417,8 @@ async def unpin(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
 
     return log_message
 
-@bot_admin
-@can_pin
-@user_admin
 @loggable
+@check_admin(permission="can_pin_messages", is_both=True)
 async def unpinall(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     bot = context.bot
     chat = update.effective_chat
@@ -507,9 +470,9 @@ async def unpinall(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
 
     return log_message
 
-@bot_admin
-@user_admin
+
 @connection_status
+@check_admin(permission="can_invite_users", is_bot=True)
 async def invite(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
     chat = update.effective_chat

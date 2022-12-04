@@ -16,7 +16,7 @@ if is_module_loaded(FILENAME):
     from telegram.helpers import escape_markdown
 
     from zerotwobot import EVENT_LOGS, LOGGER, application
-    from zerotwobot.modules.helper_funcs.chat_status import user_admin
+    from zerotwobot.modules.helper_funcs.chat_status import check_admin
     from zerotwobot.modules.sql import log_channel_sql as sql
 
     def loggable(func):
@@ -107,7 +107,7 @@ if is_module_loaded(FILENAME):
                 )
 
     
-    @user_admin
+    @check_admin(is_user=True)
     async def logging(update: Update, context: ContextTypes.DEFAULT_TYPE):
         bot = context.bot
         message = update.effective_message
@@ -125,8 +125,8 @@ if is_module_loaded(FILENAME):
         else:
             await message.reply_text("No log channel has been set for this group!")
 
-    
-    @user_admin
+
+    @check_admin(is_user=True)
     async def setlog(update: Update, context: ContextTypes.DEFAULT_TYPE):
         bot = context.bot
         message = update.effective_message
@@ -168,7 +168,7 @@ if is_module_loaded(FILENAME):
             )
 
     
-    @user_admin
+    @check_admin(is_user=True)
     async def unsetlog(update: Update, context: ContextTypes.DEFAULT_TYPE):
         bot = context.bot
         message = update.effective_message

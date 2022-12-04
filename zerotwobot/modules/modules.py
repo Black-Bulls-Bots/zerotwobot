@@ -13,14 +13,14 @@ from zerotwobot.__main__ import (
     USER_INFO,
     USER_SETTINGS,
 )
-from zerotwobot.modules.helper_funcs.chat_status import dev_plus, sudo_plus
+from zerotwobot.modules.helper_funcs.chat_status import check_admin
 from telegram import Update
 from telegram.constants import ParseMode
 from telegram.ext import ContextTypes, CommandHandler
 
 
 
-@dev_plus
+@check_admin(only_dev=True)
 async def load(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
     text = message.text.split(" ", 1)[1]
@@ -90,7 +90,7 @@ async def load(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 
-@dev_plus
+@check_admin(only_dev=True)
 async def unload(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
     text = message.text.split(" ", 1)[1]
@@ -160,7 +160,7 @@ async def unload(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
-@sudo_plus
+@check_admin(only_sudo=True)
 async def listmodules(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
     module_list = []

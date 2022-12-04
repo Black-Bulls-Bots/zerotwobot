@@ -5,12 +5,9 @@ from zerotwobot import (
     DEV_USERS,
     OWNER_ID,
     DRAGONS,
-    DEMONS,
-    TIGERS,
-    WOLVES,
     application,
 )
-from zerotwobot.modules.helper_funcs.chat_status import dev_plus
+from zerotwobot.modules.helper_funcs.chat_status import check_admin
 from zerotwobot.modules.helper_funcs.extraction import (
     extract_user,
     extract_user_and_text,
@@ -22,13 +19,13 @@ from telegram.error import BadRequest
 from telegram.ext import ContextTypes, CommandHandler
 from telegram.helpers import mention_html
 
-BLACKLISTWHITELIST = [OWNER_ID] + DEV_USERS + DRAGONS + WOLVES + DEMONS
+BLACKLISTWHITELIST = [OWNER_ID] + DEV_USERS + DRAGONS
 BLABLEUSERS = [OWNER_ID] + DEV_USERS
 
 
 
-@dev_plus
 @gloggable
+@check_admin(only_dev=True)
 async def bl_user(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     message = update.effective_message
     user = update.effective_user
@@ -70,7 +67,7 @@ async def bl_user(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
 
 
 
-@dev_plus
+@check_admin(only_dev=True)
 @gloggable
 async def unbl_user(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     message = update.effective_message
@@ -113,7 +110,7 @@ async def unbl_user(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
 
 
 
-@dev_plus
+@check_admin(only_dev=True)
 async def bl_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
     users = []
     bot = context.bot
@@ -145,7 +142,7 @@ def __user_info__(user_id):
         return ""
     if user_id == application.bot.id:
         return ""
-    if int(user_id) in DRAGONS + TIGERS + WOLVES:
+    if int(user_id) in DRAGONS:
         return ""
     if is_blacklisted:
         text = text.format("Yes")

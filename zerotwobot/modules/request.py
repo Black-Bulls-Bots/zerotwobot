@@ -5,7 +5,7 @@ from telegram.constants import ParseMode
 from telegram.error import BadRequest, Forbidden
 from telegram.ext import ContextTypes, CommandHandler, MessageHandler, filters
 from telegram.helpers import mention_html
-from zerotwobot.modules.helper_funcs.chat_status import user_admin, user_not_admin
+from zerotwobot.modules.helper_funcs.chat_status import check_admin, user_not_admin
 from zerotwobot.modules.log_channel import loggable
 
 from zerotwobot import LOGGER, application
@@ -13,7 +13,7 @@ from zerotwobot.modules.sql import request_sql as sql
 
 REQUEST_GROUP = 12
 
-@user_admin
+@check_admin(is_user=True)
 async def settings(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
     chat = update.effective_chat

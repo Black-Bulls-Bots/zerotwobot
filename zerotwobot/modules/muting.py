@@ -1,13 +1,11 @@
 import html
 from typing import Optional, Union
 
-from zerotwobot import LOGGER, TIGERS, application
+from zerotwobot import LOGGER, application
 from zerotwobot.modules.helper_funcs.chat_status import (
-    bot_admin,
-    can_restrict,
     connection_status,
     is_user_admin,
-    user_admin,
+    check_admin
 )
 from zerotwobot.modules.helper_funcs.extraction import (
     extract_user,
@@ -40,18 +38,15 @@ async def check_user(user_id: int, bot: Bot, chat: Chat) -> Union[str, None]:
         reply = "I'm not gonna MUTE myself, How high are you?"
         return reply
 
-    if await is_user_admin(chat, user_id, member) or user_id in TIGERS:
+    if await is_user_admin(chat, user_id, member):
         reply = "Can't. Find someone else to mute but not this one."
         return reply
 
     return None
 
-
-
 @connection_status
-@bot_admin
-@user_admin
 @loggable
+@check_admin(permission="can_restrict_members", is_both=True)
 async def mute(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     bot = context.bot
     args = context.args
@@ -95,12 +90,9 @@ async def mute(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
 
     return ""
 
-
-
 @connection_status
-@bot_admin
-@user_admin
 @loggable
+@check_admin(permission="can_restrict_members", is_both=True)
 async def unmute(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     bot, args = context.bot, context.args
     chat = update.effective_chat
@@ -157,10 +149,8 @@ async def unmute(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
 
 
 @connection_status
-@bot_admin
-@can_restrict
-@user_admin
 @loggable
+@check_admin(permission="can_restrict_members", is_both=True)
 async def temp_mute(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     bot, args = context.bot, context.args
     chat = update.effective_chat

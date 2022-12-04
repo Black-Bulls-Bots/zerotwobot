@@ -3,7 +3,7 @@ import asyncio
 import zerotwobot.modules.sql.global_bans_sql as gban_sql
 import zerotwobot.modules.sql.users_sql as user_sql
 from zerotwobot import DEV_USERS, OWNER_ID, application
-from zerotwobot.modules.helper_funcs.chat_status import dev_plus
+from zerotwobot.modules.helper_funcs.chat_status import check_admin
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.error import BadRequest, Forbidden
 from telegram.ext import (
@@ -90,7 +90,7 @@ async def get_invalid_gban(update: Update, context: ContextTypes.DEFAULT_TYPE, r
 
 
 
-@dev_plus
+@check_admin(only_dev=True)
 async def dbcleanup(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.effective_message
 

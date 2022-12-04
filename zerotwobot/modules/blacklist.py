@@ -10,7 +10,7 @@ from telegram.helpers import mention_html
 import zerotwobot.modules.sql.blacklist_sql as sql
 from zerotwobot import application, LOGGER
 from zerotwobot.modules.disable import DisableAbleCommandHandler
-from zerotwobot.modules.helper_funcs.chat_status import user_admin, user_not_admin
+from zerotwobot.modules.helper_funcs.chat_status import check_admin, user_not_admin
 from zerotwobot.modules.helper_funcs.extraction import extract_text
 from zerotwobot.modules.helper_funcs.misc import split_message
 from zerotwobot.modules.log_channel import loggable
@@ -24,7 +24,7 @@ BLACKLIST_GROUP = 11
 
 
 
-@user_admin
+@check_admin(is_user=True)
 @typing_action
 async def blacklist(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat = update.effective_chat
@@ -71,7 +71,7 @@ async def blacklist(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 
-@user_admin
+@check_admin(is_user=True)
 @typing_action
 async def add_blacklist(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.effective_message
@@ -125,7 +125,7 @@ async def add_blacklist(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 
-@user_admin
+@check_admin(is_user=True)
 @typing_action
 async def unblacklist(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.effective_message
@@ -204,7 +204,7 @@ async def unblacklist(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 @loggable
-@user_admin
+@check_admin(is_user=True)
 @typing_action
 async def blacklist_mode(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat = update.effective_chat

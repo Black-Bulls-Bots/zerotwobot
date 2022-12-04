@@ -18,7 +18,7 @@ from telegram.helpers import mention_html, escape_markdown
 from zerotwobot import application, LOGGER, DRAGONS
 from zerotwobot.modules.disable import DisableAbleCommandHandler
 from zerotwobot.modules.helper_funcs.handlers import MessageHandlerChecker
-from zerotwobot.modules.helper_funcs.chat_status import user_admin
+from zerotwobot.modules.helper_funcs.chat_status import check_admin
 from zerotwobot.modules.helper_funcs.extraction import extract_text
 
 from zerotwobot.modules.helper_funcs.misc import build_keyboard_parser
@@ -97,9 +97,8 @@ async def list_handlers(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode=ParseMode.MARKDOWN,
     )
 
-
-@user_admin
 @typing_action
+@check_admin(is_user=True)
 async def filters(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat = update.effective_chat
     user = update.effective_user
@@ -222,9 +221,8 @@ async def filters(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
     raise ApplicationHandlerStop
 
-
-@user_admin
 @typing_action
+@check_admin(is_user=True)
 async def stop_filter(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat = update.effective_chat
     user = update.effective_user

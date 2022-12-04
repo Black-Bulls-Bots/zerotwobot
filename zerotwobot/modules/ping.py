@@ -7,7 +7,7 @@ from telegram.constants import ParseMode
 from telegram.ext import ContextTypes
 
 from zerotwobot import StartTime, application
-from zerotwobot.modules.helper_funcs.chat_status import sudo_plus
+from zerotwobot.modules.helper_funcs.chat_status import check_admin
 from zerotwobot.modules.disable import DisableAbleCommandHandler
 
 sites_list = {
@@ -69,9 +69,7 @@ async def ping_func(to_ping: List[str]) -> List[str]:
 
     return ping_result
 
-
-
-@sudo_plus
+@check_admin(only_sudo=True)
 async def ping(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.effective_message
 
@@ -88,9 +86,7 @@ async def ping(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode=ParseMode.HTML,
     )
 
-
-
-@sudo_plus
+@check_admin(only_sudo=True)
 async def pingall(update: Update, context: ContextTypes.DEFAULT_TYPE):
     to_ping = ["Kaizoku", "Kayo", "Telegram", "Jikan"]
     pinged_list = await ping_func(to_ping)

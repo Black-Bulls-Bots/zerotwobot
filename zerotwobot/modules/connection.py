@@ -11,10 +11,10 @@ from zerotwobot import application, DRAGONS, DEV_USERS
 from zerotwobot.modules.helper_funcs import chat_status
 from zerotwobot.modules.helper_funcs.alternate import send_message, typing_action
 
-user_admin = chat_status.user_admin
+check_admin = chat_status.check_admin
 
 
-@user_admin
+@check_admin(is_user=True)
 @typing_action
 async def allow_connections(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
 

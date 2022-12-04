@@ -4,12 +4,11 @@ import re
 
 from telegram import Message, Chat, Update, User, ChatPermissions
 
-from zerotwobot import TIGERS, WOLVES, application
+from zerotwobot import application
 from zerotwobot.modules.helper_funcs.chat_status import (
-    bot_admin,
     is_user_admin,
-    user_admin,
-    user_admin_no_reply,
+    check_admin
+
 )
 from zerotwobot.modules.log_channel import loggable
 from zerotwobot.modules.sql import antiflood_sql as sql
@@ -39,8 +38,8 @@ async def check_flood(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str
     if not user:  # ignore channels
         return ""
 
-    # ignore admins and whitelists
-    if await is_user_admin(chat, user.id) or user.id in WOLVES or user.id in TIGERS:
+    # ignore admins
+    if await is_user_admin(chat, user.id):
         sql.update_flood(chat.id, None)
         return ""
     # ignore approved users
@@ -111,10 +110,7 @@ async def check_flood(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str
             )
         )
 
-
-
-@user_admin_no_reply
-@bot_admin
+@check_admin(permission="can_restrict_members", is_both=True)
 async def flood_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
     query = update.callback_query
@@ -141,10 +137,8 @@ async def flood_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except:
             pass
 
-
-
-@user_admin
 @loggable
+@check_admin(is_user=True)
 async def set_flood(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
@@ -284,7 +278,7 @@ async def flood(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 
-@user_admin
+@check_admin(is_user=True)
 async def set_flood_mode(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]

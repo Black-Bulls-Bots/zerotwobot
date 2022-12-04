@@ -5,7 +5,7 @@ from telegram.error import BadRequest
 from telegram.ext import CommandHandler, ContextTypes, filters
 from telegram.helpers import mention_html
 from zerotwobot import application
-from zerotwobot.modules.helper_funcs.chat_status import check_admin, sudo_plus
+from zerotwobot.modules.helper_funcs.chat_status import check_admin
 from zerotwobot.modules.log_channel import loggable
 from zerotwobot.modules.sql.topics_sql import (del_action_topic,
                                                get_action_topic,

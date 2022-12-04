@@ -1,7 +1,7 @@
 import speedtest
 from zerotwobot import DEV_USERS, application
 from zerotwobot.modules.disable import DisableAbleCommandHandler
-from zerotwobot.modules.helper_funcs.chat_status import dev_plus
+from zerotwobot.modules.helper_funcs.chat_status import check_admin
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.constants import ParseMode
 from telegram.ext import ContextTypes, CallbackQueryHandler
@@ -11,7 +11,7 @@ def convert(speed):
     return round(int(speed) / 1048576, 2)
 
 
-@dev_plus
+@check_admin(only_dev=True)
 async def speedtestxyz(update: Update, context: ContextTypes.DEFAULT_TYPE):
     buttons = [
         [

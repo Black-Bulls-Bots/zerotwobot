@@ -1,6 +1,6 @@
 from zerotwobot import application, LOGGER, DRAGONS
 from zerotwobot.modules.helper_funcs.chat_status import (
-    bot_admin,
+    check_admin,
     is_bot_admin,
     is_user_ban_protected,
     is_user_in_chat,
@@ -81,9 +81,6 @@ RUNMUTE_ERRORS = {
     "Not in the chat",
 }
 
-
-
-@bot_admin
 async def rban(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, args = context.bot, context.args
     message = update.effective_message
@@ -170,8 +167,6 @@ async def rban(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await message.reply_text("Well damn, I can't ban that user.")
 
 
-
-@bot_admin
 async def runban(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, args = context.bot, context.args
     message = update.effective_message
@@ -259,9 +254,6 @@ async def runban(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             await message.reply_text("Well damn, I can't unban that user.")
 
-
-
-@bot_admin
 async def rkick(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, args = context.bot, context.args
     message = update.effective_message
@@ -347,9 +339,6 @@ async def rkick(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             await message.reply_text("Well damn, I can't kick that user.")
 
-
-
-@bot_admin
 async def rmute(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, args = context.bot, context.args
     message = update.effective_message
@@ -437,9 +426,6 @@ async def rmute(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             await message.reply_text("Well damn, I can't mute that user.")
 
-
-
-@bot_admin
 async def runmute(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, args = context.bot, context.args
     message = update.effective_message

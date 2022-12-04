@@ -7,8 +7,8 @@ from cachetools import TTLCache
 from telegram import Chat, ChatMember, ChatMemberAdministrator, Update, ChatMemberOwner
 from telegram.constants import ChatMemberStatus, ParseMode, ChatType
 from telegram.ext import ContextTypes
-from zerotwobot import (DEL_CMDS, DEMONS, DEV_USERS, DRAGONS, SUPPORT_CHAT,
-                        TIGERS, WOLVES, application)
+from zerotwobot import (DEL_CMDS, DEV_USERS, DRAGONS, SUPPORT_CHAT,
+                        application)
 
 # stores admemes in memory for 10 min.
 ADMIN_CACHE = TTLCache(maxsize=512, ttl=60 * 10, timer=perf_counter)
@@ -46,7 +46,7 @@ def check_admin(
                 return await func(update, context, *args, **kwargs)
 
             bot_member = await chat.get_member(context.bot.id) if is_bot or is_both else None
-            user_member = await chat.get_member(user.id) if is_user or is_bot else None
+            user_member = await chat.get_member(user.id) if is_user or is_both else None
 
             if only_owner:
                 if isinstance(user_member, ChatMemberOwner) or user.id in DEV_USERS:
@@ -68,11 +68,12 @@ def check_admin(
                     return await update.effective_message.reply_text("Who the hell are you to say me what to do?",)
             
             if permission:
+                no_permission = permission.replace("_", " ").replace("can", "")
                 if is_bot:
                     if (getattr(bot_member, permission) if isinstance(bot_member, ChatMemberAdministrator) else False):
                         return await func(update, context, *args, **kwargs)
                     else:
-                        return await message.reply_text(f"I don't have {permission} to do this action.")
+                        return await message.reply_text(f"I don't have permission to {no_permission}.")
                 if is_user:
                     if isinstance(user_member, ChatMemberOwner):
                         return await func(update, context, *args, **kwargs)
@@ -82,12 +83,12 @@ def check_admin(
                         ):
                         return await func(update, context, *args, **kwargs)
                     else:
-                        return await message.reply_text(f"You don't have {permission} to do this action.")
+                        return await message.reply_text(f"You don't have permission to {no_permission}.")
                 if is_both:
                     if (getattr(bot_member, permission) if isinstance(bot_member, ChatMemberAdministrator) else False):
                         pass
                     else:
-                        return await message.reply_text(f"I don't have {permission} to do this action.")
+                        return await message.reply_text(f"I don't have permission to {no_permission}.")
 
                     if isinstance(user_member, ChatMemberOwner) or user.id in DEV_USERS:
                         pass
@@ -97,33 +98,43 @@ def check_admin(
                         ):
                         pass
                     else:
-                        return await message.reply_text(f"You don't have {permission} to do this action.")
+                        return await message.reply_text(f"You don't have permission to {no_permission}.")
                     return await func(update, context, *args, **kwargs)
             else:
-                if bot_member.status == ChatMemberStatus.ADMINISTRATOR:
-                    pass
-                else:
-                    return await message.reply_text("I'm not admin here.")
-
-                if user_member.status in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
-                    pass
-                elif user.id in DRAGONS:
-                    pass
-                else:
-                    return await message.reply_text("You are not admin here.")
+                if is_bot:
+                    if bot_member.status == ChatMemberStatus.ADMINISTRATOR:
+                        return await func(update, context, *args, **kwargs)
+                    else:
+                        return await message.reply_text("I'm not admin here.")
+                elif is_user:
+                    if user_member.status in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
+                        return await func(update, context, *args, **kwargs)
+                    elif user.id in DRAGONS:
+                        return await func(update, context, *args, **kwargs)
+                    else:
+                        return await message.reply_text("You are not admin here.")
+                elif is_both:
+                    if bot_member.status == ChatMemberStatus.ADMINISTRATOR:
+                        pass
+                    else:
+                        return await message.reply_text("I'm not admin here.")
+                        
+                    if user_member.status in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
+                        pass
+                    elif user.id in DRAGONS:
+                        pass
+                    else:
+                        return await message.reply_text("You are not admin here.")
+                    return await func(update, context, *args, **kwargs)
         return wrapped
     return wrapper
 
 
 def is_whitelist_plus(chat: Chat, user_id: int, member: ChatMember = None) -> bool:
-    return any(user_id in user for user in [WOLVES, TIGERS, DEMONS, DRAGONS, DEV_USERS])
+    return any(user_id in user for user in [DRAGONS, DEV_USERS])
 
 
 def is_support_plus(chat: Chat, user_id: int, member: ChatMember = None) -> bool:
-    return user_id in DEMONS or user_id in DRAGONS or user_id in DEV_USERS
-
-
-def is_sudo_plus(chat: Chat, user_id: int, member: ChatMember = None) -> bool:
     return user_id in DRAGONS or user_id in DEV_USERS
 
 
@@ -173,8 +184,6 @@ async def is_user_ban_protected(chat: Chat, user_id: int, member: ChatMember = N
         chat.type == "private"
         or user_id in DRAGONS
         or user_id in DEV_USERS
-        or user_id in WOLVES
-        or user_id in TIGERS
         or user_id in [777000, 1087968824]
     ):  # Count telegram and Group Anonymous as admin
         return True
@@ -187,55 +196,6 @@ async def is_user_ban_protected(chat: Chat, user_id: int, member: ChatMember = N
 async def is_user_in_chat(chat: Chat, user_id: int) -> bool:
     member = await chat.get_member(user_id)
     return member.status in (ChatMemberStatus.LEFT, ChatMemberStatus.RESTRICTED)
-
-
-def dev_plus(func):
-    @wraps(func)
-    async def is_dev_plus_func(update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs):
-        bot = context.bot
-        user = update.effective_user
-
-        if user.id in DEV_USERS:
-            return await func(update, context, *args, **kwargs)
-        elif not user:
-            pass
-        elif DEL_CMDS and " " not in update.effective_message.text:
-            try:
-                await update.effective_message.delete()
-            except:
-                pass
-        else:
-            await update.effective_message.reply_text(
-                "This is a developer restricted command."
-                " You do not have permissions to run this.",
-            )
-
-    return is_dev_plus_func
-
-
-def sudo_plus(func):
-    @wraps(func)
-    async def is_sudo_plus_func(update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs):
-        bot = context.bot
-        user = update.effective_user
-        chat = update.effective_chat
-
-        if user and is_sudo_plus(chat, user.id):
-            return await func(update, context, *args, **kwargs)
-        elif not user:
-            pass
-        elif DEL_CMDS and " " not in update.effective_message.text:
-            try:
-                await update.effective_message.delete()
-            except:
-                pass
-        else:
-            await update.effective_message.reply_text(
-                "Who the hell are you to say me what to do?",
-            )
-
-    return is_sudo_plus_func
-
 
 def support_plus(func):
     @wraps(func)
@@ -273,53 +233,6 @@ def whitelist_plus(func):
 
     return is_whitelist_plus_func
 
-
-def user_admin(func):
-    @wraps(func)
-    async def is_admin(update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs):
-        bot = context.bot
-        user = update.effective_user
-        chat = update.effective_chat
-
-        if user and await is_user_admin(chat, user.id):
-            return await func(update, context, *args, **kwargs)
-        elif not user:
-            pass
-        elif DEL_CMDS and " " not in update.effective_message.text:
-            try:
-                await update.effective_message.delete()
-            except:
-                pass
-        else:
-            await update.effective_message.reply_text(
-                "Who the hell are you to say me what to do?",
-            )
-
-    return is_admin
-
-
-def user_admin_no_reply(func):
-    @wraps(func)
-    async def is_not_admin_no_reply(
-        update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs,
-    ):
-        bot = context.bot
-        user = update.effective_user
-        chat = update.effective_chat
-
-        if user and await is_user_admin(chat, user.id):
-            return await func(update, context, *args, **kwargs)
-        elif not user:
-            pass
-        elif DEL_CMDS and " " not in update.effective_message.text:
-            try:
-                await update.effective_message.delete()
-            except:
-                pass
-
-    return is_not_admin_no_reply
-
-
 def user_not_admin(func):
     @wraps(func)
     async def is_not_admin(update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs):
@@ -333,151 +246,6 @@ def user_not_admin(func):
             pass
 
     return is_not_admin
-
-
-def bot_admin(func):
-    @wraps(func)
-    async def is_admin(update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs):
-        bot = context.bot
-        chat = update.effective_chat
-        update_chat_title = chat.title
-        message_chat_title = update.effective_message.chat.title
-
-        if update_chat_title == message_chat_title:
-            not_admin = "I'm not admin!"
-        else:
-            not_admin = f"I'm not admin in <b>{update_chat_title}</b>!"
-
-        if await is_bot_admin(chat, bot.id):
-            return await func(update, context, *args, **kwargs)
-        else:
-            await update.effective_message.reply_text(not_admin, parse_mode=ParseMode.HTML)
-
-    return is_admin
-
-
-def bot_can_delete(func):
-    @wraps(func)
-    async def delete_rights(update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs):
-        bot = context.bot
-        chat = update.effective_chat
-        update_chat_title = chat.title
-        message_chat_title = update.effective_message.chat.title
-
-        if update_chat_title == message_chat_title:
-            cant_delete = "I can't delete messages here!\nMake sure I'm admin and can delete other user's messages."
-        else:
-            cant_delete = f"I can't delete messages in <b>{update_chat_title}</b>!\nMake sure I'm admin and can delete other user's messages there."
-
-        if await can_delete(chat, bot.id):
-            return await func(update, context, *args, **kwargs)
-        else:
-            await update.effective_message.reply_text(cant_delete, parse_mode=ParseMode.HTML)
-
-    return delete_rights
-
-
-def can_pin(func):
-    @wraps(func)
-    async def pin_rights(update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs):
-        bot = context.bot
-        chat = update.effective_chat
-        update_chat_title = chat.title
-        message_chat_title = update.effective_message.chat.title
-
-        if update_chat_title == message_chat_title:
-            cant_pin = (
-                "I can't pin messages here!\nMake sure I'm admin and can pin messages."
-            )
-        else:
-            cant_pin = f"I can't pin messages in <b>{update_chat_title}</b>!\nMake sure I'm admin and can pin messages there."
-        
-        bot_member = await chat.get_member(bot.id)
-
-        if isinstance(bot_member, ChatMemberAdministrator):
-            if bot_member.can_pin_messages:
-                return await func(update, context, *args, **kwargs)
-            else:
-                await update.effective_message.reply_text(cant_pin, parse_mode=ParseMode.HTML)
-
-    return pin_rights
-
-
-def can_promote(func):
-    @wraps(func)
-    async def promote_rights(update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs):
-        bot = context.bot
-        chat = update.effective_chat
-        update_chat_title = chat.title
-        message_chat_title = update.effective_message.chat.title
-
-        if update_chat_title == message_chat_title:
-            cant_promote = "I can't promote/demote people here!\nMake sure I'm admin and can appoint new admins."
-        else:
-            cant_promote = (
-                f"I can't promote/demote people in <b>{update_chat_title}</b>!\n"
-                f"Make sure I'm admin there and can appoint new admins."
-            )
-        bot_member = await chat.get_member(bot.id)
-
-        if isinstance(bot_member, ChatMemberAdministrator):
-            if bot_member.can_promote_members:
-                return await func(update, context, *args, **kwargs)
-            else:
-                await update.effective_message.reply_text(cant_promote, parse_mode=ParseMode.HTML)
-
-    return promote_rights
-
-
-def can_restrict(func):
-    @wraps(func)
-    async def restrict_rights(update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs):
-        bot = context.bot
-        chat = update.effective_chat
-        update_chat_title = chat.title
-        message_chat_title = update.effective_message.chat.title
-
-        if update_chat_title == message_chat_title:
-            cant_restrict = "I can't restrict people here!\nMake sure I'm admin and can restrict users."
-        else:
-            cant_restrict = f"I can't restrict people in <b>{update_chat_title}</b>!\nMake sure I'm admin there and can restrict users."
-        
-        bot_member = await chat.get_member(bot.id)
-
-        if isinstance(bot_member, ChatMemberAdministrator):
-            if bot_member.can_restrict_members:
-                return await func(update, context, *args, **kwargs)
-            else:
-                await update.effective_message.reply_text(
-                    cant_restrict, parse_mode=ParseMode.HTML,
-                )
-
-    return restrict_rights
-
-def can_manage_topics(func):
-    @wraps(func)
-    async def topics_rights(update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs):
-        bot = context.bot
-        chat = update.effective_chat
-        update_chat_title = chat.title
-        message_chat_title = update.effective_message.chat.title
-
-        if update_chat_title == message_chat_title:
-            cant_restrict = "I can't manage topics here!\nMake sure I'm admin and can manage topics."
-        else:
-            cant_restrict = f"I can't manage topics in <b>{update_chat_title}</b>!\nMake sure I'm admin there and can manage topics."
-        
-        bot_member = await chat.get_member(bot.id)
-
-        if isinstance(bot_member, ChatMemberAdministrator):
-            if bot_member.can_restrict_members:
-                return await func(update, context, *args, **kwargs)
-            else:
-                await update.effective_message.reply_text(
-                    cant_restrict, parse_mode=ParseMode.HTML,
-                )
-
-    return topics_rights
 
 def connection_status(func):
     @wraps(func)

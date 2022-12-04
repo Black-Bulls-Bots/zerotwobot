@@ -23,15 +23,12 @@ from zerotwobot import (
     STRICT_GBAN,
     DRAGONS,
     SUPPORT_CHAT,
-    DEMONS,
-    TIGERS,
-    WOLVES,
     application,
 )
 from zerotwobot.modules.helper_funcs.chat_status import (
     is_user_admin,
     support_plus,
-    user_admin,
+    check_admin
 )
 from zerotwobot.modules.helper_funcs.extraction import (
     extract_user,
@@ -97,20 +94,6 @@ async def gban(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await message.reply_text(
             "I spy, with my little eye... a disaster! Why are you guys turning on each other?",
         )
-        return
-
-    if int(user_id) in DEMONS:
-        await message.reply_text(
-            "OOOH someone's trying to gban a Demon Disaster! *grabs popcorn*",
-        )
-        return
-
-    if int(user_id) in TIGERS:
-        await message.reply_text("That's a Tiger! They cannot be banned!")
-        return
-
-    if int(user_id) in WOLVES:
-        await message.reply_text("That's a Wolf! They cannot be banned!")
         return
 
     if user_id == bot.id:
@@ -199,7 +182,7 @@ async def gban(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
 
     else:
-        send_to_list(bot, DRAGONS + DEMONS, log_message, html=True)
+        send_to_list(bot, DRAGONS, log_message, html=True)
 
     sql.gban_user(user_id, user_chat.username or user_chat.first_name, reason)
 
@@ -230,7 +213,7 @@ async def gban(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     )
                 else:
                     send_to_list(
-                        bot, DRAGONS + DEMONS, f"Could not gban due to: {excp.message}",
+                        bot, DRAGONS, f"Could not gban due to: {excp.message}",
                     )
                 sql.ungban_user(user_id)
                 return
@@ -245,7 +228,7 @@ async def gban(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         send_to_list(
             bot,
-            DRAGONS + DEMONS,
+            DRAGONS,
             f"Gban complete! (User banned in <code>{gbanned_chats}</code> chats)",
             html=True,
         )
@@ -328,7 +311,7 @@ async def ungban(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 + "\n\nFormatting has been disabled due to an unexpected error.",
             )
     else:
-        send_to_list(bot, DRAGONS + DEMONS, log_message, html=True)
+        send_to_list(bot, DRAGONS, log_message, html=True)
 
     chats = get_user_com_chats(user_id)
     ungbanned_chats = 0
@@ -373,7 +356,7 @@ async def ungban(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode=ParseMode.HTML,
         )
     else:
-        send_to_list(bot, DRAGONS + DEMONS, "un-gban complete!")
+        send_to_list(bot, DRAGONS, "un-gban complete!")
 
     end_time = time.time()
     ungban_time = round((end_time - start_time), 2)
@@ -412,20 +395,6 @@ async def gbanlist(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def check_and_ban(update, user_id, should_message=True):
-
-    sw_ban = None if user_id in TIGERS or user_id in WOLVES else False
-
-    if sw_ban:
-        await update.effective_chat.ban_member(user_id)
-        if should_message:
-            await update.effective_message.reply_text(
-                f"<b>Alert</b>: this user is globally banned.\n"
-                f"<code>*bans them from here*</code>.\n"
-                f"<b>User ID</b>: <code>{sw_ban.id}</code>\n"
-                f"<b>Ban Reason</b>: <code>{html.escape(sw_ban.reason)}</code>",
-                parse_mode=ParseMode.HTML,
-            )
-        return
 
     if sql.is_user_gbanned(user_id):
         await update.effective_chat.ban_member(user_id)
@@ -475,7 +444,7 @@ async def enforce_gban(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 
-@user_admin
+@check_admin(is_user=True)
 async def gbanstat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = context.args
     if len(args) > 0:
@@ -511,7 +480,7 @@ def __user_info__(user_id):
         return ""
     if user_id == application.bot.id:
         return ""
-    if int(user_id) in DRAGONS + TIGERS + WOLVES:
+    if int(user_id) in DRAGONS:
         return ""
     if is_gbanned:
         text = text.format("Yes")

@@ -1,4 +1,4 @@
-from zerotwobot.modules.helper_funcs.chat_status import user_admin
+from zerotwobot.modules.helper_funcs.chat_status import check_admin
 from zerotwobot.modules.disable import DisableAbleCommandHandler
 from zerotwobot import application
 
@@ -34,7 +34,7 @@ Keep in mind that your message <b>MUST</b> contain some text other than just a b
 
 
 
-@user_admin
+@check_admin(is_user=True)
 async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = update.effective_message.text.split(None, 1)
     message = update.effective_message

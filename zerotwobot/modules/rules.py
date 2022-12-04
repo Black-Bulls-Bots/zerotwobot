@@ -2,7 +2,7 @@ from typing import Optional
 
 import zerotwobot.modules.sql.rules_sql as sql
 from zerotwobot import application
-from zerotwobot.modules.helper_funcs.chat_status import user_admin
+from zerotwobot.modules.helper_funcs.chat_status import check_admin
 from zerotwobot.modules.helper_funcs.string_handling import markdown_parser, markdown_to_html
 from telegram import (
     InlineKeyboardButton,
@@ -87,7 +87,7 @@ async def send_rules(update, chat_id, from_pm=False):
         )
 
 
-@user_admin
+@check_admin(is_user=True)
 async def set_rules(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     msg = update.effective_message  # type: Optional[Message]
@@ -104,7 +104,7 @@ async def set_rules(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.effective_message.reply_text("Successfully set rules for this group.")
 
 
-@user_admin
+@check_admin(is_user=True)
 async def clear_rules(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     sql.set_rules(chat_id, "")

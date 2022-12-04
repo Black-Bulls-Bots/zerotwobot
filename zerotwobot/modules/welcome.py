@@ -12,15 +12,12 @@ from zerotwobot import (
     LOGGER,
     OWNER_ID,
     DRAGONS,
-    DEMONS,
-    TIGERS,
-    WOLVES,
     application,
     JOIN_LOGGER,
 )
 from zerotwobot.modules.helper_funcs.chat_status import (
     is_user_ban_protected,
-    user_admin,
+    check_admin,
 )
 from zerotwobot.modules.helper_funcs.misc import build_keyboard, revert_buttons
 from zerotwobot.modules.helper_funcs.msg_types import get_welcome_type
@@ -283,43 +280,6 @@ async def new_member(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     f"{html.escape(chat.title)}\n"
                     f"#USER_JOINED\n"
                     f"Bot Sudo just joined the group"
-                )
-                continue
-
-            # Welcome Support
-            elif new_mem.id in DEMONS:
-                await update.effective_message.reply_text(
-                    "Huh! Someone with a Demon disaster level just joined!",
-                    reply_to_message_id=reply,
-                )
-                welcome_log = (
-                    f"{html.escape(chat.title)}\n"
-                    f"#USER_JOINED\n"
-                    f"Bot Support just joined the group"
-                )
-                continue
-
-            # Welcome Whitelisted
-            elif new_mem.id in TIGERS:
-                await update.effective_message.reply_text(
-                    "Roar! A Tiger disaster just joined!", reply_to_message_id=reply,
-                )
-                welcome_log = (
-                    f"{html.escape(chat.title)}\n"
-                    f"#USER_JOINED\n"
-                    f"A whitelisted user joined the chat"
-                )
-                continue
-
-            # Welcome Tigers
-            elif new_mem.id in WOLVES:
-                await update.effective_message.reply_text(
-                    "Awoo! A Wolf disaster just joined!", reply_to_message_id=reply,
-                )
-                welcome_log = (
-                    f"{html.escape(chat.title)}\n"
-                    f"#USER_JOINED\n"
-                    f"A whitelisted user joined the chat"
                 )
                 continue
 
@@ -697,9 +657,7 @@ async def left_member(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 random.choice(sql.DEFAULT_GOODBYE_MESSAGES).format(first=first_name),
             )
 
-
-
-@user_admin
+@check_admin(is_user=True)
 async def welcome(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = context.args
     chat = update.effective_chat
@@ -762,9 +720,7 @@ async def welcome(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "I understand 'on/yes' or 'off/no' only!",
             )
 
-
-
-@user_admin
+@check_admin(is_user=True)
 async def goodbye(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = context.args
     chat = update.effective_chat
@@ -815,9 +771,7 @@ async def goodbye(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "I understand 'on/yes' or 'off/no' only!",
             )
 
-
-
-@user_admin
+@check_admin(is_user=True)
 @loggable
 async def set_welcome(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     chat = update.effective_chat
@@ -840,9 +794,7 @@ async def set_welcome(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str
         f"Set the welcome message."
     )
 
-
-
-@user_admin
+@check_admin(is_user=True)
 @loggable
 async def reset_welcome(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     chat = update.effective_chat
@@ -860,9 +812,7 @@ async def reset_welcome(update: Update, context: ContextTypes.DEFAULT_TYPE) -> s
         f"Reset the welcome message to default."
     )
 
-
-
-@user_admin
+@check_admin(is_user=True)
 @loggable
 async def set_goodbye(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     chat = update.effective_chat
@@ -883,9 +833,7 @@ async def set_goodbye(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str
         f"Set the goodbye message."
     )
 
-
-
-@user_admin
+@check_admin(is_user=True)
 @loggable
 async def reset_goodbye(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     chat = update.effective_chat
@@ -903,9 +851,7 @@ async def reset_goodbye(update: Update, context: ContextTypes.DEFAULT_TYPE) -> s
         f"Reset the goodbye message."
     )
 
-
-
-@user_admin
+@check_admin(is_user=True)
 @loggable
 async def welcomemute(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     args = context.args
@@ -960,9 +906,7 @@ async def welcomemute(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str
         await msg.reply_text(reply, parse_mode=ParseMode.HTML)
         return ""
 
-
-
-@user_admin
+@check_admin(is_user=True)
 @loggable
 async def clean_welcome(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     args = context.args
@@ -1003,9 +947,7 @@ async def clean_welcome(update: Update, context: ContextTypes.DEFAULT_TYPE) -> s
         await update.effective_message.reply_text("I understand 'on/yes' or 'off/no' only!")
         return ""
 
-
-
-@user_admin
+@check_admin(is_user=True)
 async def cleanservice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     args = context.args
     chat = update.effective_chat  # type: Optional[Chat]
@@ -1119,7 +1061,7 @@ WELC_MUTE_HELP_TXT = (
 
 
 
-@user_admin
+@check_admin(is_user=True)
 async def welcome_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     WELC_HELP_TXT = (
     "Your group's welcome/goodbye messages can be personalised in multiple ways. If you want the messages"
@@ -1151,7 +1093,7 @@ async def welcome_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 
-@user_admin
+@check_admin(is_user=True)
 async def welcome_mute_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.effective_message.reply_text(
         WELC_MUTE_HELP_TXT, parse_mode=ParseMode.MARKDOWN,

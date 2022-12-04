@@ -3,13 +3,13 @@ from contextlib import suppress
 import zerotwobot
 
 from zerotwobot import application
-from zerotwobot.modules.helper_funcs.chat_status import dev_plus
+from zerotwobot.modules.helper_funcs.chat_status import check_admin
 from telegram import Update
 from telegram.error import Forbidden, TelegramError
 from telegram.ext import ContextTypes, CommandHandler
 
 
-@dev_plus
+@check_admin(only_dev=True)
 async def allow_groups(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = context.args
     if not args:
@@ -26,7 +26,7 @@ async def allow_groups(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.effective_message.reply_text("Done! Lockdown value toggled.")
 
 
-@dev_plus
+@check_admin(only_dev=True)
 async def leave(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
     args = context.args

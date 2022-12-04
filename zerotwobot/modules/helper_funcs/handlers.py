@@ -1,6 +1,6 @@
 import zerotwobot.modules.sql.blacklistusers_sql as sql
 from zerotwobot import ALLOW_EXCL
-from zerotwobot import DEV_USERS, DRAGONS, DEMONS, TIGERS, WOLVES
+from zerotwobot import DEV_USERS, DRAGONS
 
 import re
 from typing import Optional, Tuple, List, Dict, Union
@@ -26,9 +26,6 @@ class AntiSpam:
         self.whitelist = (
             (DEV_USERS or [])
             + (DRAGONS or [])
-            + (WOLVES or [])
-            + (DEMONS or [])
-            + (TIGERS or [])
         )
         # Values are HIGHLY experimental, its recommended you pay attention to our commits as we will be adjusting the values over time with what suits best.
         Duration.CUSTOM = 15  # Custom duration, 15 seconds

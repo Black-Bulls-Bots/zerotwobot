@@ -7,7 +7,7 @@ import zerotwobot.modules.sql.notes_sql as sql
 from zerotwobot import LOGGER, JOIN_LOGGER, SUPPORT_CHAT, application, DRAGONS
 from zerotwobot.modules.disable import DisableAbleCommandHandler
 from zerotwobot.modules.helper_funcs.handlers import MessageHandlerChecker
-from zerotwobot.modules.helper_funcs.chat_status import user_admin, connection_status
+from zerotwobot.modules.helper_funcs.chat_status import check_admin, connection_status
 from zerotwobot.modules.helper_funcs.misc import build_keyboard, revert_buttons
 from zerotwobot.modules.helper_funcs.msg_types import get_note_type
 from zerotwobot.modules.helper_funcs.string_handling import (
@@ -257,10 +257,8 @@ async def slash_get(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except IndexError:
         await update.effective_message.reply_text("Wrong Note ID 😾")
 
-
-
-@user_admin
 @connection_status
+@check_admin(is_user=True)
 async def save(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     msg = update.effective_message  # type: Optional[Message]
@@ -301,10 +299,8 @@ async def save(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
         return
 
-
-
-@user_admin
 @connection_status
+@check_admin(is_user=True)
 async def clear(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = context.args
     chat_id = update.effective_chat.id

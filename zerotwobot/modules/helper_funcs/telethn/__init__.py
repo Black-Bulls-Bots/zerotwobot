@@ -1,7 +1,7 @@
-from zerotwobot import DEV_USERS, DRAGONS, DEMONS, TIGERS, WOLVES, telethn
+from zerotwobot import DEV_USERS, DRAGONS, telethn
 
-IMMUNE_USERS = DRAGONS + WOLVES + DEMONS + TIGERS + DEV_USERS
+IMMUNE_USERS = DRAGONS+ DEV_USERS
 
 IMMUNE_USERS = (
-    list(DRAGONS) + list(WOLVES) + list(DEMONS) + list(TIGERS) + list(DEV_USERS)
+    list(DRAGONS) + list(DEV_USERS)
 )
