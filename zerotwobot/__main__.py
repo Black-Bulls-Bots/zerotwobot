@@ -698,7 +698,15 @@ def main():
 
     if WEBHOOK:
         LOGGER.info("Using webhooks.")
-        application.run_webhook(listen="0.0.0.0", port=PORT, url_path=TOKEN)
+        application.run_webhook(
+            listen="0.0.0.0", 
+            port=PORT, 
+            url_path=TOKEN, 
+            key='bot.key', 
+            cert='cert.pem', 
+            webhook_url=URL,
+            drop_pending_updates=False
+        )
     else:
         LOGGER.info("Using long polling.")
         application.run_polling(timeout=15, drop_pending_updates=False)   
