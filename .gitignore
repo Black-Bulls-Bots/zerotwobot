@@ -24,3 +24,7 @@ testing.py
 
 #ignore debug mode logs
 updates.txt
+
+#ignore webhook certificates
+bot.key
+cert.pem
