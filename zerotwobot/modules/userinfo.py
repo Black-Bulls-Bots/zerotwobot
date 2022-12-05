@@ -1,5 +1,6 @@
 from datetime import datetime
 import html
+from html import escape
 import os
 import re
 
@@ -289,13 +290,13 @@ async def info(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 os.remove(f"{chat_obj.id}.png")
             else:
                 await reply.edit_text(
-                head, parse_mode=ParseMode.HTML, disable_web_page_preview=True,
+                escape(head), parse_mode=ParseMode.HTML, disable_web_page_preview=True,
             )
 
             
         except:
             await reply.edit_text(
-                head, parse_mode=ParseMode.HTML, disable_web_page_preview=True,
+                escape(head), parse_mode=ParseMode.HTML, disable_web_page_preview=True,
             )
     
 

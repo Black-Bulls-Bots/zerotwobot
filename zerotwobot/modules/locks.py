@@ -280,7 +280,7 @@ async def lock(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
 
 
 
-@check_admin(permission="can_delete_message", is_both=True)
+@check_admin(permission="can_delete_messages", is_both=True)
 @loggable
 @typing_action
 async def unlock(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
@@ -393,7 +393,7 @@ async def unlock(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
 
 
 @user_not_admin
-@check_admin(permission="can_delete_message", is_bot=True)
+@check_admin(permission="can_delete_messages", is_bot=True)
 async def del_lockables(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat = update.effective_chat  # type: Optional[Chat]
     message = update.effective_message  # type: Optional[Message]
