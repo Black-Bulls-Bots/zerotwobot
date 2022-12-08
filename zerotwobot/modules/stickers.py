@@ -468,12 +468,14 @@ async def delsticker(update: Update, context: ContextTypes.DEFAULT_TYPE):
     check = "_by_" + context.bot.username
 
     if (
-        not update.effective_message.reply_to_message
-        and not update.effetive_message.reply_to_message.forum_topic_created
-        or not context.args
+        update.effective_message.reply_to_message is None
         ):
         await update.effective_message.reply_text("Sorry but you have to reply to a sticker to delete.")
         return
+    elif update.effective_message.reply_to_message:
+        if update.effective_message.reply_to_message.forum_topic_created:
+            await update.effective_message.reply_text("Sorry but you have to reply to a sticker to delete.")
+            return
 
     sticker = update.effective_message.reply_to_message.sticker
 
