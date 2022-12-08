@@ -4,7 +4,7 @@ from functools import wraps
 from telegram.ext import ContextTypes
 from telegram.constants import ChatType
 from zerotwobot.modules.helper_funcs.misc import is_module_loaded
-from zerotwobot.modules.sql.topics_sql import get_action_topic
+# from zerotwobot.modules.sql.topics_sql import get_action_topic
 
 FILENAME = __name__.rsplit(".", 1)[-1]
 
@@ -42,7 +42,8 @@ if is_module_loaded(FILENAME):
 
                 if chat.is_forum and chat.username:
                     result += f'\n<b>Link:</b> <a href="https://t.me/{chat.username}/{message.message_thread_id}/{message.message_id}">click here</a>'
-                elif message.chat.type == chat.SUPERGROUP and message.chat.username:
+            
+                if message.chat.type == chat.SUPERGROUP and message.chat.username:
                     result += f'\n<b>Link:</b> <a href="https://t.me/{chat.username}/{message.message_id}">click here</a>'
                 log_chat = sql.get_chat_log_channel(chat.id)
                 if log_chat:
@@ -80,7 +81,7 @@ if is_module_loaded(FILENAME):
         context: ContextTypes.DEFAULT_TYPE, log_chat_id: str, orig_chat_id: str, result: str,
     ):
         bot = context.bot
-        topic_chat = get_action_topic(orig_chat_id)
+        # topic_chat = get_action_topic(orig_chat_id)
         try:
             await bot.send_message(
                 log_chat_id,
@@ -90,9 +91,14 @@ if is_module_loaded(FILENAME):
             )
         except BadRequest as excp:
             if excp.message == "Chat not found":
-                await bot.send_message(
+                try:
+                    await bot.send_message(
+                        orig_chat_id, "This log channel has been deleted - unsetting.",
+                        message_thread_id= 1
+                    )
+                except:
+                    await bot.send_message(
                     orig_chat_id, "This log channel has been deleted - unsetting.",
-                    message_thread_id= topic_chat if topic_chat else None
                 )
                 sql.stop_chat_logging(orig_chat_id)
             else:

@@ -33,12 +33,11 @@ async def get_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print(len(args))
 
     if chat.is_forum:
-        if message.reply_to_message.forum_topic_created:
-            await message.reply_text(
-                f"This group's id is <code>:{chat.id}</code> \nThis topic's id is <code>{message.message_thread_id}</code>",
-                parse_mode=ParseMode.HTML,
-            )
-            return
+        await message.reply_text(
+            f"This group's id is <code>:{chat.id}</code> \nThis topic's id is <code>{message.message_thread_id}</code>",
+            parse_mode=ParseMode.HTML,
+        )
+        return
             
     if message.reply_to_message and message.reply_to_message.forward_from:
 

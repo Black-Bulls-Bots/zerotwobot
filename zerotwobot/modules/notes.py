@@ -31,7 +31,6 @@ from telegram.ext import (
     MessageHandler,
 )
 
-from zerotwobot.modules.sql.topics_sql import get_action_topic
 
 FILE_MATCHER = re.compile(r"^###file_id(!photo)?###:(.*?)(?:\s|$)")
 STICKER_MATCHER = re.compile(r"^###sticker(!photo)?###:")

@@ -702,7 +702,6 @@ async def fed_ban(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 reason,
             ),
             parse_mode="HTML",
-            message_thread_id=message.message_thread_id if chat.is_forum else None
         )
         # Send message to owner if fednotif is enabled
         if getfednotif:
@@ -741,7 +740,6 @@ async def fed_ban(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         reason,
                     ),
                     parse_mode="HTML",
-                    message_thread_id=message.message_thread_id if chat.is_forum else None
                 )
         for fedschat in fed_chats:
             try:
@@ -862,7 +860,6 @@ async def fed_ban(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reason,
         ),
         parse_mode="HTML",
-        message_thread_id=message.message_thread_id if chat.is_forum else None
     )
     # Send message to owner if fednotif is enabled
     if getfednotif:
@@ -901,7 +898,6 @@ async def fed_ban(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     reason,
                 ),
                 parse_mode="HTML",
-                message_thread_id=message.message_thread_id if chat.is_forum else None
             )
     chats_in_fed = 0
     for fedschat in fed_chats:
@@ -1066,7 +1062,6 @@ async def unfban(update: Update, context: ContextTypes.DEFAULT_TYPE):
             fban_user_id,
         ),
         parse_mode="HTML",
-        message_thread_id=message.message_thread_id if chat.is_forum else None
     )
     # Send message to owner if fednotif is enabled
     if getfednotif:
@@ -1101,7 +1096,6 @@ async def unfban(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     fban_user_id,
                 ),
                 parse_mode="HTML",
-                message_thread_id=message.message_thread_id if chat.is_forum else None
             )
     unfbanned_in_chats = 0
     for fedchats in chat_list:

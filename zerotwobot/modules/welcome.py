@@ -34,7 +34,7 @@ from telegram import (
     InlineKeyboardMarkup,
     Update,
 )
-from zerotwobot.modules.sql.topics_sql import get_action_topic
+# from zerotwobot.modules.sql.topics_sql import get_action_topic
 from telegram.constants import ParseMode
 from telegram.error import BadRequest
 from telegram.ext import (
@@ -76,7 +76,7 @@ async def send(update: Update, message, keyboard, backup_message):
     chat = update.effective_chat
     cleanserv = sql.clean_service(chat.id)
     reply = update.effective_message.message_id
-    topic_chat = get_action_topic(chat.id)
+    # topic_chat = get_action_topic(chat.id)
     # Clean service welcome
     if cleanserv:
         try:
@@ -85,15 +85,14 @@ async def send(update: Update, message, keyboard, backup_message):
             pass
         reply = False
     try:
-        if topic_chat:
+        try:
             msg = await application.bot.send_message(
                 chat.id,
                 markdown_to_html(message),
                 parse_mode=ParseMode.HTML,
                 reply_markup=keyboard,
-                message_thread_id=topic_chat
             )
-        else:
+        except:
             msg = await update.effective_message.reply_text(
                 markdown_to_html(message),
                 parse_mode=ParseMode.HTML,
@@ -109,7 +108,7 @@ async def send(update: Update, message, keyboard, backup_message):
                 quote=False,
             )
         elif excp.message == "Button_url_invalid":
-            if topic_chat:
+            try:
                 msg = await application.bot.send_message(
                     chat.id,
                     markdown_parser(
@@ -117,9 +116,8 @@ async def send(update: Update, message, keyboard, backup_message):
                         "in one of its buttons. Please update.",
                     ),
                     parse_mode=ParseMode.MARKDOWN,
-                    message_thread_id=topic_chat
                 )
-            else:
+            except:
                 msg = await update.effective_message.reply_text(
                     markdown_parser(
                         backup_message + "\nNote: the current message has an invalid url "
@@ -129,7 +127,7 @@ async def send(update: Update, message, keyboard, backup_message):
                     reply_to_message_id=reply,
                 )
         elif excp.message == "Unsupported url protocol":
-            if topic_chat:
+            try:
                 msg = await application.bot.send_message(
                     chat.id,
                     markdown_parser(
@@ -138,9 +136,8 @@ async def send(update: Update, message, keyboard, backup_message):
                         "telegram. Please update.",
                     ),
                     parse_mode=ParseMode.MARKDOWN,
-                    message_thread_id=topic_chat
                 )
-            else:
+            except:
                 msg = await update.effective_message.reply_text(
                     markdown_parser(
                         backup_message + "\nNote: the current message has buttons which "
@@ -151,7 +148,7 @@ async def send(update: Update, message, keyboard, backup_message):
                     reply_to_message_id=reply,
                 )
         elif excp.message == "Wrong url host":
-            if topic_chat:
+            try:
                 msg = await application.bot.send_message(
                     chat.id,
                     markdown_parser(
@@ -159,9 +156,8 @@ async def send(update: Update, message, keyboard, backup_message):
                         "Please update.",
                     ),
                     parse_mode=ParseMode.MARKDOWN,
-                    message_thread_id=topic_chat
                 )
-            else:
+            except:
                 msg = await update.effective_message.reply_text(
                     markdown_parser(
                         backup_message + "\nNote: the current message has some bad urls. "
@@ -176,7 +172,7 @@ async def send(update: Update, message, keyboard, backup_message):
         elif excp.message == "Have no rights to send a message":
             return
         else:
-            if topic_chat:
+            try:
                 msg = await application.bot.send_message(
                     chat.id,
                     markdown_parser(
@@ -184,9 +180,8 @@ async def send(update: Update, message, keyboard, backup_message):
                         "custom message. Please update.",
                     ),
                     parse_mode=ParseMode.MARKDOWN,
-                    message_thread_id=topic_chat
                 )
-            else:
+            except:
                 msg = await update.effective_message.reply_text(
                     markdown_parser(
                         backup_message + "\nNote: An error occured when sending the "
@@ -207,7 +202,7 @@ async def new_member(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     msg = update.effective_message
 
-    topic_chat = get_action_topic(chat.id)
+    # topic_chat = get_action_topic(chat.id)
 
     should_welc, cust_welcome, cust_content, welc_type = sql.get_welc_pref(chat.id)
     welc_mutes = sql.welcome_mutes(chat.id)
@@ -321,7 +316,7 @@ async def new_member(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         parse_mode=ParseMode.HTML,
                     )
                 await update.effective_message.reply_text(
-                    "I feel like I'm gonna suffocate in here.", reply_to_message_id=reply if not topic_chat else None,
+                    "I feel like I'm gonna suffocate in here.", reply_to_message_id=reply
                 )
                 continue
 
@@ -489,9 +484,8 @@ async def new_member(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     cust_content,
                     caption=res,
                     reply_markup=keyboard,
-                    reply_to_message_id=reply if not topic_chat else None,
+                    reply_to_message_id=reply,
                     parse_mode="markdown",
-                    message_thread_id=topic_chat if topic_chat else None
                 ) 
             else:
                 sent = await send(update, res, keyboard, backup_message)
@@ -603,8 +597,8 @@ async def left_member(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
             # if media goodbye, use appropriate function for it
             if goodbye_type != sql.Types.TEXT and goodbye_type != sql.Types.BUTTON_TEXT:
-                topic_chat = get_action_topic(chat.id)
-                await ENUM_FUNC_MAP[goodbye_type](chat.id, cust_goodbye, message_thread_id=topic_chat if topic_chat else None)
+                # topic_chat = get_action_topic(chat.id)
+                await ENUM_FUNC_MAP[goodbye_type](chat.id, cust_goodbye)
                 return
 
             first_name = (
@@ -661,7 +655,7 @@ async def left_member(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def welcome(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = context.args
     chat = update.effective_chat
-    topic_chat = get_action_topic(chat.id)
+    # topic_chat = get_action_topic(chat.id)
     # if no args, show current replies.
     if not args or args[0].lower() == "noformat":
         noformat = True
@@ -687,7 +681,7 @@ async def welcome(update: Update, context: ContextTypes.DEFAULT_TYPE):
             buttons = sql.get_welc_buttons(chat.id)
             if noformat:
                 welcome_m += revert_buttons(buttons)
-                await ENUM_FUNC_MAP[welcome_type](chat.id, cust_content, caption=welcome_m, message_thread_id=topic_chat if topic_chat else None)
+                await ENUM_FUNC_MAP[welcome_type](chat.id, cust_content, caption=welcome_m)
 
             else:
                 keyb = build_keyboard(buttons)
@@ -699,7 +693,6 @@ async def welcome(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     reply_markup=keyboard,
                     parse_mode=ParseMode.MARKDOWN,
                     disable_web_page_preview=True,
-                    message_thread_id=topic_chat if topic_chat else None
                 )
 
     elif len(args) >= 1:
@@ -724,7 +717,7 @@ async def welcome(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def goodbye(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = context.args
     chat = update.effective_chat
-    topic_chat = get_action_topic(chat.id)
+    # topic_chat = get_action_topic(chat.id)
 
     if not args or args[0] == "noformat":
         noformat = True
@@ -749,11 +742,11 @@ async def goodbye(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         else:
             if noformat:
-                await ENUM_FUNC_MAP[goodbye_type](chat.id, goodbye_m, message_thread_id=topic_chat if topic_chat else None)
+                await ENUM_FUNC_MAP[goodbye_type](chat.id, goodbye_m)
 
             else:
                 await ENUM_FUNC_MAP[goodbye_type](
-                    chat.id, goodbye_m, parse_mode=ParseMode.MARKDOWN, message_thread_id=topic_chat if topic_chat else None
+                    chat.id, goodbye_m, parse_mode=ParseMode.MARKDOWN
                 )
 
     elif len(args) >= 1:
@@ -1018,14 +1011,13 @@ async def user_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             pass
         if member_dict["should_welc"]:
             if member_dict["media_wel"]:
-                topic_chat = get_action_topic(chat.id)
+                # topic_chat = get_action_topic(chat.id)
                 sent = await ENUM_FUNC_MAP[member_dict["welc_type"]](
                     member_dict["chat_id"],
                     member_dict["cust_content"],
                     caption=member_dict["res"],
                     reply_markup=member_dict["keyboard"],
                     parse_mode="markdown",
-                    message_thread_id=topic_chat if topic_chat else None
                 )
             else:
                 sent = await send(
