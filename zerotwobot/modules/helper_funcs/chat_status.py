@@ -254,7 +254,6 @@ def connection_status(func):
             context.bot,
             update,
             update.effective_chat,
-            update.message,
             update.effective_message.from_user.id,
             need_admin=False,
         )
