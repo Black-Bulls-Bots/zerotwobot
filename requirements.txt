@@ -39,7 +39,7 @@ humanize==3.12.0
 hyperframe==5.2.0
 idna==2.10
 jikanpy==4.3.2
-joblib==1.1.0
+joblib==1.2.0
 lxml==4.9.1
 Markdown==3.3.4
 markdown2==2.4.1
