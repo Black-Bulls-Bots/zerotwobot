@@ -21,7 +21,8 @@ def check_admin(
     is_both: bool = False,
     only_owner: bool = False,
     only_sudo: bool = False,
-    only_dev: bool = False
+    only_dev: bool = False,
+    no_reply=False
 ):
     """Check for permission level to perform some operations
 
@@ -33,6 +34,7 @@ def check_admin(
         only_owner (bool, optional): if only owner can perform the action. Defaults to False.
         only_sudo (bool, optional): if only sudo users can perform the operation. Defaults to False.
         only_dev (bool, optional): if only dev users can perform the operation. Defaults to False.
+        no_reply (boot, optional): if should not reply. Defaults to False.
     """
     def wrapper(func):
         @wraps(func)
@@ -72,6 +74,8 @@ def check_admin(
                 if is_bot:
                     if (getattr(bot_member, permission) if isinstance(bot_member, ChatMemberAdministrator) else False):
                         return await func(update, context, *args, **kwargs)
+                    elif no_reply:
+                        return
                     else:
                         return await message.reply_text(f"I don't have permission to {no_permission}.")
                 if is_user:
@@ -82,11 +86,15 @@ def check_admin(
                         or user.id in DRAGONS
                         ):
                         return await func(update, context, *args, **kwargs)
+                    elif no_reply:
+                        return
                     else:
                         return await message.reply_text(f"You don't have permission to {no_permission}.")
                 if is_both:
                     if (getattr(bot_member, permission) if isinstance(bot_member, ChatMemberAdministrator) else False):
                         pass
+                    elif no_reply:
+                        return
                     else:
                         return await message.reply_text(f"I don't have permission to {no_permission}.")
 
@@ -97,6 +105,8 @@ def check_admin(
                         or user.id in DRAGONS
                         ):
                         pass
+                    elif no_reply:
+                        return
                     else:
                         return await message.reply_text(f"You don't have permission to {no_permission}.")
                     return await func(update, context, *args, **kwargs)

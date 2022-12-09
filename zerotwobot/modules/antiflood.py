@@ -110,7 +110,7 @@ async def check_flood(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str
             )
         )
 
-@check_admin(permission="can_restrict_members", is_both=True)
+@check_admin(permission="can_restrict_members", is_both=True, no_reply=True)
 async def flood_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
     query = update.callback_query

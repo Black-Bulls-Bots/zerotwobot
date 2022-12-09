@@ -393,7 +393,7 @@ async def unlock(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
 
 
 @user_not_admin
-@check_admin(permission="can_delete_messages", is_bot=True)
+@check_admin(permission="can_delete_messages", is_bot=True, no_reply=True)
 async def del_lockables(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat = update.effective_chat  # type: Optional[Chat]
     message = update.effective_message  # type: Optional[Message]
