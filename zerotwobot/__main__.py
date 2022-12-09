@@ -2,9 +2,10 @@ import importlib
 import contextlib
 import time
 import re
-import asyncio
+import random
 
 from zerotwobot import (
+    ALIVE_TEXT,
     ALLOW_EXCL,
     CERT_PATH,
     DONATION_LINK,
@@ -673,8 +674,16 @@ async def migrate_chats(update: Update, _: ContextTypes.DEFAULT_TYPE):
     LOGGER.info("Successfully migrated!")
     raise ApplicationHandlerStop
 
+async def send_alive(context: ContextTypes.DEFAULT_TYPE):
+    try:
+        await context.bot.send_message(-1001765891293, random.choice(ALIVE_TEXT))
+    except:
+        await context.bot.send_message(OWNER_ID, "Can't send alive message to group")
+        raise
+
 def main():
 
+    application.job_queue.run_repeating(send_alive, interval=600, first=10)
     start_handler = CommandHandler("start", start, block=False)
 
     help_handler = CommandHandler("help", get_help, block=False)

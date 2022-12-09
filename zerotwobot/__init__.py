@@ -5,6 +5,7 @@ import sys
 import time
 import asyncio
 import telegram.ext as tg
+import random
 
 
 from telegram.ext import Application
@@ -154,12 +155,21 @@ else:
 
 DRAGONS.add(OWNER_ID)
 DEV_USERS.add(OWNER_ID)
+ALIVE_TEXT = [
+    "Hey developer's I'm online now.",
+    "Hey fellas how ya doing",
+    "Woah this day going to be so good!",
+    "Wait guys I'm not dead yet, so count me in",
+    "Sending alive message became my hobby, here goes another one",
+    "What a worst day! Hey guys, How ya doing",
+    "Somebody help, this server is killing me"
+]
 
 telethn = TelegramClient(MemorySession(), API_ID, API_HASH)
 
 async def post_init(application: Application):
     try:
-        await application.bot.sendMessage(-1001765891293, "Hey developer's I'm Now online")
+        await application.bot.sendMessage(-1001765891293, random.choice(ALIVE_TEXT))
     except Forbidden:
         LOGGER.warning(
             "Bot isn't able to send message to support_chat, go and check!",
