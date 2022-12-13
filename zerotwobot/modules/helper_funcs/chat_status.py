@@ -64,7 +64,7 @@ def check_admin(
                         " You do not have permissions to run this.",
                     )
             if only_sudo:
-                if user.id in [DRAGONS, DEV_USERS]:
+                if user.id in DRAGONS:
                     return await func(update, context, *args, **kwargs)
                 else:
                     return await update.effective_message.reply_text("Who the hell are you to say me what to do?",)

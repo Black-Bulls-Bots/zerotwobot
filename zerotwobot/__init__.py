@@ -152,8 +152,7 @@ else:
         BL_CHATS = set(int(x) for x in Config.BL_CHATS or [])
     except ValueError:
         raise Exception("Your blacklisted chats list does not contain valid integers.")
-
-DRAGONS.add(OWNER_ID)
+        
 DEV_USERS.add(OWNER_ID)
 ALIVE_TEXT = [
     "Hey developer's I'm online now.",
