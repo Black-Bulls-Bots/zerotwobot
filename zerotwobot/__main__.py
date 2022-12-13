@@ -294,6 +294,7 @@ async def error_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # the chat_id of a group has changed, use e.new_chat_id instead
     except TelegramError:
         LOGGER.error(error)
+        raise # then only it sends the message to the owner
         # handle all other telegram related errors
 
 

@@ -6,6 +6,7 @@ import random
 import sys
 import pretty_errors
 import io
+import os
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import ContextTypes, CommandHandler
 from zerotwobot import application, DEV_USERS, OWNER_ID
@@ -58,22 +59,14 @@ async def error_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     tb = "".join(tb_list)
     pretty_message = (
-        "{}\n"
+        f"{pretty_error}\n"
         "-------------------------------------------------------------------------------\n"
         "An exception was raised while handling an update\n"
-        "User: {}\n"
-        "Chat: {} {}\n"
-        "Callback data: {}\n"
-        "Message: {}\n\n"
-        "Full Traceback: {}"
-    ).format(
-            pretty_error,
-        update.effective_user.id,
-        update.effective_chat.title if update.effective_chat else "",
-        update.effective_chat.id if update.effective_chat else "",
-        update.callback_query.data if update.callback_query else "None",
-        update.effective_message.text if update.effective_message else "No message",
-        tb,
+        f"User: {update.effective_user.id}\n"
+        f"Chat: {update.effective_chat.title if update.effective_chat else ''} {update.effective_chat.id if update.effective_chat else ''}\n"
+        f"Callback data: {update.callback_query.data if update.callback_query else None}\n"
+        f"Message: {update.effective_message.text if update.effective_message else 'No message'}\n\n"
+        f"Full Traceback: {tb}"
     )
     async with AsyncClient() as client:
         r = await client.post(
@@ -90,6 +83,8 @@ async def error_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 caption=f"#{context.error.identifier}\n<b>An unknown error occured:</b>\n<code>{e}</code>",
                 parse_mode="html",
         )
+        if os.path.isfile("error.txt"):
+            os.remove("error.txt")
         return
     key = key.get("result").get("key")
     url = f"https://nekobin.com/{key}.py"
@@ -123,6 +118,8 @@ async def list_errors(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode="html",
             message_thread_id=update.effective_message.message_thread_id if update.effective_chat.is_forum else None
         )
+        if os.path.isfile("errors_msg.txt"):
+            os.remove("errors_msg.txt")
         return
     await update.effective_message.reply_text(msg, parse_mode="html")
 
