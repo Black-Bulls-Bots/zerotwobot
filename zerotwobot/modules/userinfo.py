@@ -30,7 +30,6 @@ async def get_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat = update.effective_chat
     message = update.effective_message
     user_id = await extract_user(message, context, args)
-    print(len(args))
 
     if chat.is_forum:
         await message.reply_text(

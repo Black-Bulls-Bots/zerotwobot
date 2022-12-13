@@ -82,7 +82,6 @@ async def create_topic(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await message.reply_text("You must give a name for the topic to create.")
         else:
             name = " ".join(args)
-            print(name)
             try:
                 topic = await context.bot.create_forum_topic(chat.id, name)
                 await message.reply_text(f"Successfully created {topic.name}\nID: {topic.message_thread_id}" if topic else "Something happened")
