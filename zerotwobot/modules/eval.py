@@ -58,12 +58,16 @@ async def send(msg, bot, update):
 async def evaluate(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
     await send(await do(eval, bot, update), bot, update)
+    if os.path.isfile("zerotwobot/modules/helper_funcs/temp.txt"):
+        os.remove("zerotwobot/modules/helper_funcs/temp.txt")
 
 
 @check_admin(only_dev=True)
 async def execute(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
     await send(await do(exec, bot, update), bot, update)
+    if os.path.isfile("zerotwobot/modules/helper_funcs/temp.txt"):
+        os.remove("zerotwobot/modules/helper_funcs/temp.txt")
 
 
 def cleanup_code(code):

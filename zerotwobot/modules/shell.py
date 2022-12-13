@@ -1,5 +1,5 @@
 import subprocess
-
+import os
 from zerotwobot import LOGGER, application
 from zerotwobot.modules.helper_funcs.chat_status import check_admin
 from telegram import Update
@@ -39,6 +39,9 @@ async def shell(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 chat_id=message.chat_id,
                 message_thread_id=message.message_thread_id if chat.is_forum else None
             )
+        
+        if os.path.isfile("shell_ouput.txt"):
+            os.remove("shell_output.txt")
     else:
         await message.reply_text(reply, parse_mode=ParseMode.MARKDOWN)
 
