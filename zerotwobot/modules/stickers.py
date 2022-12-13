@@ -125,7 +125,7 @@ async def kang(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         elif msg.reply_to_message.photo:
             file_id = msg.reply_to_message.photo[-1].file_id
-        elif msg.reply_to_message.document and not msg.reply_to_message.document.mime_type == "video/mp4":
+        elif msg.reply_to_message.document == "video/mp4":
             file_id = msg.reply_to_message.document.file_id
         elif msg.reply_to_message.animation:
             file_id = msg.reply_to_message.animation.file_id
@@ -317,7 +317,7 @@ async def kang(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await context.bot.add_sticker_to_set(
                     user_id=user.id,
                     name=packname,
-                    webm_sticker=open("kangsticker.webm", "rb"),
+                    webm_sticker=open(f"kangsticker_{user.id}.webm", "rb"),
                     emojis=sticker_emoji,
                 )
                 await msg.reply_text(
