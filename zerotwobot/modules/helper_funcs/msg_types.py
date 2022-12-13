@@ -171,7 +171,7 @@ def get_filter_type(msg: Message):
         content = None
         text = msg.text.split(None, 2)[2]
         data_type = Types.TEXT
-    elif msg.reply_to_message.forum_topic_created:
+    elif msg.reply_to_message and msg.reply_to_message.forum_topic_created:
         content = None
         text = msg.text.split(None, 2)[2]
         data_type = Types.TEXT

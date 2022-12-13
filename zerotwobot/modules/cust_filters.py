@@ -103,7 +103,7 @@ async def filters(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat = update.effective_chat
     user = update.effective_user
     msg = update.effective_message
-    args = msg.text.split(" ")  # use python's maxsplit to separate Cmd, keyword, and reply_text
+    args = msg.text.split(None, 1)  # use python's maxsplit to separate Cmd, keyword, and reply_text
 
     conn = await connected(context.bot, update, chat, user.id)
     if not conn is False:
@@ -124,7 +124,7 @@ async def filters(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    if msg.reply_to_message:
+    if msg.reply_to_message and not msg.reply_to_message.forum_topic_created:
         if len(args) < 2:
             await send_message(
                 update.effective_message,
@@ -162,7 +162,26 @@ async def filters(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             return
 
-    elif (msg.reply_to_message and msg.reply_to_message.forum_topic_created) and len(args) >= 2:
+    if len(args) >= 2:
+        if msg.reply_to_message:
+            if msg.reply_to_message.forum_topic_created:
+                offset = len(extracted[1]) - len(msg.text)
+
+                text, buttons = button_markdown_parser(
+                    extracted[1], entities=msg.parse_entities(), offset=offset
+                )
+
+                text = text.strip()
+                if not text:
+                    await send_message(
+                        update.effective_message,
+                        "There is no note message - You can't JUST have buttons, you need a message to go with it!",
+                    )
+                    return
+            else:
+                pass
+
+    elif msg.reply_to_message and len(args) >= 1:
         if msg.reply_to_message.text:
             text_to_parsing = msg.reply_to_message.text
         elif msg.reply_to_message.caption:
@@ -184,7 +203,10 @@ async def filters(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    elif msg.reply_to_message and not msg.reply_to_message.forum_topic_created:
+    elif msg.reply_to_message:
+        if msg.reply_to_message.forum_topic_created:
+            return
+
         if msg.reply_to_message.text:
             text_to_parsing = msg.reply_to_message.text
         elif msg.reply_to_message.caption:
