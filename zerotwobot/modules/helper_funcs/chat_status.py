@@ -15,15 +15,15 @@ ADMIN_CACHE = TTLCache(maxsize=512, ttl=60 * 10, timer=perf_counter)
 THREAD_LOCK = RLock()
 
 def check_admin(
-    permission: str = None,
-    is_bot: bool = False,
-    is_user: bool = False,
-    is_both: bool = False,
-    only_owner: bool = False,
-    only_sudo: bool = False,
-    only_dev: bool = False,
-    no_reply=False
-):
+        permission: str = None,
+        is_bot: bool = False,
+        is_user: bool = False,
+        is_both: bool = False,
+        only_owner: bool = False,
+        only_sudo: bool = False,
+        only_dev: bool = False,
+        no_reply: object = False
+) -> object:
     """Check for permission level to perform some operations
 
     Args:
@@ -44,7 +44,7 @@ def check_admin(
             user = update.effective_user
             message = update.effective_message
 
-            if chat.type == ChatType.PRIVATE:
+            if chat.type == ChatType.PRIVATE and not (only_dev or only_sudo or only_owner):
                 return await func(update, context, *args, **kwargs)
 
             bot_member = await chat.get_member(context.bot.id) if is_bot or is_both else None
@@ -59,10 +59,11 @@ def check_admin(
                 if user.id in DEV_USERS:
                     return await func(update, context, *args, **kwargs)
                 else:
-                    await update.effective_message.reply_text(
-                        "This is a developer restricted command."
-                        " You do not have permissions to run this.",
+                    return await update.effective_message.reply_text(
+                        "Hey little kid"
+                        "Who the hell are you to say me what to execute on my server?",
                     )
+                    
             if only_sudo:
                 if user.id in DRAGONS:
                     return await func(update, context, *args, **kwargs)
