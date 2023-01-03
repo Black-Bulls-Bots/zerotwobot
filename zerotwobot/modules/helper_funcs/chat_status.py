@@ -7,6 +7,7 @@ from cachetools import TTLCache
 from telegram import Chat, ChatMember, ChatMemberAdministrator, Update, ChatMemberOwner
 from telegram.constants import ChatMemberStatus, ParseMode, ChatType
 from telegram.ext import ContextTypes
+from telegram.error import Forbidden
 from zerotwobot import (DEL_CMDS, DEV_USERS, DRAGONS, SUPPORT_CHAT,
                         application)
 
@@ -166,7 +167,10 @@ async def is_user_admin(chat: Chat, user_id: int, member: ChatMember = None) -> 
                 # keyerror happend means cache is deleted,
                 # so query bot api again and return user status
                 # while saving it in cache for future usage...
-                chat_admins = await application.bot.getChatAdministrators(chat.id)
+                try:
+                    chat_admins = await application.bot.getChatAdministrators(chat.id)
+                except Forbidden:
+                    return False
                 admin_list = [x.user.id for x in chat_admins]
                 ADMIN_CACHE[chat.id] = admin_list
 
