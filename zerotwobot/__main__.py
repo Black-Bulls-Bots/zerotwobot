@@ -29,7 +29,8 @@ from zerotwobot import (
 from zerotwobot.modules import ALL_MODULES
 from zerotwobot.modules.helper_funcs.chat_status import is_user_admin
 from zerotwobot.modules.helper_funcs.misc import paginate_modules
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from zerotwobot.modules.connection import connected
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, Chat, User
 from telegram.error import (
     BadRequest,
     ChatMigrated,
@@ -215,9 +216,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 chat = await application.bot.getChat(match.group(1))
 
                 if await is_user_admin(chat, update.effective_user.id):
-                    await send_settings(match.group(1), update.effective_user.id, False)
+                    await send_settings(match.group(1), update.effective_user, update, context, False)
                 else:
-                    await send_settings(match.group(1), update.effective_user.id, True)
+                    await send_settings(match.group(1), update.effective_user, update, context, True)
 
             elif args[0][1:].isdigit() and "rules" in IMPORTED:
                 await IMPORTED["rules"].send_rules(update, args[0], from_pm=True)
@@ -462,42 +463,47 @@ async def get_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await send_help(chat.id, HELP_STRINGS)
 
 
-async def send_settings(chat_id, user_id, user=False):
+async def send_settings(chat: Chat | (int | str), user: User, update: Update, context:ContextTypes.DEFAULT_TYPE, is_user=False):
     if user:
         if USER_SETTINGS:
             settings = "\n\n".join(
-                "*{}*:\n{}".format(mod.__mod_name__, mod.__user_settings__(user_id))
+                "*{}*:\n{}".format(mod.__mod_name__, mod.__user_settings__(user.id))
                 for mod in USER_SETTINGS.values()
             )
             await application.bot.send_message(
-                user_id,
+                user.id,
                 "These are your current settings:" + "\n\n" + settings,
                 parse_mode=ParseMode.MARKDOWN,
             )
 
         else:
             await application.bot.send_message(
-                user_id,
+                user.id,
                 "Seems like there aren't any user specific settings available :'(",
                 parse_mode=ParseMode.MARKDOWN,
             )
 
     else:
         if CHAT_SETTINGS:
+            if not isinstance(chat, Chat):
+                chat = await context.bot.get_chat(chat)
+
+            conn = await connected(context.bot, update, chat, user.id, need_admin=True)
+            
             chat_obj = await application.bot.getChat(conn)
             chat_name = chat_obj.title
             await application.bot.send_message(
-                user_id,
+                user.id,
                 text="Which module would you like to check {}'s settings for Darling?".format(
                     chat_name,
                 ),
                 reply_markup=InlineKeyboardMarkup(
-                    paginate_modules(0, CHAT_SETTINGS, "stngs", chat=chat_id),
+                    paginate_modules(0, CHAT_SETTINGS, "stngs", chat=chat.id),
                 ),
             )
         else:
             await application.bot.send_message(
-                user_id,
+                user.id,
                 "Seems like there aren't any chat settings available :'(\nSend this "
                 "in a group chat you're admin in to find its current settings!",
                 parse_mode=ParseMode.MARKDOWN,
@@ -617,7 +623,7 @@ async def get_settings(update: Update, context: ContextTypes.DEFAULT_TYPE):
             text = "Click here to check your settings."
 
     else:
-        await send_settings(chat.id, user.id, True)
+        await send_settings(chat, user, update, context, True)
 
 
 
