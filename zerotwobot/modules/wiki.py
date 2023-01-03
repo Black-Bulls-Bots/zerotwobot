@@ -13,10 +13,13 @@ async def wiki(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else update.effective_message
     )
     res = ""
-    if msg == update.effective_message:
-        search = msg.text.split(" ", maxsplit=1)[1]
-    else:
-        search = msg.text
+    args = context.args
+
+    if not args:
+        return await update.effective_message.reply_text(
+            "You should give something to search for :)"
+        )
+    search = " ".join(args)
     try:
         res = wikipedia.summary(search)
     except DisambiguationError as e:
