@@ -136,8 +136,7 @@ async def info(update: Update, context: ContextTypes.DEFAULT_TYPE):
             try:
                 chat_obj = await bot.get_chat(user_name)
             except BadRequest:
-                if BadRequest.message == "Chat not found":
-                    await reply.edit_text("I can't get information about this user/channel/group.")
+                await reply.edit_text("I can't get information about this user/channel/group.")
                 return
             userid = chat_obj.id
         else:
