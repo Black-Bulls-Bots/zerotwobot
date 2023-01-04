@@ -62,7 +62,7 @@ def check_admin(
                 else:
                     return await update.effective_message.reply_text(
                         "Hey little kid"
-                        "Who the hell are you to say me what to execute on my server?",
+                        "\nWho the hell are you to say me what to execute on my server?",
                     )
                     
             if only_sudo:
