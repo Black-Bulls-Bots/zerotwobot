@@ -1,4 +1,5 @@
 import importlib
+import asyncio
 import re
 from typing import Dict, List, Optional, Tuple, Union
 
@@ -83,7 +84,7 @@ if is_module_loaded(FILENAME):
                                 # check if command was disabled
                                 is_disabled = command_parts[
                                     0
-                                ] in ADMIN_CMDS and is_user_admin(chat, user.id)
+                                ] in ADMIN_CMDS and asyncio.ensure_future(is_user_admin(chat, user.id))
                                 if not is_disabled:
                                     return None
                                 else:
