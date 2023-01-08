@@ -13,7 +13,7 @@ from zerotwobot.modules.helper_funcs.extraction import (
 )
 from zerotwobot.modules.helper_funcs.string_handling import extract_time
 from zerotwobot.modules.log_channel import loggable
-from telegram import Bot, Chat, ChatPermissions, Update, ChatMemberRestricted
+from telegram import Bot, Chat, ChatPermissions, Update, ChatMemberRestricted, ChatMember
 from telegram.constants import ParseMode
 from telegram.error import BadRequest
 from telegram.ext import ContextTypes, CommandHandler
@@ -39,7 +39,7 @@ async def check_user(user_id: int, bot: Bot, chat: Chat) -> Union[str, None]:
         return reply
 
     if await is_user_admin(chat, user_id, member):
-        reply = "Can't. Find someone else to mute but not this one."
+        reply = "Sorry can't do that, this user is admin here."
         return reply
 
     return None
@@ -74,7 +74,7 @@ async def mute(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     if reason:
         log += f"\n<b>Reason:</b> {reason}"
 
-    if not isinstance(member, ChatMemberRestricted) and (member.can_send_messages if isinstance(member, ChatMemberRestricted) else None):
+    if member.status in [ChatMember.RESTRICTED, ChatMember.MEMBER]:
         chat_permissions = ChatPermissions(can_send_messages=False)
         await bot.restrict_chat_member(chat.id, user_id, chat_permissions)
         await bot.sendMessage(
@@ -108,8 +108,8 @@ async def unmute(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
 
     member = await chat.get_member(int(user_id))
 
-    if member.status != "kicked" and member.status != "left":
-        if not isinstance(member, ChatMemberRestricted):
+    if member.status not in [ChatMember.LEFT, ChatMember.BANNED]:
+        if member.status != ChatMember.RESTRICTED:
             await message.reply_text("This user already has the right to speak.")
         else:
             chat_permissions = ChatPermissions(
@@ -194,7 +194,7 @@ async def temp_mute(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
         log += f"\n<b>Reason:</b> {reason}"
 
     try:
-        if not isinstance(member, ChatMemberRestricted) and (member.can_send_messages if isinstance(member, ChatMemberRestricted) else None):
+        if member.status in [ChatMember.RESTRICTED, ChatMember.MEMBER]:
             chat_permissions = ChatPermissions(can_send_messages=False)
             await bot.restrict_chat_member(
                 chat.id, user_id, chat_permissions, until_date=mutetime,
