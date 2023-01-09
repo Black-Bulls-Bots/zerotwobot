@@ -147,7 +147,7 @@ async def filters(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if handler.filters == (keyword, chat_id):
             application.remove_handler(handler, HANDLER_GROUP)
 
-    text, file_type, file_id = get_filter_type(msg)
+    text, file_type, file_id, media_spoiler = get_filter_type(msg)
     if not msg.reply_to_message and len(extracted) >= 2:
         offset = len(extracted[1]) - len(
             msg.text,
@@ -232,7 +232,7 @@ async def filters(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await send_message(update.effective_message, "Invalid filter!")
         return
 
-    add = await addnew_filter(update, chat_id, keyword, text, file_type, file_id, buttons)
+    add = await addnew_filter(update, chat_id, keyword, text, file_type, file_id, buttons, media_spoiler)
     # This is an old method
     # sql.add_filter(chat_id, keyword, content, is_sticker, is_document, is_image, is_audio, is_voice, is_video, buttons)
 
@@ -411,13 +411,24 @@ async def reply_filter(update: Update, context: ContextTypes.DEFAULT_TYPE):
                             )
                 else:
                     try:
-                        await ENUM_FUNC_MAP[filt.file_type](
-                            chat.id,
-                            filt.file_id,
-                            reply_markup=keyboard,
-                            reply_to_message_id=message.message_id,
-                            message_thread_id=message.message_thread_id if chat.is_forum else None
-                        )
+                        if filt.file_type not in [sql.Types.PHOTO.value, sql.Types.VIDEO]:
+                            await ENUM_FUNC_MAP[filt.file_type](
+                                chat.id,
+                                filt.file_id,
+                                reply_markup=keyboard,
+                                reply_to_message_id=message.message_id,
+                                message_thread_id=message.message_thread_id if chat.is_forum else None,
+                            )
+                        else:
+                            await ENUM_FUNC_MAP[filt.file_type](
+                                chat.id,
+                                filt.file_id,
+                                reply_markup=keyboard,
+                                caption=filt.reply_text,
+                                reply_to_message_id=message.message_id,
+                                message_thread_id=message.message_thread_id if chat.is_forum else None,
+                                has_spoiler=filt.has_media_spoiler
+                            )
                     except BadRequest:
                         await send_message(
                             message,
@@ -430,14 +441,14 @@ async def reply_filter(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 elif filt.is_document:
                     await message.reply_document(filt.reply)
                 elif filt.is_image:
-                    await message.reply_photo(filt.reply)
+                    await message.reply_photo(filt.reply, has_spoiler=filt.has_media_spoiler)
                 elif filt.is_audio:
                     await message.reply_audio(filt.reply)
                 elif filt.is_voice:
                     await message.reply_voice(filt.reply)
                 elif filt.is_video:
-                    await message.reply_video(filt.reply)
-                elif filt.has_markdown:
+                    await message.reply_video(filt.reply, has_spoiler=filt.has_media_spoiler)
+                elif filt.has_buttons:
                     buttons = sql.get_buttons(chat.id, filt.keyword)
                     keyb = build_keyboard_parser(context.bot, chat.id, buttons)
                     keyboard = InlineKeyboardMarkup(keyb)
@@ -529,7 +540,7 @@ async def rmall_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if member.status == "creator" or query.from_user.id in DRAGONS:
             allfilters = sql.get_chat_triggers(chat.id)
             if not allfilters:
-                msg.edit_text("No filters in this chat, nothing to stop!")
+                await msg.edit_text("No filters in this chat, nothing to stop!")
                 return
 
             count = 0
@@ -541,7 +552,7 @@ async def rmall_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             for i in filterlist:
                 sql.remove_filter(chat.id, i)
 
-            msg.edit_text(f"Cleaned {count} filters in {chat.title}")
+            await msg.edit_text(f"Cleaned {count} filters in {chat.title}")
 
         if member.status == "administrator":
             await query.answer("Only owner of the chat can do this.")
@@ -550,8 +561,8 @@ async def rmall_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await query.answer("You need to be admin to do this.")
     elif query.data == "filters_cancel":
         if member.status == "creator" or query.from_user.id in DRAGONS:
-            msg.edit_text("Clearing of all filters has been cancelled.")
-            return
+            await msg.edit_text("Clearing of all filters has been cancelled.")
+            return await query.answer()
         if member.status == "administrator":
             await query.answer("Only owner of the chat can do this.")
         if member.status == "member":
@@ -573,14 +584,14 @@ def get_exception(excp, filt, chat):
 
 
 # NOT ASYNC NOT A HANDLER
-async def addnew_filter(update, chat_id, keyword, text, file_type, file_id, buttons):
+async def addnew_filter(update, chat_id, keyword, text, file_type, file_id, buttons, has_spoiler):
     msg = update.effective_message
     totalfilt = sql.get_chat_triggers(chat_id)
     if len(totalfilt) >= 150:  # Idk why i made this like function....
         await msg.reply_text("This group has reached its max filters limit of 150.")
         return False
     else:
-        sql.new_add_filter(chat_id, keyword, text, file_type, file_id, buttons)
+        sql.new_add_filter(chat_id, keyword, text, file_type, file_id, buttons, has_spoiler)
         return True
 
 

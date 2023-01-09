@@ -171,10 +171,12 @@ def get_filter_type(msg: Message):
         content = None
         text = msg.text.split(None, 2)[2]
         data_type = Types.TEXT
+        media_spoiler = None
     elif msg.reply_to_message and msg.reply_to_message.forum_topic_created:
         content = None
         text = msg.text.split(None, 2)[2]
         data_type = Types.TEXT
+        media_spoiler = None
     elif msg.reply_to_message and not msg.reply_to_message.forum_topic_created:    
         if (
             msg.reply_to_message.text
@@ -183,49 +185,60 @@ def get_filter_type(msg: Message):
             content = None
             text = msg.reply_to_message.text
             data_type = Types.TEXT
+            media_spoiler = None
 
         elif msg.reply_to_message.sticker:
             content = msg.reply_to_message.sticker.file_id
             text = None
             data_type = Types.STICKER
+            media_spoiler = None
 
         elif msg.reply_to_message.document:
             content = msg.reply_to_message.document.file_id
             text = msg.reply_to_message.caption
             data_type = Types.DOCUMENT
+            media_spoiler = None
 
         elif msg.reply_to_message.photo:
             content = msg.reply_to_message.photo[-1].file_id  # last elem = best quality
             text = msg.reply_to_message.caption
             data_type = Types.PHOTO
+            media_spoiler = msg.reply_to_message.has_media_spoiler
 
         elif msg.reply_to_message.audio:
             content = msg.reply_to_message.audio.file_id
             text = msg.reply_to_message.caption
             data_type = Types.AUDIO
+            media_spoiler = None
 
         elif msg.reply_to_message.voice:
             content = msg.reply_to_message.voice.file_id
             text = msg.reply_to_message.caption
             data_type = Types.VOICE
+            media_spoiler = None
 
         elif msg.reply_to_message.video:
             content = msg.reply_to_message.video.file_id
             text = msg.reply_to_message.caption
             data_type = Types.VIDEO
+            media_spoiler = msg.reply_to_message.has_media_spoiler
 
         elif msg.reply_to_message.video_note:
             content = msg.reply_to_message.video_note.file_id
             text = None
             data_type = Types.VIDEO_NOTE
+            media_spoiler = None
 
         else:
             text = None
             data_type = None
             content = None
+            media_spoiler = None
     else:
         text = None
         data_type = None
         content = None
+        media_spoiler = None
 
-    return text, data_type, content
+
+    return text, data_type, content, media_spoiler
