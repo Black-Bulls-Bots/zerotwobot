@@ -102,4 +102,4 @@ __help__ = """
 
 __mod_name__ = "Translator"
 __command_list__ = ["tr", "tl"]
-__handlers__ = [TRANSLATE_HANDLER]
+#__handlers__ = [TRANSLATE_HANDLER]
