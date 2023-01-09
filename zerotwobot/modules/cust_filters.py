@@ -637,6 +637,7 @@ doin?
  • `/removeallfilters`*:* Remove all chat filters at once.
 
 *Note*: Filters also support markdown formatters like: {first}, {last} etc.. and buttons.
+*Added in v2.5*: Supports media spoilers too, and media caption.
 Check `/markdownhelp` to know more!
 
 """
