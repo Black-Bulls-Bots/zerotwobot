@@ -27,7 +27,6 @@ future==0.18.2
 geographiclib==1.52
 geopy==2.2.0
 google-reverse-search==0.1.3
-google-trans-new-that-works==0.1.1
 greenlet==1.1.2
 h11==0.12.0
 h2==3.2.0
