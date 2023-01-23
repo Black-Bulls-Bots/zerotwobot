@@ -31,12 +31,15 @@ async def get_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
     user_id = await extract_user(message, context, args)
 
-    if chat.is_forum and message.reply_to_message.forum_topic_created:
-        await message.reply_text(
-            f"This group's id is <code>:{chat.id}</code> \nThis topic's id is <code>{message.message_thread_id}</code>",
-            parse_mode=ParseMode.HTML,
-        )
-        return
+    if message.reply_to_message:
+        if chat.is_forum and message.reply_to_message.forum_topic_created:
+            await message.reply_text(
+                f"This group's id is <code>:{chat.id}</code> \nThis topic's id is <code>{message.message_thread_id}</code>",
+                parse_mode=ParseMode.HTML,
+            )
+            return
+    else:
+        pass
             
     if message.reply_to_message and message.reply_to_message.forward_from:
 
