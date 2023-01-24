@@ -116,7 +116,7 @@ async def connect_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await send_message(update.effective_message, "Invalid Chat ID!")
                 return
 
-            isadmin = getstatusadmin.status in [ChatMemberStatusAdministrator, ChatMemberStatus.OWNER]
+            isadmin = getstatusadmin.status in [ChatMemberStatus.Administrator, ChatMemberStatus.OWNER]
             ismember = getstatusadmin.status == ChatMemberStatus.MEMBER
             isallow = sql.allow_connect_to_chat(connect_chat)
 
