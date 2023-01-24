@@ -9,7 +9,7 @@ from contextlib import redirect_stdout
 from zerotwobot import LOGGER, application
 from zerotwobot.modules.helper_funcs.chat_status import check_admin
 from telegram import Update
-from telegram.constants import ParseMode
+from telegram.constants import ChatID, ParseMode
 from telegram.ext import ContextTypes, CommandHandler
 
 namespaces = {}
@@ -56,6 +56,9 @@ async def send(msg, bot, update):
 
 @check_admin(only_dev=True)
 async def evaluate(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_message.from_user.id == ChatID.ANONYMOUS_ADMIN:
+        return
+
     bot = context.bot
     await send(await do(eval, bot, update), bot, update)
     if os.path.isfile("zerotwobot/modules/helper_funcs/temp.txt"):
@@ -64,6 +67,9 @@ async def evaluate(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 @check_admin(only_dev=True)
 async def execute(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_message.from_user.id == ChatID.ANONYMOUS_ADMIN:
+        return
+
     bot = context.bot
     await send(await do(exec, bot, update), bot, update)
     if os.path.isfile("zerotwobot/modules/helper_funcs/temp.txt"):
@@ -124,6 +130,9 @@ async def do(func, bot, update):
 
 @check_admin(only_dev=True)
 async def clear(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_message.from_user.id == ChatID.ANONYMOUS_ADMIN:
+        return
+
     bot = context.bot
     log_input(update)
     global namespaces
