@@ -2,7 +2,7 @@
 
 <center>
   <h1> 
-    Zero Two
+    Zero Two - v2.8
   </h1>
 </center>
 
@@ -12,31 +12,35 @@
   </center>
 </p>
 
-## A Powerful and Modular
+## 🤖 A Powerful and Modular
 
-**Zero Two is a powerful and modular telegram group management bot built using python3 and sqlalchemy. Literally she can do anything to help you make your group a better place like any other bot and she's painted with anime theme for weeb lover's.**
+Zero Two is a powerful and modular telegram group management bot built using python3 and sqlalchemy. She can make your group a fun place with anime commands, she can also act as normal telegram group management bot.
 
-## NOTE:
 
-  *I'm making this note to whoever comes to see this repo. (I came through a lot to make this bot) - I would not say such dumb thing like this, the whole credits goes to [SaitamaRobot](https://github.com/AnimeKaizoku/SaitamaRobot). You might ask me what you did?, well i did some edits with my knowledge to make this bot like my own. I don't give a shit about any illegal problems if anyone comes with that GPLv3 license stuff. After all i came through a lot from many developers, No one ever told me/us anything not even a simple guide. So i will make this repo public so anyone can learn or get code from here for my future updates.*
+## 🔎 FAQ
 
-## Bot stuff
+* **Where to check the bot?**
+  Check [Zero Two](https://t.me/joker_zero_two_bot) in telegram for more live usage.
 
-* Bot link : [Zero Two](https://t.me/joker_zero_two_bot)
-* Bot Support chat : [Support](https://t.me/blackbulls_support)
-* Bot News/Updates : [News](https://t.me/blackbull_bots)
-* Me(Repo Owner) : [Joker Hacker](https://t.me/kishoreee)
-* Wiki : [Checkout Our Wiki](https://github.com/Black-Bulls-Bots/zerotwobot/wiki)
+* **Where to reach for support?**
+  You can reach us on [Black Bulls](https://t.me/blackbulls_support) Telegram group.
+
+* **Where to get latest announcements?**
+  You can find our [Announcement](https://t.me/blackbull_bots) channel on telegram.
+
+* **Who is the project owner?**
+  Yeah, it's [Joker Hacker](https://t.me/kishoreee)
+
+* **Any guide resource?**
+  Checkout Our  [Wiki](https://github.com/Black-Bulls-Bots/zerotwobot/wiki)
   
-## Useful Links
-[Contributing](https://github.com/Black-Bulls-Bots/zerotwobot/blob/main/CONTRIBUTING.md)
-[Code of Conduct](https://github.com/Black-Bulls-Bots/zerotwobot/blob/main/CODE_OF_CONDUCT.md)
-[Security Policy](https://github.com/Black-Bulls-Bots/zerotwobot/blob/main/SECURITY.md)
+## 💛 CREDITS
 
+I'm really thankful to the persons behind this [SaitamaRobot](https://github.com/AnimeKaizoku/SaitamaRobot) projects, this inspired me a lot to create this Zero Two project.
 
-## CREDITS
+## 🔗 Useful Links
+For those who are coming to contribute to this project, please read [Contributing](https://github.com/Black-Bulls-Bots/zerotwobot/blob/main/CONTRIBUTING.md) guidelines, make sure you read [Code of Conduct](https://github.com/Black-Bulls-Bots/zerotwobot/blob/main/CODE_OF_CONDUCT.md) too and finally we have [Security Policy](https://github.com/Black-Bulls-Bots/zerotwobot/blob/main/SECURITY.md) too.
 
-[SaitamaRobot](https://github.com/AnimeKaizoku/SaitamaRobot)
 
 ## License
 Zero Two is Licensed Under GPL Version 3 [Read More Here](https://github.com/Black-Bulls-Bots/zerotwobot/blob/main/LICENSE)
