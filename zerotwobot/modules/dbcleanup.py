@@ -35,7 +35,6 @@ async def get_invalid_chats(update: Update, context: ContextTypes.DEFAULT_TYPE, 
             else:
                 progress_message = await bot.sendMessage(
                     chat_id, progress_bar, 
-                    message_thread_id=update.effective_message.message_thread_id if chat.is_forum else None
                 )
             progress += 5
 
@@ -94,18 +93,18 @@ async def get_invalid_gban(update: Update, context: ContextTypes.DEFAULT_TYPE, r
 async def dbcleanup(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.effective_message
 
-    await msg.reply_text("Getting invalid chat count ...")
-    invalid_chat_count = get_invalid_chats(update, context)
+    msg_edited = await msg.reply_text("Getting invalid chat count ...")
+    invalid_chat_count = await get_invalid_chats(update, context)
 
-    await msg.reply_text("Getting invalid gbanned count ...")
-    invalid_gban_count = get_invalid_gban(update, context)
+    await msg_edited.edit_text("Getting invalid gbanned count ...")
+    invalid_gban_count = await get_invalid_gban(update, context)
 
     reply = f"Total invalid chats - {invalid_chat_count}\n"
     reply += f"Total invalid gbanned users - {invalid_gban_count}"
 
     buttons = [[InlineKeyboardButton("Cleanup DB", callback_data="db_cleanup")]]
 
-    await update.effective_message.reply_text(
+    await msg_edited.edit_text(
         reply, reply_markup=InlineKeyboardMarkup(buttons),
     )
 
@@ -126,26 +125,20 @@ async def callback_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if query.from_user.id in admin_list:
             await bot.editMessageText("Leaving chats ...", chat_id, message.message_id)
             chat_count = get_invalid_chats(update, context, True)
-            await bot.sendMessage(
-                chat_id, 
+            await update.effective_message.edit_text(
                 f"Left {chat_count} chats.",
-                message_thread_id=message.message_thread_id if update.effective_chat.is_forum else None
             )
         else:
             await query.answer("You are not allowed to use this.")
     elif query_type == "db_cleanup":
         if query.from_user.id in admin_list:
             await bot.editMessageText("Cleaning up DB ...", chat_id, message.message_id)
-            invalid_chat_count = get_invalid_chats(update, context, True)
-            invalid_gban_count = get_invalid_gban(update, context, True)
+            invalid_chat_count = await get_invalid_chats(update, context, True)
+            invalid_gban_count = await get_invalid_gban(update, context, True)
             reply = "Cleaned up {} chats and {} gbanned users from db.".format(
                 invalid_chat_count, invalid_gban_count,
             )
-            await bot.sendMessage(
-                chat_id, 
-                reply,
-                message_thread_id=message.message_thread_id if update.effective_chat.is_forum else None
-            )
+            await update.effective_message.edit_text(reply,)
         else:
             await query.answer("You are not allowed to use this.")
 
