@@ -6,12 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [2.9] - 2023-01-25
+## [2.10] - 2023-01-26
+
+### Fixed
+- Fixed uploading text/image/video to telegraph.
 
 ### Changed
 
+- update bot version in `CHANGELOG.md` and `README.md`
+- Bump `telegraph` from 2.1.0 to 2.2.0
+## [2.9] - 2023-01-25
+
+### Changed
 - `dbcleanup` - fixed dbcleanup command, it was not running because of async.
 - update bot version in `CHANGELOG.md` and `README.md`
+
 ## [2.8] - 2023-01-25
 
 ### Added
