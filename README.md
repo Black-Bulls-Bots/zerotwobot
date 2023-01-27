@@ -2,7 +2,7 @@
 
 <center>
   <h1> 
-    Zero Two - v2.8
+    Zero Two - v3.0-a.1
   </h1>
 </center>
 
@@ -11,6 +11,10 @@
     Let me get a taste of you. After all...you are now my darling!
   </center>
 </p>
+
+| :warning:        Caution   |
+|-----------------------------------------|
+| **This branch is undergoing development, please checkout to [main](https://github.com/Black-Bulls-Bots/zerotwobot/tree/main) branch for stable release or refer to this [issue](https://github.com/Black-Bulls-Bots/zerotwobot/issues/67) for more details**|
 
 ## 🤖 A Powerful and Modular
 
