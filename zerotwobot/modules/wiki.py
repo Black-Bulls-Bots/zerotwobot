@@ -6,10 +6,12 @@ from telegram.constants import ParseMode
 from telegram.ext import ContextTypes
 from wikipedia.exceptions import DisambiguationError, PageError
 
+
 async def wiki(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = (
         update.effective_message.reply_to_message
-        if update.effective_message.reply_to_message and not update.effective_message.reply_to_message.forum_topic_created
+        if update.effective_message.reply_to_message
+        and not update.effective_message.reply_to_message.forum_topic_created
         else update.effective_message
     )
     res = ""
@@ -31,7 +33,8 @@ async def wiki(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
     except PageError as e:
         await update.message.reply_text(
-            "<code>{}</code>".format(e), parse_mode=ParseMode.HTML,
+            "<code>{}</code>".format(e),
+            parse_mode=ParseMode.HTML,
         )
     if res:
         result = f"<b>{search}</b>\n\n"
@@ -50,7 +53,9 @@ async def wiki(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 )
         else:
             await update.message.reply_text(
-                result, parse_mode=ParseMode.HTML, disable_web_page_preview=True,
+                result,
+                parse_mode=ParseMode.HTML,
+                disable_web_page_preview=True,
             )
 
 

@@ -21,7 +21,9 @@ async def paste(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     async with AsyncClient() as client:
-        r = await client.post("https://nekobin.com/api/documents", json={"content": data})
+        r = await client.post(
+            "https://nekobin.com/api/documents", json={"content": data}
+        )
     key = r.json().get("result").get("key")
 
     url = f"https://nekobin.com/{key}"
@@ -29,7 +31,9 @@ async def paste(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply_text = f"Nekofied to *Nekobin* : {url}"
 
     await message.reply_text(
-        reply_text, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True,
+        reply_text,
+        parse_mode=ParseMode.MARKDOWN,
+        disable_web_page_preview=True,
     )
 
 

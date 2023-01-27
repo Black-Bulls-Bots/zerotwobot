@@ -33,7 +33,6 @@ Keep in mind that your message <b>MUST</b> contain some text other than just a b
 """
 
 
-
 @check_admin(is_user=True)
 async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = update.effective_message.text.split(None, 1)
@@ -41,11 +40,16 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if message.reply_to_message:
         await message.reply_to_message.reply_text(
-            args[1], parse_mode="MARKDOWN", disable_web_page_preview=True,
+            args[1],
+            parse_mode="MARKDOWN",
+            disable_web_page_preview=True,
         )
     else:
         await message.reply_text(
-            args[1], quote=False, parse_mode="MARKDOWN", disable_web_page_preview=True,
+            args[1],
+            quote=False,
+            parse_mode="MARKDOWN",
+            disable_web_page_preview=True,
         )
     await message.delete()
 
@@ -60,7 +64,6 @@ async def markdown_help_sender(update: Update):
         "[URL](example.com) [button](buttonurl:github.com) "
         "[button2](buttonurl://google.com:same)",
     )
-
 
 
 async def markdown_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -110,7 +113,9 @@ Output: `1.0 USD = 75.505 INR`
 • 🕐 [Timezones list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
 """
 
-ECHO_HANDLER = DisableAbleCommandHandler("echo", echo, filters=filters.ChatType.GROUPS, block=False)
+ECHO_HANDLER = DisableAbleCommandHandler(
+    "echo", echo, filters=filters.ChatType.GROUPS, block=False
+)
 MD_HELP_HANDLER = CommandHandler("markdownhelp", markdown_help, block=False)
 
 application.add_handler(ECHO_HANDLER)

@@ -3,7 +3,10 @@ from typing import Optional
 import zerotwobot.modules.sql.rules_sql as sql
 from zerotwobot import application
 from zerotwobot.modules.helper_funcs.chat_status import check_admin
-from zerotwobot.modules.helper_funcs.string_handling import markdown_parser, markdown_to_html
+from zerotwobot.modules.helper_funcs.string_handling import (
+    markdown_parser,
+    markdown_to_html,
+)
 from telegram import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
@@ -35,7 +38,9 @@ async def send_rules(update, chat_id, from_pm=False):
                 user.id,
                 "The rules shortcut for this chat hasn't been set properly! Ask admins to "
                 "fix this.\nMaybe they forgot the hyphen in ID",
-                message_thread_id= update.effective_message.message_thread_id if chat.is_forum else None,
+                message_thread_id=update.effective_message.message_thread_id
+                if chat.is_forum
+                else None,
             )
             return
         else:
@@ -46,7 +51,10 @@ async def send_rules(update, chat_id, from_pm=False):
 
     if from_pm and rules:
         await bot.send_message(
-            user.id, text, parse_mode=ParseMode.HTML, disable_web_page_preview=True,
+            user.id,
+            text,
+            parse_mode=ParseMode.HTML,
+            disable_web_page_preview=True,
         )
     elif from_pm:
         await bot.send_message(
@@ -61,7 +69,8 @@ async def send_rules(update, chat_id, from_pm=False):
                 [
                     [
                         InlineKeyboardButton(
-                            text="Rules", url=f"t.me/{bot.username}?start={chat_id}",
+                            text="Rules",
+                            url=f"t.me/{bot.username}?start={chat_id}",
                         ),
                     ],
                 ],
@@ -74,7 +83,8 @@ async def send_rules(update, chat_id, from_pm=False):
                 [
                     [
                         InlineKeyboardButton(
-                            text="Rules", url=f"t.me/{bot.username}?start={chat_id}",
+                            text="Rules",
+                            url=f"t.me/{bot.username}?start={chat_id}",
                         ),
                     ],
                 ],
@@ -97,11 +107,15 @@ async def set_rules(update: Update, context: ContextTypes.DEFAULT_TYPE):
         txt = args[1]
         offset = len(txt) - len(raw_text)  # set correct offset relative to command
         markdown_rules = markdown_parser(
-            txt, entities=msg.parse_entities(), offset=offset,
+            txt,
+            entities=msg.parse_entities(),
+            offset=offset,
         )
 
         sql.set_rules(chat_id, markdown_rules)
-        await update.effective_message.reply_text("Successfully set rules for this group.")
+        await update.effective_message.reply_text(
+            "Successfully set rules for this group."
+        )
 
 
 @check_admin(is_user=True)
@@ -139,9 +153,15 @@ __help__ = """
 
 __mod_name__ = "Rules"
 
-GET_RULES_HANDLER = CommandHandler("rules", get_rules, filters=filters.ChatType.GROUPS, block=False)
-SET_RULES_HANDLER = CommandHandler("setrules", set_rules, filters=filters.ChatType.GROUPS, block=False)
-RESET_RULES_HANDLER = CommandHandler("clearrules", clear_rules, filters=filters.ChatType.GROUPS, block=False)
+GET_RULES_HANDLER = CommandHandler(
+    "rules", get_rules, filters=filters.ChatType.GROUPS, block=False
+)
+SET_RULES_HANDLER = CommandHandler(
+    "setrules", set_rules, filters=filters.ChatType.GROUPS, block=False
+)
+RESET_RULES_HANDLER = CommandHandler(
+    "clearrules", clear_rules, filters=filters.ChatType.GROUPS, block=False
+)
 
 application.add_handler(GET_RULES_HANDLER)
 application.add_handler(SET_RULES_HANDLER)

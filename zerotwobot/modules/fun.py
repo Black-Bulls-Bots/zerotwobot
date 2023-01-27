@@ -33,7 +33,6 @@ async def sanitize(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply_animation(random.choice(fun_strings.GIFS), caption=f"*Sanitizes {name}*")
 
 
-
 async def slap(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, args = context.bot, context.args
     message = update.effective_message
@@ -89,7 +88,6 @@ async def slap(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply_text(reply, parse_mode=ParseMode.HTML)
 
 
-
 async def pat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
     args = context.args
@@ -130,10 +128,8 @@ async def pat(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_to.reply_text(reply, parse_mode=ParseMode.HTML)
 
 
-
 async def roll(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(random.choice(range(1, 7)))
-
 
 
 async def shout(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -150,10 +146,8 @@ async def shout(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return await update.effective_message.reply_text(msg, parse_mode="MARKDOWN")
 
 
-
 async def toss(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(random.choice(fun_strings.TOSS))
-
 
 
 async def shrug(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -164,7 +158,6 @@ async def shrug(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply_text(r"¯\_(ツ)_/¯")
 
 
-
 async def bluetext(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.effective_message
     reply_text = (
@@ -173,7 +166,6 @@ async def bluetext(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply_text(
         "/BLUE /TEXT\n/MUST /CLICK\n/I /AM /A /STUPID /ANIMAL /THAT /IS /ATTRACTED /TO /COLORS",
     )
-
 
 
 async def rlg(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -188,7 +180,6 @@ async def rlg(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(repl)
 
 
-
 async def decide(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply_text = (
         update.effective_message.reply_to_message.reply_text
@@ -198,7 +189,6 @@ async def decide(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply_text(random.choice(fun_strings.DECIDE))
 
 
-
 async def eightball(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply_text = (
         update.effective_message.reply_to_message.reply_text
@@ -206,7 +196,6 @@ async def eightball(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else update.effective_message.reply_text
     )
     reply_text(random.choice(fun_strings.EIGHTBALL))
-
 
 
 async def table(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -276,7 +265,6 @@ weebyfont = [
 ]
 
 
-
 async def weebify(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = context.args
     message = update.effective_message
@@ -289,7 +277,9 @@ async def weebify(update: Update, context: ContextTypes.DEFAULT_TYPE):
         string = "  ".join(args).lower()
 
     if not string:
-        await message.reply_text("Usage is `/weebify <text>`", parse_mode=ParseMode.MARKDOWN)
+        await message.reply_text(
+            "Usage is `/weebify <text>`", parse_mode=ParseMode.MARKDOWN
+        )
         return
 
     for normiecharacter in string:

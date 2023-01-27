@@ -27,7 +27,7 @@ from telegram import (
     Update,
     User,
     ChatMemberAdministrator,
-    ChatMemberOwner
+    ChatMemberOwner,
 )
 from telegram.constants import ParseMode, MessageLimit
 from telegram.error import BadRequest
@@ -48,7 +48,11 @@ CURRENT_WARNING_FILTER_STRING = "<b>Current warning filters in this chat:</b>\n"
 
 # Not async
 async def warn(
-    user: User, chat: Chat, reason: str, message: Message, warner: User = None,
+    user: User,
+    chat: Chat,
+    reason: str,
+    message: Message,
+    warner: User = None,
 ) -> str:
     if await is_user_admin(chat, user.id):
         await message.reply_text("Damn admins, They are too far to be Warned")
@@ -98,7 +102,8 @@ async def warn(
             [
                 [
                     InlineKeyboardButton(
-                        "🔘 Remove warn", callback_data="rm_warn({})".format(user.id),
+                        "🔘 Remove warn",
+                        callback_data="rm_warn({})".format(user.id),
                     ),
                 ],
             ],
@@ -122,12 +127,17 @@ async def warn(
         )
 
     try:
-        await message.reply_text(reply, reply_markup=keyboard, parse_mode=ParseMode.HTML)
+        await message.reply_text(
+            reply, reply_markup=keyboard, parse_mode=ParseMode.HTML
+        )
     except BadRequest as excp:
         if excp.message == "Reply message not found":
             # Do not reply
             await message.reply_text(
-                reply, reply_markup=keyboard, parse_mode=ParseMode.HTML, quote=False,
+                reply,
+                reply_markup=keyboard,
+                parse_mode=ParseMode.HTML,
+                quote=False,
             )
         else:
             raise
@@ -163,7 +173,8 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
             )
         else:
             await update.effective_message.edit_text(
-                "User already has no warns.", parse_mode=ParseMode.HTML,
+                "User already has no warns.",
+                parse_mode=ParseMode.HTML,
             )
 
     return ""
@@ -178,7 +189,11 @@ async def warn_user(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     warner: Optional[User] = update.effective_user
 
     user_id, reason = await extract_user_and_text(message, context, args)
-    if message.text.startswith("/d") and message.reply_to_message and not message.reply_to_message.forum_topic_created:
+    if (
+        message.text.startswith("/d")
+        and message.reply_to_message
+        and not message.reply_to_message.forum_topic_created
+    ):
         await message.reply_to_message.delete()
     if user_id:
         if (
@@ -225,7 +240,6 @@ async def reset_warns(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str
     return ""
 
 
-
 async def warns(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = context.args
     message: Optional[Message] = update.effective_message
@@ -262,7 +276,8 @@ async def add_warn_filter(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg: Optional[Message] = update.effective_message
 
     args = msg.text.split(
-        None, 1,
+        None,
+        1,
     )  # use python's maxsplit to separate Cmd, keyword, and reply_text
 
     if len(args) < 2:
@@ -295,7 +310,8 @@ async def remove_warn_filter(update: Update, context: ContextTypes.DEFAULT_TYPE)
     msg: Optional[Message] = update.effective_message
 
     args = msg.text.split(
-        None, 1,
+        None,
+        1,
     )  # use python's maxsplit to separate Cmd, keyword, and reply_text
 
     if len(args) < 2:
@@ -325,7 +341,6 @@ async def remove_warn_filter(update: Update, context: ContextTypes.DEFAULT_TYPE)
     )
 
 
-
 async def list_warn_filters(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat: Optional[Chat] = update.effective_chat
     all_handlers = sql.get_chat_warn_triggers(chat.id)
@@ -338,14 +353,17 @@ async def list_warn_filters(update: Update, context: ContextTypes.DEFAULT_TYPE):
     for keyword in all_handlers:
         entry = f" - {html.escape(keyword)}\n"
         if len(entry) + len(filter_list) > MessageLimit.MAX_TEXT_LENGTH:
-            await update.effective_message.reply_text(filter_list, parse_mode=ParseMode.HTML)
+            await update.effective_message.reply_text(
+                filter_list, parse_mode=ParseMode.HTML
+            )
             filter_list = entry
         else:
             filter_list += entry
 
     if filter_list != CURRENT_WARNING_FILTER_STRING:
-        await update.effective_message.reply_text(filter_list, parse_mode=ParseMode.HTML)
-
+        await update.effective_message.reply_text(
+            filter_list, parse_mode=ParseMode.HTML
+        )
 
 
 @loggable
@@ -373,6 +391,7 @@ async def reply_filter(update: Update, context: ContextTypes.DEFAULT_TYPE) -> st
             warn_filter = sql.get_warn_filter(chat.id, keyword)
             return await warn(user, chat, warn_filter.reply, message)
     return ""
+
 
 @check_admin(is_user=True)
 @loggable
@@ -402,6 +421,7 @@ async def set_warn_limit(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
         await msg.reply_text("The current warn limit is {}".format(limit))
     return ""
+
 
 @check_admin(is_user=True)
 async def set_warn_strength(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -491,23 +511,40 @@ be a sentence, encompass it with quotes, as such: `/addwarn "very angry" This is
 
 __mod_name__ = "Warnings"
 
-WARN_HANDLER = CommandHandler(["warn", "dwarn"], warn_user, filters=filters.ChatType.GROUPS, block=False)
+WARN_HANDLER = CommandHandler(
+    ["warn", "dwarn"], warn_user, filters=filters.ChatType.GROUPS, block=False
+)
 RESET_WARN_HANDLER = CommandHandler(
-    ["resetwarn", "resetwarns"], reset_warns, filters=filters.ChatType.GROUPS, block=False
+    ["resetwarn", "resetwarns"],
+    reset_warns,
+    filters=filters.ChatType.GROUPS,
+    block=False,
 )
 CALLBACK_QUERY_HANDLER = CallbackQueryHandler(button, pattern=r"rm_warn", block=False)
-MYWARNS_HANDLER = DisableAbleCommandHandler("warns", warns, filters=filters.ChatType.GROUPS, block=False)
-ADD_WARN_HANDLER = CommandHandler("addwarn", add_warn_filter, filters=filters.ChatType.GROUPS)
+MYWARNS_HANDLER = DisableAbleCommandHandler(
+    "warns", warns, filters=filters.ChatType.GROUPS, block=False
+)
+ADD_WARN_HANDLER = CommandHandler(
+    "addwarn", add_warn_filter, filters=filters.ChatType.GROUPS
+)
 RM_WARN_HANDLER = CommandHandler(
-    ["nowarn", "stopwarn"], remove_warn_filter, filters=filters.ChatType.GROUPS,
+    ["nowarn", "stopwarn"],
+    remove_warn_filter,
+    filters=filters.ChatType.GROUPS,
 )
 LIST_WARN_HANDLER = DisableAbleCommandHandler(
-    ["warnlist", "warnfilters"], list_warn_filters, filters=filters.ChatType.GROUPS, admin_ok=True, block=False
+    ["warnlist", "warnfilters"],
+    list_warn_filters,
+    filters=filters.ChatType.GROUPS,
+    admin_ok=True,
+    block=False,
 )
 WARN_FILTER_HANDLER = MessageHandler(
     filters.TEXT & filters.ChatType.GROUPS, reply_filter, block=False
 )
-WARN_LIMIT_HANDLER = CommandHandler("warnlimit", set_warn_limit, filters=filters.ChatType.GROUPS, block=False)
+WARN_LIMIT_HANDLER = CommandHandler(
+    "warnlimit", set_warn_limit, filters=filters.ChatType.GROUPS, block=False
+)
 WARN_STRENGTH_HANDLER = CommandHandler(
     "strongwarn", set_warn_strength, filters=filters.ChatType.GROUPS, block=False
 )

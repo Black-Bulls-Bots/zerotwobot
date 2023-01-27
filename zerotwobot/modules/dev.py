@@ -45,7 +45,6 @@ async def leave(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.effective_message.reply_text("Send a valid chat ID")
 
 
-
 LEAVE_HANDLER = CommandHandler("leave", leave, block=False)
 
 ALLOWGROUPS_HANDLER = CommandHandler("lockdown", allow_groups, block=False)

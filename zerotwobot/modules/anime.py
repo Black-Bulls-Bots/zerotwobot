@@ -7,7 +7,10 @@ import jikanpy
 from httpx import AsyncClient
 from zerotwobot import application
 from zerotwobot.modules.disable import DisableAbleCommandHandler
-from zerotwobot.modules.helper_funcs.string_handling import markdown_parser, markdown_to_html
+from zerotwobot.modules.helper_funcs.string_handling import (
+    markdown_parser,
+    markdown_to_html,
+)
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, Message
 from telegram.ext import ContextTypes
 from telegram.constants import ParseMode
@@ -163,6 +166,7 @@ query ($id: Int,$search: String) {
 
 url = "https://graphql.anilist.co"
 
+
 async def extract_arg(message: Message):
     split = message.text.split(" ", 1)
     if len(split) > 1:
@@ -184,8 +188,9 @@ async def airing(update: Update, context: ContextTypes.DEFAULT_TYPE):
     variables = {"search": search_str}
     async with AsyncClient() as client:
         r = await client.post(
-        url, json={"query": airing_query, "variables": variables},
-    )
+            url,
+            json={"query": airing_query, "variables": variables},
+        )
     if not r.status_code in [401, 404, 500, 503]:
         response = r.json()["data"]["Media"]
     else:
@@ -201,7 +206,6 @@ async def airing(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.effective_message.reply_text(msg, parse_mode=ParseMode.MARKDOWN)
 
 
-
 async def anime(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
     search = await extract_arg(message)
@@ -211,8 +215,9 @@ async def anime(update: Update, context: ContextTypes.DEFAULT_TYPE):
     variables = {"search": search}
     async with AsyncClient() as client:
         r = await client.post(
-        url, json={"query": anime_query, "variables": variables},
-    )
+            url,
+            json={"query": anime_query, "variables": variables},
+        )
     json = r.json()
     if "errors" in json.keys():
         await update.effective_message.reply_text("Anime not found")
@@ -223,7 +228,7 @@ async def anime(update: Update, context: ContextTypes.DEFAULT_TYPE):
         for x in json["genres"]:
             msg += f"{x}, "
         msg = msg[:-2] + "`\n"
-        msg += "➢ *Adult*: True 🔞 \n" if json['isAdult'] else "➢ *Adult*: False\n"
+        msg += "➢ *Adult*: True 🔞 \n" if json["isAdult"] else "➢ *Adult*: False\n"
         msg += "➢ *Studios*: `"
         for x in json["studios"]["nodes"]:
             msg += f"{x['name']}, "
@@ -276,18 +281,20 @@ async def anime(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
 
 
-
 async def character(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
     search = await extract_arg(message)
     if not search:
-        await update.effective_message.reply_text("Format : /character < character name >")
+        await update.effective_message.reply_text(
+            "Format : /character < character name >"
+        )
         return
     variables = {"query": search}
     async with AsyncClient() as client:
         r = await client.post(
-        url, json={"query": character_query, "variables": variables},
-    )
+            url,
+            json={"query": character_query, "variables": variables},
+        )
     json = r.json()
     if "errors" in json.keys():
         await update.effective_message.reply_text("Character not found")
@@ -309,9 +316,9 @@ async def character(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
         else:
             await update.effective_message.reply_text(
-                markdown_to_html(markdown_parser(msg)), parse_mode=ParseMode.HTML,
+                markdown_to_html(markdown_parser(msg)),
+                parse_mode=ParseMode.HTML,
             )
-
 
 
 async def manga(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -323,8 +330,9 @@ async def manga(update: Update, context: ContextTypes.DEFAULT_TYPE):
     variables = {"search": search}
     async with AsyncClient() as client:
         r = await client.post(
-        url, json={"query": manga_query, "variables": variables},
-    )
+            url,
+            json={"query": manga_query, "variables": variables},
+        )
     json = r.json()
     msg = ""
     if "errors" in json.keys():
@@ -333,7 +341,8 @@ async def manga(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if json:
         json = json["data"]["Media"]
         title, title_native = json["title"].get("romaji", False), json["title"].get(
-            "native", False,
+            "native",
+            False,
         )
         start_date, status, score = (
             json["startDate"].get("year", False),
@@ -379,7 +388,6 @@ async def manga(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 parse_mode=ParseMode.MARKDOWN,
                 reply_markup=InlineKeyboardMarkup(buttons),
             )
-
 
 
 async def user(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -450,7 +458,8 @@ async def user(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton(info_btn, url=us["url"])],
         [
             InlineKeyboardButton(
-                close_btn, callback_data=f"anime_close, {message.from_user.id}",
+                close_btn,
+                callback_data=f"anime_close, {message.from_user.id}",
             ),
         ],
     ]
@@ -463,7 +472,6 @@ async def user(update: Update, context: ContextTypes.DEFAULT_TYPE):
         disable_web_page_preview=False,
     )
     await progress_message.delete()
-
 
 
 async def upcoming(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -539,14 +547,14 @@ async def site_search(update: Update, context: ContextTypes.DEFAULT_TYPE, site: 
         )
     else:
         await message.reply_text(
-            result, parse_mode=ParseMode.HTML, disable_web_page_preview=True,
+            result,
+            parse_mode=ParseMode.HTML,
+            disable_web_page_preview=True,
         )
-
 
 
 async def kaizoku(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await site_search(update, context, "kaizoku")
-
 
 
 async def kayo(update: Update, context: ContextTypes.DEFAULT_TYPE):

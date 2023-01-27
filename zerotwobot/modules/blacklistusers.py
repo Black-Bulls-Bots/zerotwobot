@@ -23,7 +23,6 @@ BLACKLISTWHITELIST = [OWNER_ID] + DEV_USERS + DRAGONS
 BLABLEUSERS = [OWNER_ID] + DEV_USERS
 
 
-
 @gloggable
 @check_admin(only_dev=True)
 async def bl_user(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
@@ -37,7 +36,9 @@ async def bl_user(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
         return ""
 
     if user_id == bot.id:
-        await message.reply_text("How am I supposed to do my work if I am ignoring myself?")
+        await message.reply_text(
+            "How am I supposed to do my work if I am ignoring myself?"
+        )
         return ""
 
     if user_id in BLACKLISTWHITELIST:
@@ -64,7 +65,6 @@ async def bl_user(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
         log_message += f"\n<b>Reason:</b> {reason}"
 
     return log_message
-
 
 
 @check_admin(only_dev=True)
@@ -107,7 +107,6 @@ async def unbl_user(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     else:
         await message.reply_text("I am not ignoring them at all though!")
         return ""
-
 
 
 @check_admin(only_dev=True)

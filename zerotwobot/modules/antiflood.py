@@ -5,11 +5,7 @@ import re
 from telegram import Message, Chat, Update, User, ChatPermissions
 
 from zerotwobot import application
-from zerotwobot.modules.helper_funcs.chat_status import (
-    is_user_admin,
-    check_admin
-
-)
+from zerotwobot.modules.helper_funcs.chat_status import is_user_admin, check_admin
 from zerotwobot.modules.log_channel import loggable
 from zerotwobot.modules.sql import antiflood_sql as sql
 from telegram.error import BadRequest
@@ -27,7 +23,6 @@ from zerotwobot.modules.helper_funcs.alternate import send_message
 from zerotwobot.modules.sql.approve_sql import is_approved
 
 FLOOD_GROUP = 3
-
 
 
 @loggable
@@ -63,7 +58,9 @@ async def check_flood(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str
             tag = "KICKED"
         elif getmode == 3:
             await context.bot.restrict_chat_member(
-                chat.id, user.id, permissions=ChatPermissions(can_send_messages=False),
+                chat.id,
+                user.id,
+                permissions=ChatPermissions(can_send_messages=False),
             )
             execstrings = "Muted"
             tag = "MUTED"
@@ -83,7 +80,8 @@ async def check_flood(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str
             execstrings = "Muted for {}".format(getvalue)
             tag = "TMUTE"
         await send_message(
-            update.effective_message, "Beep Boop! Boop Beep!\n{}!".format(execstrings),
+            update.effective_message,
+            "Beep Boop! Boop Beep!\n{}!".format(execstrings),
         )
 
         return (
@@ -109,6 +107,7 @@ async def check_flood(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str
                 chat.title,
             )
         )
+
 
 @check_admin(permission="can_restrict_members", is_both=True, no_reply=True)
 async def flood_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -136,6 +135,7 @@ async def flood_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
         except:
             pass
+
 
 @loggable
 @check_admin(is_user=True)
@@ -203,7 +203,8 @@ async def set_flood(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
                 if conn:
                     text = await message.reply_text(
                         "Anti-flood has been set to {} in chat: {}".format(
-                            amount, chat_name,
+                            amount,
+                            chat_name,
                         ),
                     )
                 else:
@@ -222,7 +223,9 @@ async def set_flood(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
                 )
 
         else:
-            await message.reply_text("Invalid argument please use a number, 'off' or 'no'")
+            await message.reply_text(
+                "Invalid argument please use a number, 'off' or 'no'"
+            )
     else:
         await message.reply_text(
             (
@@ -231,7 +234,6 @@ async def set_flood(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
             parse_mode="markdown",
         )
     return ""
-
 
 
 async def flood(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -266,7 +268,8 @@ async def flood(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if conn:
             text = await msg.reply_text(
                 "I'm currently restricting members after {} consecutive messages in {}.".format(
-                    limit, chat_name,
+                    limit,
+                    chat_name,
                 ),
             )
         else:
@@ -275,7 +278,6 @@ async def flood(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     limit,
                 ),
             )
-
 
 
 @check_admin(is_user=True)
@@ -316,7 +318,9 @@ async def set_flood_mode(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if len(args) == 1:
                 teks = """It looks like you tried to set time value for antiflood but you didn't specified time; Try, `/setfloodmode tban <timevalue>`.
 Examples of time value: 4m = 4 minutes, 3h = 3 hours, 6d = 6 days, 5w = 5 weeks."""
-                await send_message(update.effective_message, teks, parse_mode="markdown")
+                await send_message(
+                    update.effective_message, teks, parse_mode="markdown"
+                )
                 return
             settypeflood = "tban for {}".format(args[1])
             sql.set_flood_strength(chat_id, 4, str(args[1]))
@@ -327,19 +331,23 @@ Examples of time value: 4m = 4 minutes, 3h = 3 hours, 6d = 6 days, 5w = 5 weeks.
                     """It looks like you tried to set time value for antiflood but you didn't specified time; Try, `/setfloodmode tmute <timevalue>`.
 Examples of time value: 4m = 4 minutes, 3h = 3 hours, 6d = 6 days, 5w = 5 weeks.""",
                 )
-                await send_message(update.effective_message, teks, parse_mode="markdown")
+                await send_message(
+                    update.effective_message, teks, parse_mode="markdown"
+                )
                 return
             settypeflood = "tmute for {}".format(args[1])
             sql.set_flood_strength(chat_id, 5, str(args[1]))
         else:
             await send_message(
-                update.effective_message, "I only understand ban/kick/mute/tban/tmute!",
+                update.effective_message,
+                "I only understand ban/kick/mute/tban/tmute!",
             )
             return
         if conn:
             text = await msg.reply_text(
                 "Exceeding consecutive flood limit will result in {} in {}!".format(
-                    settypeflood, chat_name,
+                    settypeflood,
+                    chat_name,
                 ),
             )
         else:
@@ -372,7 +380,8 @@ Examples of time value: 4m = 4 minutes, 3h = 3 hours, 6d = 6 days, 5w = 5 weeks.
         if conn:
             text = await msg.reply_text(
                 "Sending more messages than flood limit will result in {} in {}.".format(
-                    settypeflood, chat_name,
+                    settypeflood,
+                    chat_name,
                 ),
             )
         else:
@@ -417,14 +426,22 @@ will result in restricting that user.
 __mod_name__ = "Anti-Flood"
 
 FLOOD_BAN_HANDLER = MessageHandler(
-    filters.ALL & ~filters.StatusUpdate.ALL & filters.ChatType.GROUPS, check_flood, block=False
+    filters.ALL & ~filters.StatusUpdate.ALL & filters.ChatType.GROUPS,
+    check_flood,
+    block=False,
 )
-SET_FLOOD_HANDLER = CommandHandler("setflood", set_flood, filters=filters.ChatType.GROUPS, block=False)
+SET_FLOOD_HANDLER = CommandHandler(
+    "setflood", set_flood, filters=filters.ChatType.GROUPS, block=False
+)
 SET_FLOOD_MODE_HANDLER = CommandHandler(
     "setfloodmode", set_flood_mode, block=False
 )  # , filters=filters.ChatType.GROUPS)
-FLOOD_QUERY_HANDLER = CallbackQueryHandler(flood_button, pattern=r"unmute_flooder", block=False)
-FLOOD_HANDLER = CommandHandler("flood", flood, filters=filters.ChatType.GROUPS, block=False)
+FLOOD_QUERY_HANDLER = CallbackQueryHandler(
+    flood_button, pattern=r"unmute_flooder", block=False
+)
+FLOOD_HANDLER = CommandHandler(
+    "flood", flood, filters=filters.ChatType.GROUPS, block=False
+)
 
 application.add_handler(FLOOD_BAN_HANDLER, FLOOD_GROUP)
 application.add_handler(FLOOD_QUERY_HANDLER)

@@ -13,7 +13,9 @@ from telegram.ext import (
 )
 
 
-async def get_invalid_chats(update: Update, context: ContextTypes.DEFAULT_TYPE, remove: bool = False):
+async def get_invalid_chats(
+    update: Update, context: ContextTypes.DEFAULT_TYPE, remove: bool = False
+):
     bot = context.bot
     chat_id = update.effective_chat.id
     chats = user_sql.get_all_chats()
@@ -28,14 +30,19 @@ async def get_invalid_chats(update: Update, context: ContextTypes.DEFAULT_TYPE, 
             if progress_message:
                 try:
                     await bot.editMessageText(
-                        progress_bar, chat_id, progress_message.message_id,
+                        progress_bar,
+                        chat_id,
+                        progress_message.message_id,
                     )
                 except:
                     pass
             else:
                 progress_message = await bot.sendMessage(
-                    chat_id, progress_bar, 
-                    message_thread_id=update.effective_message.message_thread_id if chat.is_forum else None
+                    chat_id,
+                    progress_bar,
+                    message_thread_id=update.effective_message.message_thread_id
+                    if chat.is_forum
+                    else None,
                 )
             progress += 5
 
@@ -63,7 +70,9 @@ async def get_invalid_chats(update: Update, context: ContextTypes.DEFAULT_TYPE, 
         return kicked_chats
 
 
-async def get_invalid_gban(update: Update, context: ContextTypes.DEFAULT_TYPE, remove: bool = False):
+async def get_invalid_gban(
+    update: Update, context: ContextTypes.DEFAULT_TYPE, remove: bool = False
+):
     bot = context.bot
     banned = gban_sql.get_gban_list()
     ungbanned_users = 0
@@ -89,7 +98,6 @@ async def get_invalid_gban(update: Update, context: ContextTypes.DEFAULT_TYPE, r
         return ungbanned_users
 
 
-
 @check_admin(only_dev=True)
 async def dbcleanup(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.effective_message
@@ -106,9 +114,9 @@ async def dbcleanup(update: Update, context: ContextTypes.DEFAULT_TYPE):
     buttons = [[InlineKeyboardButton("Cleanup DB", callback_data="db_cleanup")]]
 
     await update.effective_message.reply_text(
-        reply, reply_markup=InlineKeyboardMarkup(buttons),
+        reply,
+        reply_markup=InlineKeyboardMarkup(buttons),
     )
-
 
 
 async def callback_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -127,9 +135,11 @@ async def callback_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await bot.editMessageText("Leaving chats ...", chat_id, message.message_id)
             chat_count = get_invalid_chats(update, context, True)
             await bot.sendMessage(
-                chat_id, 
+                chat_id,
                 f"Left {chat_count} chats.",
-                message_thread_id=message.message_thread_id if update.effective_chat.is_forum else None
+                message_thread_id=message.message_thread_id
+                if update.effective_chat.is_forum
+                else None,
             )
         else:
             await query.answer("You are not allowed to use this.")
@@ -139,12 +149,15 @@ async def callback_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             invalid_chat_count = get_invalid_chats(update, context, True)
             invalid_gban_count = get_invalid_gban(update, context, True)
             reply = "Cleaned up {} chats and {} gbanned users from db.".format(
-                invalid_chat_count, invalid_gban_count,
+                invalid_chat_count,
+                invalid_gban_count,
             )
             await bot.sendMessage(
-                chat_id, 
+                chat_id,
                 reply,
-                message_thread_id=message.message_thread_id if update.effective_chat.is_forum else None
+                message_thread_id=message.message_thread_id
+                if update.effective_chat.is_forum
+                else None,
             )
         else:
             await query.answer("You are not allowed to use this.")

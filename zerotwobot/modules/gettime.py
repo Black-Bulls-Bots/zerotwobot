@@ -12,11 +12,11 @@ from telegram.ext import ContextTypes
 async def generate_time(to_find: str, findtype: List[str]) -> str:
     async with AsyncClient() as client:
         r = await client.get(
-        f"https://api.timezonedb.com/v2.1/list-time-zone"
-        f"?key={TIME_API_KEY}"
-        f"&format=json"
-        f"&fields=countryCode,countryName,zoneName,gmtOffset,timestamp,dst",
-    )
+            f"https://api.timezonedb.com/v2.1/list-time-zone"
+            f"?key={TIME_API_KEY}"
+            f"&format=json"
+            f"&fields=countryCode,countryName,zoneName,gmtOffset,timestamp,dst",
+        )
     data = r.json()
 
     for zone in data["zones"]:
@@ -67,10 +67,13 @@ async def gettime(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         query = message.text.strip().split(" ", 1)[1]
     except:
-        await message.reply_text("Provide a country name/abbreviation/timezone to find.")
+        await message.reply_text(
+            "Provide a country name/abbreviation/timezone to find."
+        )
         return
     send_message = await message.reply_text(
-        f"Finding timezone info for <b>{query}</b>", parse_mode=ParseMode.HTML,
+        f"Finding timezone info for <b>{query}</b>",
+        parse_mode=ParseMode.HTML,
     )
 
     query_timezone = query.lower()
@@ -89,7 +92,9 @@ async def gettime(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     await send_message.edit_text(
-        result, parse_mode=ParseMode.HTML, disable_web_page_preview=True,
+        result,
+        parse_mode=ParseMode.HTML,
+        disable_web_page_preview=True,
     )
 
 

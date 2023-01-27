@@ -8,6 +8,7 @@ from telegram import Update, Chat
 from telegram.error import BadRequest, RetryAfter, Forbidden
 from telegram.ext import ContextTypes, CommandHandler, filters
 
+
 async def get_user_common_chats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, args = context.bot, context.args
     msg = update.effective_message

@@ -7,6 +7,7 @@ from telegram.helpers import mention_html
 from zerotwobot import application
 from zerotwobot.modules.helper_funcs.chat_status import check_admin
 from zerotwobot.modules.log_channel import loggable
+
 # from zerotwobot.modules.sql.topics_sql import (del_action_topic,
 #                                                get_action_topic,
 #                                                set_action_topic)
@@ -18,7 +19,7 @@ from zerotwobot.modules.log_channel import loggable
 #     message = update.effective_message
 #     chat = update.effective_chat
 #     user = update.effective_user
-    
+
 #     if chat.is_forum:
 #         topic_id = message.message_thread_id
 #         topic_chat = get_action_topic(chat.id)
@@ -69,6 +70,7 @@ from zerotwobot.modules.log_channel import loggable
 #         await message.reply_text("Action Topic can be only removed in Groups with Topic support.")
 #         return ""
 
+
 @loggable
 @check_admin(permission="can_manage_topics", is_both=True)
 async def create_topic(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -76,7 +78,7 @@ async def create_topic(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat = update.effective_chat
     user = update.effective_user
     args = context.args
-    
+
     if chat.is_forum:
         if len(args) < 1:
             await message.reply_text("You must give a name for the topic to create.")
@@ -84,11 +86,15 @@ async def create_topic(update: Update, context: ContextTypes.DEFAULT_TYPE):
             name = " ".join(args)
             try:
                 topic = await context.bot.create_forum_topic(chat.id, name)
-                await message.reply_text(f"Successfully created {topic.name}\nID: {topic.message_thread_id}" if topic else "Something happened")
+                await message.reply_text(
+                    f"Successfully created {topic.name}\nID: {topic.message_thread_id}"
+                    if topic
+                    else "Something happened"
+                )
                 await context.bot.sendMessage(
-                    chat_id=chat.id, 
+                    chat_id=chat.id,
                     text=f"Congratulations {topic.name} created successfully\nID: {topic.message_thread_id}",
-                    message_thread_id=topic.message_thread_id
+                    message_thread_id=topic.message_thread_id,
                 )
                 log_message = (
                     f"<b>{html.escape(chat.title)}:</b>\n"
@@ -102,8 +108,11 @@ async def create_topic(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await message.reply_text(f"Something happened.\n{e.message}")
                 return ""
     else:
-        await message.reply_text("Baka! You can create topics in topics enabled group only.") 
+        await message.reply_text(
+            "Baka! You can create topics in topics enabled group only."
+        )
         return ""
+
 
 @loggable
 @check_admin(permission="can_manage_topics", is_both=True)
@@ -135,6 +144,7 @@ async def delete_topic(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await message.reply_text("You can perform this in topics enabled groups only.")
         return ""
 
+
 @loggable
 @check_admin(permission="can_manage_topics", is_both=True)
 async def close_topic(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -164,6 +174,7 @@ async def close_topic(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await message.reply_text("You can perform this in topics enabled groups only.")
         return ""
+
 
 @loggable
 @check_admin(permission="can_manage_topics", is_both=True)

@@ -18,7 +18,6 @@ AFK_GROUP = 7
 AFK_REPLY_GROUP = 8
 
 
-
 async def afk(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_message.text:
         args = update.effective_message.text.split(None, 1)
@@ -28,7 +27,6 @@ async def afk(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if not user:  # ignore channels
         return
-
 
     notice = ""
     if len(args) >= 2:
@@ -45,15 +43,14 @@ async def afk(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if reason:
             await update.effective_message.reply_text(
                 f"{fname} is now away! \nReason: <code>{reason}</code> \n {notice}",
-                parse_mode="html"
+                parse_mode="html",
             )
         else:
-                await update.effective_message.reply_text(
+            await update.effective_message.reply_text(
                 "{} is now away!{}".format(fname, notice),
-            )   
+            )
     except BadRequest:
         pass
-
 
 
 async def no_longer_afk(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -86,12 +83,12 @@ async def no_longer_afk(update: Update, context: ContextTypes.DEFAULT_TYPE):
             ]
             chosen_option = random.choice(options)
             await update.effective_message.reply_text(
-                chosen_option.format(firstname) + f"\nYou were AFK for: <code>{time}</code>",
-                parse_mode="html"
+                chosen_option.format(firstname)
+                + f"\nYou were AFK for: <code>{time}</code>",
+                parse_mode="html",
             )
         except:
             return
-
 
 
 async def reply_afk(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -120,7 +117,7 @@ async def reply_afk(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 return
 
             user_id = await get_user_id(
-                message.text[ent.offset: ent.offset + ent.length],
+                message.text[ent.offset : ent.offset + ent.length],
             )
             if not user_id:
                 # Should never happen, since for a user to become AFK they must have spoken. Maybe changed username?
@@ -133,7 +130,9 @@ async def reply_afk(update: Update, context: ContextTypes.DEFAULT_TYPE):
             try:
                 chat = await bot.get_chat(user_id)
             except BadRequest:
-                LOGGER.error("Error: Could not fetch userid {} for AFK module".format(user_id))
+                LOGGER.error(
+                    "Error: Could not fetch userid {} for AFK module".format(user_id)
+                )
                 return
             fst_name = chat.first_name
 
@@ -145,7 +144,13 @@ async def reply_afk(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await check_afk(update, context, user_id, fst_name, userc_id)
 
 
-async def check_afk(update: Update, context: ContextTypes.DEFAULT_TYPE, user_id: int, fst_name: str, userc_id: int):
+async def check_afk(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+    user_id: int,
+    fst_name: str,
+    userc_id: int,
+):
     if sql.is_afk(user_id):
         user = sql.check_afk_status(user_id)
 
@@ -179,8 +184,12 @@ AFK_HANDLER = DisableAbleCommandHandler("afk", afk, block=False)
 AFK_REGEX_HANDLER = DisableAbleMessageHandler(
     filters.Regex(r"^(?i)brb(.*)$"), afk, friendly="afk", block=False
 )
-NO_AFK_HANDLER = MessageHandler(filters.ALL & filters.ChatType.GROUPS, no_longer_afk, block=False)
-AFK_REPLY_HANDLER = MessageHandler(filters.ALL & filters.ChatType.GROUPS, reply_afk, block=False)
+NO_AFK_HANDLER = MessageHandler(
+    filters.ALL & filters.ChatType.GROUPS, no_longer_afk, block=False
+)
+AFK_REPLY_HANDLER = MessageHandler(
+    filters.ALL & filters.ChatType.GROUPS, reply_afk, block=False
+)
 
 application.add_handler(AFK_HANDLER, AFK_GROUP)
 application.add_handler(AFK_REGEX_HANDLER, AFK_GROUP)

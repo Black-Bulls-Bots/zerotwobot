@@ -1,7 +1,16 @@
 import threading
 
 from zerotwobot.modules.sql import BASE, SESSION
-from sqlalchemy import Boolean, Column, Integer, String, UnicodeText,BigInteger,  distinct, func
+from sqlalchemy import (
+    Boolean,
+    Column,
+    Integer,
+    String,
+    UnicodeText,
+    BigInteger,
+    distinct,
+    func,
+)
 from sqlalchemy.dialects import postgresql
 
 
@@ -21,7 +30,10 @@ class Warns(BASE):
 
     def __repr__(self):
         return "<{} warns for {} in {} for reasons {}>".format(
-            self.num_warns, self.user_id, self.chat_id, self.reasons,
+            self.num_warns,
+            self.user_id,
+            self.chat_id,
+            self.reasons,
         )
 
 

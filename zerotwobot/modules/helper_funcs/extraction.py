@@ -12,7 +12,7 @@ async def id_from_reply(message: Message):
     if not prev_message or prev_message.forum_topic_created:
         return None, None
     user_id = prev_message.from_user.id
-    #if user id is from channel bot, then fetch channel id from sender_chat 
+    # if user id is from channel bot, then fetch channel id from sender_chat
     if user_id == 136817688:
         user_id = message.reply_to_message.sender_chat.id
     res = message.text.split(None, 1)
@@ -21,12 +21,18 @@ async def id_from_reply(message: Message):
     return user_id, res[1]
 
 
-async def extract_user(message: Message, context: ContextTypes.DEFAULT_TYPE, args: List[str],) -> Optional[int]:
+async def extract_user(
+    message: Message,
+    context: ContextTypes.DEFAULT_TYPE,
+    args: List[str],
+) -> Optional[int]:
     return (await extract_user_and_text(message, context, args))[0]
 
 
 async def extract_user_and_text(
-    message: Message, context: ContextTypes.DEFAULT_TYPE, args: List[str],
+    message: Message,
+    context: ContextTypes.DEFAULT_TYPE,
+    args: List[str],
 ) -> Union[(Optional[int], Optional[str])]:
     prev_message = message.reply_to_message
     split_text = message.text.split(None, 1)
@@ -152,7 +158,8 @@ async def extract_unt_fedban(
         await context.bot.get_chat(user_id)
     except BadRequest as excp:
         if excp.message in ("User_id_invalid", "Chat not found") and not isinstance(
-            user_id, int,
+            user_id,
+            int,
         ):
             await message.reply_text(
                 "I don't seem to have interacted with this user before "
@@ -169,5 +176,7 @@ async def extract_unt_fedban(
     return user_id, text
 
 
-async def extract_user_fban(message: Message, context: ContextTypes.DEFAULT_TYPE, args: List[str]) -> Optional[int]:
+async def extract_user_fban(
+    message: Message, context: ContextTypes.DEFAULT_TYPE, args: List[str]
+) -> Optional[int]:
     return (await extract_unt_fedban(message, context, args))[0]

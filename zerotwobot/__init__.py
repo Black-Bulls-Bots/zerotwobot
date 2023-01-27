@@ -79,11 +79,16 @@ if ENV:
     API_HASH = os.environ.get("API_HASH", None)
     DONATION_LINK = os.environ.get("DONATION_LINK")
     LOAD = os.environ.get("LOAD", "").split()
-    NO_LOAD = os.environ.get("NO_LOAD", "translation rss cleaner connection math").split()
+    NO_LOAD = os.environ.get(
+        "NO_LOAD", "translation rss cleaner connection math"
+    ).split()
     DEL_CMDS = bool(os.environ.get("DEL_CMDS", False))
     STRICT_GBAN = bool(os.environ.get("STRICT_GBAN", False))
     WORKERS = int(os.environ.get("WORKERS", 8))
-    BAN_STICKER = os.environ.get("BAN_STICKER", "CAACAgUAAxkBAAEDRNJhjolhBDkOeJLs2cPuhskKthnoQwACFwIAAs4DwFWTjimU8iDvqiIE")
+    BAN_STICKER = os.environ.get(
+        "BAN_STICKER",
+        "CAACAgUAAxkBAAEDRNJhjolhBDkOeJLs2cPuhskKthnoQwACFwIAAs4DwFWTjimU8iDvqiIE",
+    )
     ALLOW_EXCL = os.environ.get("ALLOW_EXCL", False)
     TIME_API_KEY = os.environ.get("TIME_API_KEY", None)
     AI_API_KEY = os.environ.get("AI_API_KEY", None)
@@ -95,9 +100,8 @@ if ENV:
 
     if DB_URI.startswith("postgres://"):
         DB_URI = DB_URI.replace("postgres://", "postgresql://")
-    
-    TEMP_DOWNLOAD_LOC = os.environ.get("TEMP_DOWNLOAD_LOC", None)
 
+    TEMP_DOWNLOAD_LOC = os.environ.get("TEMP_DOWNLOAD_LOC", None)
 
     try:
         BL_CHATS = set(int(x) for x in os.environ.get("BL_CHATS", "").split())
@@ -143,7 +147,7 @@ else:
     SUPPORT_CHAT = Config.SUPPORT_CHAT
     INFOPIC = Config.INFOPIC
     TEMP_DOWNLOAD_LOC = Config.TEMP_DOWNLOAD_LOC
-    DB_URI = Config.SQLALCHEMY_DATABASE_URI 
+    DB_URI = Config.SQLALCHEMY_DATABASE_URI
 
     if DB_URI.startswith("postgres://"):
         DB_URI = DB_URI.replace("postgres://", "postgresql://")
@@ -152,7 +156,7 @@ else:
         BL_CHATS = set(int(x) for x in Config.BL_CHATS or [])
     except ValueError:
         raise Exception("Your blacklisted chats list does not contain valid integers.")
-        
+
 DEV_USERS.add(OWNER_ID)
 ALIVE_TEXT = [
     "Hey developer's I'm online now.",
@@ -161,10 +165,11 @@ ALIVE_TEXT = [
     "Wait guys I'm not dead yet, so count me in",
     "Sending alive message became my hobby, here goes another one",
     "What a worst day! Hey guys, How ya doing",
-    "Somebody help, this server is killing me"
+    "Somebody help, this server is killing me",
 ]
 
 telethn = TelegramClient(MemorySession(), API_ID, API_HASH)
+
 
 async def post_init(application: Application):
     try:
@@ -175,6 +180,7 @@ async def post_init(application: Application):
         )
     except BadRequest as e:
         LOGGER.warning(e.message)
+
 
 application = Application.builder().token(TOKEN).post_init(post_init).build()
 asyncio.get_event_loop().run_until_complete(application.bot.initialize())

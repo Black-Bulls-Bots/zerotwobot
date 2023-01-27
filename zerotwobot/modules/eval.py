@@ -40,9 +40,11 @@ async def send(msg, bot, update):
         with io.BytesIO(str.encode(msg)) as out_file:
             out_file.name = "output.txt"
             await bot.send_document(
-                chat_id=update.effective_chat.id, 
-                document=out_file, 
-                message_thread_id=update.effective_message.message_thread_id if update.effective_chat.is_forum else None
+                chat_id=update.effective_chat.id,
+                document=out_file,
+                message_thread_id=update.effective_message.message_thread_id
+                if update.effective_chat.is_forum
+                else None,
             )
     else:
         LOGGER.info(f"OUT: '{msg}'")
@@ -50,7 +52,9 @@ async def send(msg, bot, update):
             chat_id=update.effective_chat.id,
             text=f"`{msg}`",
             parse_mode=ParseMode.MARKDOWN,
-            message_thread_id=update.effective_message.message_thread_id if update.effective_chat.is_forum else None
+            message_thread_id=update.effective_message.message_thread_id
+            if update.effective_chat.is_forum
+            else None,
         )
 
 
@@ -90,7 +94,8 @@ async def do(func, bot, update):
 
     os.chdir(os.getcwd())
     with open(
-        os.path.join(os.getcwd(), "zerotwobot/modules/helper_funcs/temp.txt"), "w",
+        os.path.join(os.getcwd(), "zerotwobot/modules/helper_funcs/temp.txt"),
+        "w",
     ) as temp:
         temp.write(body)
 

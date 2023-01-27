@@ -28,7 +28,7 @@ from zerotwobot import (
 from zerotwobot.modules.helper_funcs.chat_status import (
     is_user_admin,
     support_plus,
-    check_admin
+    check_admin,
 )
 from zerotwobot.modules.helper_funcs.extraction import (
     extract_user,
@@ -65,7 +65,6 @@ UNGBAN_ERRORS = {
     "Peer_id_invalid",
     "User not found",
 }
-
 
 
 @support_plus
@@ -126,7 +125,9 @@ async def gban(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
 
         old_reason = sql.update_gban_reason(
-            user_id, user_chat.username or user_chat.first_name, reason,
+            user_id,
+            user_chat.username or user_chat.first_name,
+            reason,
         )
         if old_reason:
             await message.reply_text(
@@ -173,7 +174,9 @@ async def gban(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if EVENT_LOGS:
         try:
-            log = await bot.send_message(EVENT_LOGS, log_message, parse_mode=ParseMode.HTML)
+            log = await bot.send_message(
+                EVENT_LOGS, log_message, parse_mode=ParseMode.HTML
+            )
         except BadRequest as excp:
             log = await bot.send_message(
                 EVENT_LOGS,
@@ -213,7 +216,9 @@ async def gban(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     )
                 else:
                     send_to_list(
-                        bot, DRAGONS, f"Could not gban due to: {excp.message}",
+                        bot,
+                        DRAGONS,
+                        f"Could not gban due to: {excp.message}",
                     )
                 sql.ungban_user(user_id)
                 return
@@ -255,7 +260,6 @@ async def gban(update: Update, context: ContextTypes.DEFAULT_TYPE):
         pass  # bot probably blocked by user
 
 
-
 @support_plus
 async def ungban(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, args = context.bot, context.args
@@ -281,7 +285,9 @@ async def ungban(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await message.reply_text("This user is not gbanned!")
         return
 
-    await message.reply_text(f"I'll give {user_chat.first_name} a second chance, globally.")
+    await message.reply_text(
+        f"I'll give {user_chat.first_name} a second chance, globally."
+    )
 
     start_time = time.time()
     datetime_fmt = "%Y-%m-%dT%H:%M"
@@ -303,7 +309,9 @@ async def ungban(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if EVENT_LOGS:
         try:
-            log = await bot.send_message(EVENT_LOGS, log_message, parse_mode=ParseMode.HTML)
+            log = await bot.send_message(
+                EVENT_LOGS, log_message, parse_mode=ParseMode.HTML
+            )
         except BadRequest as excp:
             log = await bot.send_message(
                 EVENT_LOGS,
@@ -342,7 +350,8 @@ async def ungban(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     )
                 else:
                     await bot.send_message(
-                        OWNER_ID, f"Could not un-gban due to: {excp.message}",
+                        OWNER_ID,
+                        f"Could not un-gban due to: {excp.message}",
                     )
                 return
         except TelegramError:
@@ -366,7 +375,6 @@ async def ungban(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await message.reply_text(f"Person has been un-gbanned. Took {ungban_time} min")
     else:
         await message.reply_text(f"Person has been un-gbanned. Took {ungban_time} sec")
-
 
 
 @support_plus
@@ -411,12 +419,13 @@ async def check_and_ban(update, user_id, should_message=True):
             await update.effective_message.reply_text(text, parse_mode=ParseMode.HTML)
 
 
-
 async def enforce_gban(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Not using @restrict handler to avoid spamming - just ignore if cant gban.
     bot = context.bot
     try:
-        get_member = await update.effective_chat.get_member(bot.id,)
+        get_member = await update.effective_chat.get_member(
+            bot.id,
+        )
         if isinstance(get_member, ChatMemberAdministrator):
             restrict_permission = get_member.can_restrict_members
         else:
@@ -441,7 +450,6 @@ async def enforce_gban(update: Update, context: ContextTypes.DEFAULT_TYPE):
             user = msg.reply_to_message.from_user
             if user and not await is_user_admin(chat, user.id):
                 await check_and_ban(update, user.id, should_message=False)
-
 
 
 @check_admin(is_user=True)
@@ -514,9 +522,13 @@ GBAN_HANDLER = CommandHandler("gban", gban, block=False)
 UNGBAN_HANDLER = CommandHandler("ungban", ungban, block=False)
 GBAN_LIST = CommandHandler("gbanlist", gbanlist, block=False)
 
-GBAN_STATUS = CommandHandler("antispam", gbanstat, filters=filters.ChatType.GROUPS, block=False)
+GBAN_STATUS = CommandHandler(
+    "antispam", gbanstat, filters=filters.ChatType.GROUPS, block=False
+)
 
-GBAN_ENFORCER = MessageHandler(filters.ALL & filters.ChatType.GROUPS, enforce_gban, block=False)
+GBAN_ENFORCER = MessageHandler(
+    filters.ALL & filters.ChatType.GROUPS, enforce_gban, block=False
+)
 
 application.add_handler(GBAN_HANDLER)
 application.add_handler(UNGBAN_HANDLER)

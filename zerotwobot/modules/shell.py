@@ -6,6 +6,7 @@ from telegram import Update
 from telegram.constants import ParseMode
 from telegram.ext import ContextTypes, CommandHandler
 
+
 @check_admin(only_dev=True)
 async def shell(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
@@ -16,7 +17,10 @@ async def shell(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     cmd = cmd[1]
     process = subprocess.Popen(
-        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True,
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        shell=True,
     )
     stdout, stderr = process.communicate()
     reply = ""
@@ -37,9 +41,9 @@ async def shell(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 filename=doc.name,
                 reply_to_message_id=message.message_id,
                 chat_id=message.chat_id,
-                message_thread_id=message.message_thread_id if chat.is_forum else None
+                message_thread_id=message.message_thread_id if chat.is_forum else None,
             )
-        
+
         if os.path.isfile("shell_ouput.txt"):
             os.remove("shell_output.txt")
     else:

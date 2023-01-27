@@ -62,6 +62,7 @@ class Config(object):
 
     TEMP_DOWNLOAD_LOC = "./Downloads"
 
+
 class Production(Config):
     LOGGER = True
 

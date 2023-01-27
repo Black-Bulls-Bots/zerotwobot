@@ -20,7 +20,8 @@ async def speedtestxyz(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ],
     ]
     await update.effective_message.reply_text(
-        "Select SpeedTest Mode", reply_markup=InlineKeyboardMarkup(buttons),
+        "Select SpeedTest Mode",
+        reply_markup=InlineKeyboardMarkup(buttons),
     )
 
 
@@ -38,14 +39,17 @@ async def speedtestxyz_callback(update: Update, context: ContextTypes.DEFAULT_TY
         if query.data == "speedtest_image":
             speedtest_image = speed.results.share()
             await update.effective_message.reply_photo(
-                photo=speedtest_image, caption=replymsg,
+                photo=speedtest_image,
+                caption=replymsg,
             )
             await msg.delete()
 
         elif query.data == "speedtest_text":
             result = speed.results.dict()
             replymsg += f"\nDownload: `{convert(result['download'])}Mb/s`\nUpload: `{convert(result['upload'])}Mb/s`\nPing: `{result['ping']}`"
-            await update.effective_message.edit_text(replymsg, parse_mode=ParseMode.MARKDOWN)
+            await update.effective_message.edit_text(
+                replymsg, parse_mode=ParseMode.MARKDOWN
+            )
     else:
         await query.answer("You are required to join Black Bulls to use this command.")
 

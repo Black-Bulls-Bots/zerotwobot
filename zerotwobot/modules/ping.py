@@ -69,6 +69,7 @@ async def ping_func(to_ping: List[str]) -> List[str]:
 
     return ping_result
 
+
 @check_admin(only_sudo=True)
 async def ping(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.effective_message
@@ -86,6 +87,7 @@ async def ping(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode=ParseMode.HTML,
     )
 
+
 @check_admin(only_sudo=True)
 async def pingall(update: Update, context: ContextTypes.DEFAULT_TYPE):
     to_ping = ["Kaizoku", "Kayo", "Telegram", "Jikan"]
@@ -98,7 +100,9 @@ async def pingall(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply_msg += "\n<b>Service uptime:</b> <code>{}</code>".format(uptime)
 
     await update.effective_message.reply_text(
-        reply_msg, parse_mode=ParseMode.HTML, disable_web_page_preview=True,
+        reply_msg,
+        parse_mode=ParseMode.HTML,
+        disable_web_page_preview=True,
     )
 
 

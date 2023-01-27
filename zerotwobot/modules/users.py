@@ -12,6 +12,7 @@ from telegram.ext import (
     MessageHandler,
 )
 from telegram.helpers import escape_markdown
+
 # from zerotwobot.modules.sql.topics_sql import get_action_topic
 
 import zerotwobot.modules.sql.users_sql as sql
@@ -54,7 +55,6 @@ async def get_user_id(username: str) -> Union[int, None]:
                     LOGGER.exception("Error extracting user ID")
 
     return None
-
 
 
 @check_admin(only_dev=True)
@@ -104,7 +104,6 @@ async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
 
-
 async def log_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat = update.effective_chat
     msg = update.effective_message
@@ -123,7 +122,6 @@ async def log_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
         sql.update_user(msg.forward_from.id, msg.forward_from.username)
 
 
-
 @check_admin(only_sudo=True)
 async def chats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     all_chats = sql.get_all_chats() or []
@@ -135,7 +133,10 @@ async def chats(update: Update, context: ContextTypes.DEFAULT_TYPE):
             bot_member = await curr_chat.get_member(context.bot.id)
             chat_members = await curr_chat.get_member_count(context.bot.id)
             chatfile += "{}. {} | {} | {}\n".format(
-                P, chat.chat_name, chat.chat_id, chat_members,
+                P,
+                chat.chat_name,
+                chat.chat_id,
+                chat_members,
             )
             P = P + 1
         except:
@@ -148,7 +149,6 @@ async def chats(update: Update, context: ContextTypes.DEFAULT_TYPE):
             filename="groups_list.txt",
             caption="Here be the list of groups in my database.",
         )
-
 
 
 async def chat_checker(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -184,8 +184,12 @@ __help__ = ""  # no help string
 BROADCAST_HANDLER = CommandHandler(
     ["broadcastall", "broadcastusers", "broadcastgroups"], broadcast, block=False
 )
-USER_HANDLER = MessageHandler(filters.ALL & filters.ChatType.GROUPS, log_user, allow_edit=True, block=False)
-CHAT_CHECKER_HANDLER = MessageHandler(filters.ALL & filters.ChatType.GROUPS, chat_checker, allow_edit=True, block=False)
+USER_HANDLER = MessageHandler(
+    filters.ALL & filters.ChatType.GROUPS, log_user, allow_edit=True, block=False
+)
+CHAT_CHECKER_HANDLER = MessageHandler(
+    filters.ALL & filters.ChatType.GROUPS, chat_checker, allow_edit=True, block=False
+)
 CHATLIST_HANDLER = CommandHandler("groups", chats, block=False)
 
 application.add_handler(USER_HANDLER, USERS_GROUP)

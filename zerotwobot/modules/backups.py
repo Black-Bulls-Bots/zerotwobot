@@ -24,6 +24,7 @@ from zerotwobot.modules.sql import disable_sql as disabledsql
 import zerotwobot.modules.sql.locks_sql as locksql
 from zerotwobot.modules.connection import connected
 
+
 @typing_action
 @check_admin(is_user=True)
 async def import_data(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -48,7 +49,9 @@ async def import_data(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if msg.reply_to_message and msg.reply_to_message.document:
         try:
-            file_info = await context.bot.get_file(msg.reply_to_message.document.file_id)
+            file_info = await context.bot.get_file(
+                msg.reply_to_message.document.file_id
+            )
         except BadRequest:
             await msg.reply_text(
                 "Try downloading and uploading the file yourself again, This one seem broken to me!",
@@ -151,7 +154,8 @@ async def export_data(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if checkchat.get("status"):
         if jam <= int(checkchat.get("value")):
             timeformatt = time.strftime(
-                "%H:%M:%S %d/%m/%Y", time.localtime(checkchat.get("value")),
+                "%H:%M:%S %d/%m/%Y",
+                time.localtime(checkchat.get("value")),
             )
             await update.effective_message.reply_text(
                 "You can only backup once a day!\nYou can backup again in about `{}`".format(
@@ -195,34 +199,41 @@ async def export_data(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         ("{}".format(btn.name), "{}".format(btn.url), False),
                     )
             isicat += "###button###: {}<###button###>{}<###splitter###>".format(
-                note.value, str(buttonlist),
+                note.value,
+                str(buttonlist),
             )
             buttonlist.clear()
         elif note.msgtype == 2:
             isicat += "###sticker###:{}<###splitter###>".format(note.file)
         elif note.msgtype == 3:
             isicat += "###file###:{}<###TYPESPLIT###>{}<###splitter###>".format(
-                note.file, note.value,
+                note.file,
+                note.value,
             )
         elif note.msgtype == 4:
             isicat += "###photo###:{}<###TYPESPLIT###>{}<###splitter###>".format(
-                note.file, note.value,
+                note.file,
+                note.value,
             )
         elif note.msgtype == 5:
             isicat += "###audio###:{}<###TYPESPLIT###>{}<###splitter###>".format(
-                note.file, note.value,
+                note.file,
+                note.value,
             )
         elif note.msgtype == 6:
             isicat += "###voice###:{}<###TYPESPLIT###>{}<###splitter###>".format(
-                note.file, note.value,
+                note.file,
+                note.value,
             )
         elif note.msgtype == 7:
             isicat += "###video###:{}<###TYPESPLIT###>{}<###splitter###>".format(
-                note.file, note.value,
+                note.file,
+                note.value,
             )
         elif note.msgtype == 8:
             isicat += "###video_note###:{}<###TYPESPLIT###>{}<###splitter###>".format(
-                note.file, note.value,
+                note.file,
+                note.value,
             )
         else:
             isicat += "{}<###splitter###>".format(note.value)
@@ -338,7 +349,9 @@ async def export_data(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await context.bot.sendMessage(
             JOIN_LOGGER,
             "*Successfully imported backup:*\nChat: `{}`\nChat ID: `{}`\nOn: `{}`".format(
-                chat.title, chat_id, tgl,
+                chat.title,
+                chat_id,
+                tgl,
             ),
             parse_mode=ParseMode.MARKDOWN,
         )
@@ -348,11 +361,13 @@ async def export_data(update: Update, context: ContextTypes.DEFAULT_TYPE):
         current_chat_id,
         document=open("zerotwobot{}.backup".format(chat_id), "rb"),
         caption="*Successfully Exported backup:*\nChat: `{}`\nChat ID: `{}`\nOn: `{}`\n\nNote: This `zerotwobot-Backup` was specially made for notes.".format(
-            chat.title, chat_id, tgl,
+            chat.title,
+            chat_id,
+            tgl,
         ),
         reply_to_message_id=msg.message_id,
         parse_mode=ParseMode.MARKDOWN,
-        message_thread_id=msg.message_thread_id if chat.is_forum else None
+        message_thread_id=msg.message_thread_id if chat.is_forum else None,
     )
     os.remove("zerotwobot{}.backup".format(chat_id))  # Cleaning file
 

@@ -55,7 +55,13 @@ ENUM_FUNC_MAP = {
 
 
 # Do not async
-async def get(update: Update, context: ContextTypes.DEFAULT_TYPE, notename, show_none=True, no_format=False):
+async def get(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+    notename,
+    show_none=True,
+    no_format=False,
+):
     bot = context.bot
     chat_id = update.effective_message.chat.id
     chat = update.effective_chat
@@ -67,7 +73,10 @@ async def get(update: Update, context: ContextTypes.DEFAULT_TYPE, notename, show
         if MessageHandlerChecker.check_user(update.effective_user.id):
             return
         # If we're replying to a message, reply to that message (unless it's an error)
-        if message.reply_to_message and not message.reply_to_message.forum_topic_created:
+        if (
+            message.reply_to_message
+            and not message.reply_to_message.forum_topic_created
+        ):
             reply_id = message.reply_to_message.message_id
         else:
             reply_id = message.message_id
@@ -75,7 +84,9 @@ async def get(update: Update, context: ContextTypes.DEFAULT_TYPE, notename, show
             if JOIN_LOGGER:
                 try:
                     await bot.forward_message(
-                        chat_id=chat_id, from_chat_id=JOIN_LOGGER, message_id=note.value,
+                        chat_id=chat_id,
+                        from_chat_id=JOIN_LOGGER,
+                        message_id=note.value,
                     )
                 except BadRequest as excp:
                     if excp.message == "Message to forward not found":
@@ -89,7 +100,9 @@ async def get(update: Update, context: ContextTypes.DEFAULT_TYPE, notename, show
             else:
                 try:
                     await bot.forward_message(
-                        chat_id=chat_id, from_chat_id=chat_id, message_id=markdown_to_html(note.value),
+                        chat_id=chat_id,
+                        from_chat_id=chat_id,
+                        message_id=markdown_to_html(note.value),
                     )
                 except BadRequest as excp:
                     if excp.message == "Message to forward not found":
@@ -113,7 +126,8 @@ async def get(update: Update, context: ContextTypes.DEFAULT_TYPE, notename, show
                 "mention",
             ]
             valid_format = escape_invalid_curly_brackets(
-                note.value, VALID_NOTE_FORMATTERS,
+                note.value,
+                VALID_NOTE_FORMATTERS,
             )
             if valid_format:
                 if not no_format:
@@ -142,10 +156,12 @@ async def get(update: Update, context: ContextTypes.DEFAULT_TYPE, notename, show
                     username="@" + message.from_user.username
                     if message.from_user.username
                     else mention_markdown(
-                        message.from_user.id, message.from_user.first_name,
+                        message.from_user.id,
+                        message.from_user.first_name,
                     ),
                     mention=mention_markdown(
-                        message.from_user.id, message.from_user.first_name,
+                        message.from_user.id,
+                        message.from_user.first_name,
                     ),
                     chatname=escape_markdown(
                         message.chat.title
@@ -177,7 +193,9 @@ async def get(update: Update, context: ContextTypes.DEFAULT_TYPE, notename, show
                         parse_mode=parseMode,
                         disable_web_page_preview=True,
                         reply_markup=keyboard,
-                        message_thread_id=message.message_thread_id if chat.is_forum else None
+                        message_thread_id=message.message_thread_id
+                        if chat.is_forum
+                        else None,
                     )
                 else:
                     await ENUM_FUNC_MAP[note.msgtype](
@@ -188,7 +206,9 @@ async def get(update: Update, context: ContextTypes.DEFAULT_TYPE, notename, show
                         parse_mode=parseMode,
                         disable_web_page_preview=True,
                         reply_markup=keyboard,
-                        message_thread_id=message.message_thread_id if chat.is_forum else None
+                        message_thread_id=message.message_thread_id
+                        if chat.is_forum
+                        else None,
                     )
 
             except BadRequest as excp:
@@ -221,7 +241,6 @@ async def get(update: Update, context: ContextTypes.DEFAULT_TYPE, notename, show
         await message.reply_text("This note doesn't exist")
 
 
-
 @connection_status
 async def cmd_get(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, args = context.bot, context.args
@@ -233,14 +252,12 @@ async def cmd_get(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.effective_message.reply_text("Get rekt")
 
 
-
 @connection_status
 async def hash_get(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message.text
     fst_word = message.split()[0]
     no_hash = fst_word[1:].lower()
     await get(update, context, no_hash, show_none=False)
-
 
 
 @connection_status
@@ -256,15 +273,15 @@ async def slash_get(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except IndexError:
         await update.effective_message.reply_text("Wrong Note ID 😾")
 
+
 @connection_status
 @check_admin(is_user=True)
 async def save(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     msg = update.effective_message  # type: Optional[Message]
-    if len(context.args) < 1 :
+    if len(context.args) < 1:
         await msg.reply_text("You should give the note a name.")
         return
-    
 
     note_name, text, data_type, content, buttons = get_note_type(msg)
     note_name = note_name.lower()
@@ -273,7 +290,12 @@ async def save(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     sql.add_note_to_db(
-        chat_id, note_name, text, data_type, buttons=buttons, file=content,
+        chat_id,
+        note_name,
+        text,
+        data_type,
+        buttons=buttons,
+        file=content,
     )
 
     await msg.reply_text(
@@ -281,7 +303,11 @@ async def save(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode=ParseMode.MARKDOWN,
     )
 
-    if msg.reply_to_message and msg.reply_to_message.from_user.is_bot and not msg.reply_to_message.forum_topic_created:
+    if (
+        msg.reply_to_message
+        and msg.reply_to_message.from_user.is_bot
+        and not msg.reply_to_message.forum_topic_created
+    ):
         if text:
             await msg.reply_text(
                 "Seems like you're trying to save a message from a bot. Unfortunately, "
@@ -298,6 +324,7 @@ async def save(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
         return
 
+
 @connection_status
 @check_admin(is_user=True)
 async def clear(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -309,8 +336,9 @@ async def clear(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if sql.rm_note(chat_id, notename):
             await update.effective_message.reply_text("Successfully removed note.")
         else:
-            await update.effective_message.reply_text("That's not a note in my database!")
-
+            await update.effective_message.reply_text(
+                "That's not a note in my database!"
+            )
 
 
 async def clearall(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -326,7 +354,8 @@ async def clearall(update: Update, context: ContextTypes.DEFAULT_TYPE):
             [
                 [
                     InlineKeyboardButton(
-                        text="Delete all notes", callback_data="notes_rmall",
+                        text="Delete all notes",
+                        callback_data="notes_rmall",
                     ),
                 ],
                 [InlineKeyboardButton(text="Cancel", callback_data="notes_cancel")],
@@ -337,7 +366,6 @@ async def clearall(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=buttons,
             parse_mode=ParseMode.MARKDOWN,
         )
-
 
 
 async def clearall_btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -371,7 +399,6 @@ async def clearall_btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await query.answer("You need to be admin to do this.")
 
 
-
 @connection_status
 async def list_notes(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
@@ -384,7 +411,9 @@ async def list_notes(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             note_name = f"`{note_id}.`  `#{(note.name.lower())}`\n"
         if len(msg) + len(note_name) > MessageLimit.MAX_TEXT_LENGTH:
-            await update.effective_message.reply_text(msg, parse_mode=ParseMode.MARKDOWN)
+            await update.effective_message.reply_text(
+                msg, parse_mode=ParseMode.MARKDOWN
+            )
             msg = ""
         msg += note_name
 
@@ -392,7 +421,9 @@ async def list_notes(update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
             await update.effective_message.reply_text("No notes in this chat!")
         except BadRequest:
-            await update.effective_message.reply_text("No notes in this chat!", quote=False)
+            await update.effective_message.reply_text(
+                "No notes in this chat!", quote=False
+            )
 
     elif len(msg) != 0:
         await update.effective_message.reply_text(msg, parse_mode=ParseMode.MARKDOWN)
@@ -420,7 +451,11 @@ async def __import_data__(chat_id, data, message: Message):
             content = notedata[matchsticker.end() :].strip()
             if content:
                 sql.add_note_to_db(
-                    chat_id, notename[1:], notedata, sql.Types.STICKER, file=content,
+                    chat_id,
+                    notename[1:],
+                    notedata,
+                    sql.Types.STICKER,
+                    file=content,
                 )
         elif matchbtn:
             parse = notedata[matchbtn.end() :].strip()
@@ -442,7 +477,11 @@ async def __import_data__(chat_id, data, message: Message):
             content = file[0]
             if content:
                 sql.add_note_to_db(
-                    chat_id, notename[1:], notedata, sql.Types.DOCUMENT, file=content,
+                    chat_id,
+                    notename[1:],
+                    notedata,
+                    sql.Types.DOCUMENT,
+                    file=content,
                 )
         elif matchphoto:
             photo = notedata[matchphoto.end() :].strip()
@@ -451,7 +490,11 @@ async def __import_data__(chat_id, data, message: Message):
             content = photo[0]
             if content:
                 sql.add_note_to_db(
-                    chat_id, notename[1:], notedata, sql.Types.PHOTO, file=content,
+                    chat_id,
+                    notename[1:],
+                    notedata,
+                    sql.Types.PHOTO,
+                    file=content,
                 )
         elif matchaudio:
             audio = notedata[matchaudio.end() :].strip()
@@ -460,7 +503,11 @@ async def __import_data__(chat_id, data, message: Message):
             content = audio[0]
             if content:
                 sql.add_note_to_db(
-                    chat_id, notename[1:], notedata, sql.Types.AUDIO, file=content,
+                    chat_id,
+                    notename[1:],
+                    notedata,
+                    sql.Types.AUDIO,
+                    file=content,
                 )
         elif matchvoice:
             voice = notedata[matchvoice.end() :].strip()
@@ -469,7 +516,11 @@ async def __import_data__(chat_id, data, message: Message):
             content = voice[0]
             if content:
                 sql.add_note_to_db(
-                    chat_id, notename[1:], notedata, sql.Types.VOICE, file=content,
+                    chat_id,
+                    notename[1:],
+                    notedata,
+                    sql.Types.VOICE,
+                    file=content,
                 )
         elif matchvideo:
             video = notedata[matchvideo.end() :].strip()
@@ -478,7 +529,11 @@ async def __import_data__(chat_id, data, message: Message):
             content = video[0]
             if content:
                 sql.add_note_to_db(
-                    chat_id, notename[1:], notedata, sql.Types.VIDEO, file=content,
+                    chat_id,
+                    notename[1:],
+                    notedata,
+                    sql.Types.VIDEO,
+                    file=content,
                 )
         elif matchvn:
             video_note = notedata[matchvn.end() :].strip()
@@ -487,7 +542,11 @@ async def __import_data__(chat_id, data, message: Message):
             content = video_note[0]
             if content:
                 sql.add_note_to_db(
-                    chat_id, notename[1:], notedata, sql.Types.VIDEO_NOTE, file=content,
+                    chat_id,
+                    notename[1:],
+                    notedata,
+                    sql.Types.VIDEO_NOTE,
+                    file=content,
                 )
         else:
             sql.add_note_to_db(chat_id, notename[1:], notedata, sql.Types.TEXT)
@@ -502,7 +561,9 @@ async def __import_data__(chat_id, data, message: Message):
                 caption="These files/photos failed to import due to originating "
                 "from another bot. This is a telegram API restriction, and can't "
                 "be avoided. Sorry for the inconvenience!",
-                message_thread_id=message.message_thread_id if message.chat.is_forum else None
+                message_thread_id=message.message_thread_id
+                if message.chat.is_forum
+                else None,
             )
 
 
@@ -554,7 +615,9 @@ SLASH_GET_HANDLER = MessageHandler(filters.Regex(r"^/\d+$"), slash_get, block=Fa
 SAVE_HANDLER = CommandHandler("save", save, block=False)
 DELETE_HANDLER = CommandHandler("clear", clear, block=False)
 
-LIST_HANDLER = DisableAbleCommandHandler(["notes", "saved"], list_notes, admin_ok=True, block=False)
+LIST_HANDLER = DisableAbleCommandHandler(
+    ["notes", "saved"], list_notes, admin_ok=True, block=False
+)
 
 CLEARALL = DisableAbleCommandHandler("removeallnotes", clearall, block=False)
 CLEARALL_BTN = CallbackQueryHandler(clearall_btn, pattern=r"notes_.*", block=False)

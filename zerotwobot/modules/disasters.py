@@ -10,10 +10,7 @@ from zerotwobot import (
     SUPPORT_CHAT,
     application,
 )
-from zerotwobot.modules.helper_funcs.chat_status import (
-    whitelist_plus,
-    check_admin
-)
+from zerotwobot.modules.helper_funcs.chat_status import whitelist_plus, check_admin
 from zerotwobot.modules.helper_funcs.extraction import extract_user
 from zerotwobot.modules.log_channel import gloggable
 from telegram import Update
@@ -36,6 +33,7 @@ def check_user_id(user_id: int, context: ContextTypes.DEFAULT_TYPE) -> Optional[
     else:
         reply = None
     return reply
+
 
 @gloggable
 @check_admin(only_dev=True)
@@ -84,6 +82,7 @@ async def addsudo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
 
     return log_message
 
+
 @gloggable
 @check_admin(only_dev=True)
 async def removesudo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
@@ -125,11 +124,13 @@ async def removesudo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
         await message.reply_text("This user is not a Dragon Disaster!")
         return ""
 
+
 @whitelist_plus
 async def sudolist(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
     m = await update.effective_message.reply_text(
-        "<code>Gathering intel..</code>", parse_mode=ParseMode.HTML,
+        "<code>Gathering intel..</code>",
+        parse_mode=ParseMode.HTML,
     )
     true_sudo = list(set(DRAGONS) - set(DEV_USERS))
     reply = "<b>Known Dragon Disasters 🐉:</b>\n"
@@ -143,12 +144,12 @@ async def sudolist(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await m.edit_text(reply, parse_mode=ParseMode.HTML)
 
 
-
 @whitelist_plus
 async def devlist(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
     m = await update.effective_message.reply_text(
-        "<code>Gathering intel..</code>", parse_mode=ParseMode.HTML,
+        "<code>Gathering intel..</code>",
+        parse_mode=ParseMode.HTML,
     )
     true_dev = list(set(DEV_USERS) - {OWNER_ID})
     reply = "<b>Black Bulls Members ⚡️:</b>\n"

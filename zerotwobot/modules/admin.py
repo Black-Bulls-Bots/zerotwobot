@@ -1,6 +1,12 @@
 import html
 
-from telegram import ChatMemberAdministrator, Update, InlineKeyboardButton, InlineKeyboardMarkup, ChatMemberOwner
+from telegram import (
+    ChatMemberAdministrator,
+    Update,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    ChatMemberOwner,
+)
 from telegram.constants import ParseMode, ChatMemberStatus, ChatID, ChatType
 from telegram.error import BadRequest
 from telegram.ext import ContextTypes, CommandHandler, filters, CallbackQueryHandler
@@ -22,7 +28,6 @@ from zerotwobot.modules.log_channel import loggable
 from zerotwobot.modules.helper_funcs.alternate import send_message
 
 
-
 @connection_status
 @loggable
 @check_admin(permission="can_promote_members", is_both=True)
@@ -37,9 +42,8 @@ async def promote(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     user_id = await extract_user(message, context, args)
     promoter = await chat.get_member(user.id)
 
-
     if message.from_user.id == ChatID.ANONYMOUS_ADMIN:
-        
+
         await message.reply_text(
             text="You are an anonymous admin.",
             reply_markup=InlineKeyboardMarkup(
@@ -67,12 +71,19 @@ async def promote(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     except:
         return
 
-    if user_member.status == ChatMemberStatus.ADMINISTRATOR or user_member.status == ChatMemberStatus.OWNER:
-        await message.reply_text("How am I meant to promote someone that's already an admin?")
+    if (
+        user_member.status == ChatMemberStatus.ADMINISTRATOR
+        or user_member.status == ChatMemberStatus.OWNER
+    ):
+        await message.reply_text(
+            "How am I meant to promote someone that's already an admin?"
+        )
         return
 
     if user_id == bot.id:
-        await message.reply_text("I can't promote myself! Get an admin to do it for me.")
+        await message.reply_text(
+            "I can't promote myself! Get an admin to do it for me."
+        )
         return
 
     # set same perms as bot - bot can't assign higher perms than itself!
@@ -93,11 +104,13 @@ async def promote(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
                 can_pin_messages=bot_member.can_pin_messages,
                 can_manage_chat=bot_member.can_manage_chat,
                 can_manage_video_chats=bot_member.can_manage_video_chats,
-                can_manage_topics=bot_member.can_manage_topics
+                can_manage_topics=bot_member.can_manage_topics,
             )
         except BadRequest as err:
             if err.message == "User_not_mutual_contact":
-                await message.reply_text("I can't promote someone who isn't in the group.")
+                await message.reply_text(
+                    "I can't promote someone who isn't in the group."
+                )
             else:
                 await message.reply_text("An error occurred while promoting.")
             return
@@ -106,7 +119,7 @@ async def promote(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
         chat.id,
         f"Successfully promoted <b>{user_member.user.first_name or user_id}</b>!",
         parse_mode=ParseMode.HTML,
-        message_thread_id=message.message_thread_id if chat.is_forum else None
+        message_thread_id=message.message_thread_id if chat.is_forum else None,
     )
 
     log_message = (
@@ -117,7 +130,6 @@ async def promote(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     )
 
     return log_message
-
 
 
 @connection_status
@@ -135,7 +147,7 @@ async def demote(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     demoter = await chat.get_member(user.id)
 
     if message.from_user.id == ChatID.ANONYMOUS_ADMIN:
-    
+
         await message.reply_text(
             text="You are an anonymous admin.",
             reply_markup=InlineKeyboardMarkup(
@@ -164,7 +176,9 @@ async def demote(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
         return
 
     if user_member.status == ChatMemberStatus.OWNER:
-        await message.reply_text("This person CREATED the chat, how would I demote them?")
+        await message.reply_text(
+            "This person CREATED the chat, how would I demote them?"
+        )
         return
 
     if not user_member.status == ChatMemberStatus.ADMINISTRATOR:
@@ -189,14 +203,14 @@ async def demote(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
             can_promote_members=False,
             can_manage_chat=False,
             can_manage_video_chats=False,
-            can_manage_topics=False
+            can_manage_topics=False,
         )
 
         await bot.sendMessage(
             chat.id,
             f"Sucessfully demoted <b>{user_member.user.first_name or user_id}</b>!",
             parse_mode=ParseMode.HTML,
-            message_thread_id=message.message_thread_id if chat.is_forum else None
+            message_thread_id=message.message_thread_id if chat.is_forum else None,
         )
 
         log_message = (
@@ -215,7 +229,6 @@ async def demote(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
         raise
 
 
-
 @check_admin(is_user=True)
 async def refresh_admin(update, _):
     try:
@@ -224,7 +237,6 @@ async def refresh_admin(update, _):
         pass
 
     await update.effective_message.reply_text("Admins cache refreshed!")
-
 
 
 @connection_status
@@ -239,7 +251,7 @@ async def set_title(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id, title = await extract_user_and_text(message, context, args)
 
     if message.from_user.id == 1087968824:
-    
+
         await message.reply_text(
             text="You are an anonymous admin.",
             reply_markup=InlineKeyboardMarkup(
@@ -297,7 +309,9 @@ async def set_title(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         await bot.setChatAdministratorCustomTitle(chat.id, user_id, title)
     except BadRequest:
-        await message.reply_text("Either they aren't promoted by me or you set a title text that is impossible to set.")
+        await message.reply_text(
+            "Either they aren't promoted by me or you set a title text that is impossible to set."
+        )
         raise
 
     await bot.sendMessage(
@@ -305,7 +319,7 @@ async def set_title(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"Successfully set title for <code>{user_member.user.first_name or user_id}</code> "
         f"to <code>{html.escape(title[:16])}</code>!",
         parse_mode=ParseMode.HTML,
-        message_thread_id=message.message_thread_id if chat.is_forum else None
+        message_thread_id=message.message_thread_id if chat.is_forum else None,
     )
 
 
@@ -333,7 +347,7 @@ async def pin(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     if not prev_message:
         await message.reply_text("Please reply to message which you want to pin.")
         return
-    
+
     if message.from_user.id == 1087968824:
 
         await message.reply_text(
@@ -355,7 +369,9 @@ async def pin(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     if prev_message and is_group:
         try:
             await bot.pinChatMessage(
-                chat.id, prev_message.message_id, disable_notification=is_silent,
+                chat.id,
+                prev_message.message_id,
+                disable_notification=is_silent,
             )
         except BadRequest as excp:
             if excp.message == "Chat_not_modified":
@@ -397,7 +413,6 @@ async def unpin(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
 
         return
 
-
     try:
         await bot.unpinChatMessage(chat.id)
     except BadRequest as excp:
@@ -416,6 +431,7 @@ async def unpin(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     )
 
     return log_message
+
 
 @loggable
 @check_admin(permission="can_pin_messages", is_both=True)
@@ -443,13 +459,9 @@ async def unpinall(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
         )
 
         return
-    elif (
-            not admin_member.status == ChatMemberStatus.OWNER
-            and user.id not in DRAGONS
-        ):
-            await message.reply_text("Only chat OWNER can unpin all messages.")
-            return
-
+    elif not admin_member.status == ChatMemberStatus.OWNER and user.id not in DRAGONS:
+        await message.reply_text("Only chat OWNER can unpin all messages.")
+        return
 
     try:
         if chat.is_forum:
@@ -481,7 +493,11 @@ async def invite(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.effective_message.reply_text(f"https://t.me/{chat.username}")
     elif chat.type in [ChatType.SUPERGROUP, ChatType.CHANNEL]:
         bot_member = await chat.get_member(bot.id)
-        if (bot_member.can_invite_users if isinstance(bot_member, ChatMemberAdministrator) else None):
+        if (
+            bot_member.can_invite_users
+            if isinstance(bot_member, ChatMemberAdministrator)
+            else None
+        ):
             invitelink = await bot.exportChatInviteLink(chat.id)
             await update.effective_message.reply_text(invitelink)
         else:
@@ -494,25 +510,29 @@ async def invite(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
 
-
 @connection_status
 async def adminlist(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user  # type: Optional[User]
     bot = context.bot
 
     if update.effective_message.chat.type == "private":
-        await send_message(update.effective_message, "This command only works in Groups.")
+        await send_message(
+            update.effective_message, "This command only works in Groups."
+        )
         return
 
     chat_id = update.effective_chat.id
 
     try:
         msg = await update.effective_message.reply_text(
-            "Fetching group admins...", parse_mode=ParseMode.HTML,
+            "Fetching group admins...",
+            parse_mode=ParseMode.HTML,
         )
     except BadRequest:
         msg = await update.effective_message.reply_text(
-            "Fetching group admins...", quote=False, parse_mode=ParseMode.HTML,
+            "Fetching group admins...",
+            quote=False,
+            parse_mode=ParseMode.HTML,
         )
 
     administrators = await bot.getChatAdministrators(chat_id)
@@ -532,7 +552,8 @@ async def adminlist(update: Update, context: ContextTypes.DEFAULT_TYPE):
             else:
                 name = "{}".format(
                     mention_html(
-                        user.id, html.escape(user.first_name + " " + (user.last_name or "")),
+                        user.id,
+                        html.escape(user.first_name + " " + (user.last_name or "")),
                     ),
                 )
 
@@ -544,7 +565,7 @@ async def adminlist(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
                 if custom_title:
                     text += f"<code> ┗━ {html.escape(custom_title)}</code>\n"
-            
+
             if status == ChatMemberStatus.ADMINISTRATOR:
                 if custom_title:
                     try:
@@ -562,7 +583,8 @@ async def adminlist(update: Update, context: ContextTypes.DEFAULT_TYPE):
     for admin_group in custom_admin_list.copy():
         if len(custom_admin_list[admin_group]) == 1:
             text += "\n<code> • </code>{} | <code>{}</code>".format(
-                custom_admin_list[admin_group][0], html.escape(admin_group),
+                custom_admin_list[admin_group][0],
+                html.escape(admin_group),
             )
             custom_admin_list.pop(admin_group)
 
@@ -577,6 +599,7 @@ async def adminlist(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await msg.edit_text(text, parse_mode=ParseMode.HTML)
     except BadRequest:  # if original message is deleted
         return
+
 
 @loggable
 async def admin_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -594,33 +617,42 @@ async def admin_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         if (
             not (
-                promoter.can_promote_members if isinstance(promoter, ChatMemberAdministrator) else None 
-                or promoter.status == ChatMemberStatus.OWNER
+                promoter.can_promote_members
+                if isinstance(promoter, ChatMemberAdministrator)
+                else None or promoter.status == ChatMemberStatus.OWNER
             )
             and admin_user.id not in DRAGONS
         ):
-            await query.answer("You don't have the necessary rights to do that!", show_alert=True)
+            await query.answer(
+                "You don't have the necessary rights to do that!", show_alert=True
+            )
             return
 
         try:
             user_id = int(splitter[2])
         except ValueError:
             user_id = splitter[2]
-            await message.edit_text("You don't seem to be referring to a user or the ID specified is incorrect...")
+            await message.edit_text(
+                "You don't seem to be referring to a user or the ID specified is incorrect..."
+            )
             return
 
-        
         try:
             user_member = await chat.get_member(user_id)
         except:
             return
 
-        if user_member.status == ChatMemberStatus.ADMINISTRATOR or user_member.status == ChatMemberStatus.OWNER:
-            await message.edit_text("How am I meant to promote someone that's already an admin?")
+        if (
+            user_member.status == ChatMemberStatus.ADMINISTRATOR
+            or user_member.status == ChatMemberStatus.OWNER
+        ):
+            await message.edit_text(
+                "How am I meant to promote someone that's already an admin?"
+            )
             return
 
         bot_member = await chat.get_member(bot.id)
-        
+
         if isinstance(bot_member, ChatMemberAdministrator):
             try:
                 await bot.promoteChatMember(
@@ -635,11 +667,13 @@ async def admin_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     can_restrict_members=bot_member.can_restrict_members,
                     can_pin_messages=bot_member.can_pin_messages,
                     can_manage_chat=bot_member.can_manage_chat,
-                    can_manage_video_chats=bot_member.can_manage_video_chats
+                    can_manage_video_chats=bot_member.can_manage_video_chats,
                 )
             except BadRequest as err:
                 if err.message == "User_not_mutual_contact":
-                    await message.edit_text("I can't promote someone who isn't in the group")
+                    await message.edit_text(
+                        "I can't promote someone who isn't in the group"
+                    )
                 else:
                     await message.edit_text("An error occured while promoting.")
                 return
@@ -663,31 +697,34 @@ async def admin_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         demoter = await chat.get_member(admin_user.id)
 
-        if (
-            not (
-                demoter.can_promote_members if isinstance(demoter, ChatMemberAdministrator) else None 
-                or demoter.status == ChatMemberStatus.OWNER
-            )
+        if not (
+            demoter.can_promote_members
+            if isinstance(demoter, ChatMemberAdministrator)
+            else None or demoter.status == ChatMemberStatus.OWNER
         ):
-            await query.answer("You don't have the necessary rights to do that!", show_alert=True)
+            await query.answer(
+                "You don't have the necessary rights to do that!", show_alert=True
+            )
             return
 
         try:
             user_id = int(splitter[2])
         except:
             user_id = splitter[2]
-            await message.edit_text("You dont't seem to be referring to a user or the ID specified is incorrect..")
+            await message.edit_text(
+                "You dont't seem to be referring to a user or the ID specified is incorrect.."
+            )
             return
 
-        
-        
         try:
             user_member = await chat.get_member(user_id)
         except:
             return
 
         if user_member.status == ChatMemberStatus.OWNER:
-            await message.edit_text("This person CREATED the chat, how would I demote them?")
+            await message.edit_text(
+                "This person CREATED the chat, how would I demote them?"
+            )
             return
 
         if not user_member.status == ChatMemberStatus.ADMINISTRATOR:
@@ -695,7 +732,9 @@ async def admin_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
 
         if user_id == bot.id:
-            await message.edit_text("I can't demote myself!, Get an admin to do it for me.")
+            await message.edit_text(
+                "I can't demote myself!, Get an admin to do it for me."
+            )
             return
 
         try:
@@ -734,7 +773,7 @@ async def admin_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 " user, so I can't act upon them!",
             )
             return
-            
+
     elif splitter[1] == "title":
         title = splitter[3]
 
@@ -742,9 +781,12 @@ async def admin_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         if (
             not (
-                (admin_member.can_promote_members if isinstance(admin_member, ChatMemberAdministrator) else None)
-                or
-                admin_member.status == ChatMemberStatus.OWNER
+                (
+                    admin_member.can_promote_members
+                    if isinstance(admin_member, ChatMemberAdministrator)
+                    else None
+                )
+                or admin_member.status == ChatMemberStatus.OWNER
             )
             and admin_user.id not in DRAGONS
         ):
@@ -755,15 +797,14 @@ async def admin_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             user_id = int(splitter[2])
         except:
             await message.edit_text(
-                    "You don't seem to be referring to a user or the ID specified is incorrect..",
+                "You don't seem to be referring to a user or the ID specified is incorrect..",
             )
             return
-            
 
         try:
             user_member = await chat.get_member(user_id)
         except:
-            return           
+            return
 
         if user_member.status == ChatMemberStatus.OWNER:
             await message.edit_text(
@@ -795,7 +836,9 @@ async def admin_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
             await bot.setChatAdministratorCustomTitle(chat.id, user_id, title)
         except BadRequest:
-            await message.edit_text("Either they aren't promoted by me or you set a title text that is impossible to set.")
+            await message.edit_text(
+                "Either they aren't promoted by me or you set a title text that is impossible to set."
+            )
             return
 
         await message.edit_text(
@@ -803,22 +846,26 @@ async def admin_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"to <code>{html.escape(title[:16])}</code>!",
             parse_mode=ParseMode.HTML,
         )
-            
+
     elif splitter[1] == "pin":
 
         admin_member = await chat.get_member(admin_user.id)
 
         if (
             not (
-                (admin_member.can_pin_messages if isinstance(admin_member, ChatMemberAdministrator) else None)
-                or 
-                admin_member.status == ChatMemberStatus.OWNER
+                (
+                    admin_member.can_pin_messages
+                    if isinstance(admin_member, ChatMemberAdministrator)
+                    else None
+                )
+                or admin_member.status == ChatMemberStatus.OWNER
             )
             and admin_user.id not in DRAGONS
         ):
-            await query.answer("You don't have the necessary rights to do that!", show_alert=True)
+            await query.answer(
+                "You don't have the necessary rights to do that!", show_alert=True
+            )
             return
-
 
         try:
             message_id = int(splitter[2])
@@ -831,14 +878,16 @@ async def admin_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if is_group:
             try:
                 await bot.pinChatMessage(
-                    chat.id, message_id, disable_notification=is_silent,
+                    chat.id,
+                    message_id,
+                    disable_notification=is_silent,
                 )
             except BadRequest as excp:
                 if excp.message == "Chat_not_modified":
                     pass
                 else:
                     raise
-            
+
             await message.edit_text("Done Pinned.")
 
             log_message = (
@@ -855,13 +904,18 @@ async def admin_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         if (
             not (
-                (admin_member.can_pin_messages if isinstance(admin_member, ChatMemberAdministrator) else None)
-                or 
-                admin_member.status == ChatMemberStatus.OWNER
+                (
+                    admin_member.can_pin_messages
+                    if isinstance(admin_member, ChatMemberAdministrator)
+                    else None
+                )
+                or admin_member.status == ChatMemberStatus.OWNER
             )
             and admin_user.id not in DRAGONS
         ):
-            await query.answer("You don't have the necessary rights to do that!", show_alert=True)
+            await query.answer(
+                "You don't have the necessary rights to do that!", show_alert=True
+            )
             return
 
         try:
@@ -874,7 +928,6 @@ async def admin_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 return
             else:
                 raise
-        
 
         log_message = (
             f"<b>{html.escape(chat.title)}:</b>\n"
@@ -896,7 +949,9 @@ async def admin_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         try:
             if chat.is_forum:
-                await bot.unpin_all_forum_topic_messages(chat.id, message.message_thread_id)
+                await bot.unpin_all_forum_topic_messages(
+                    chat.id, message.message_thread_id
+                )
             else:
                 await bot.unpin_all_chat_messages(chat.id)
         except BadRequest as excp:
@@ -904,7 +959,7 @@ async def admin_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 pass
             else:
                 raise
-        
+
         await message.edit_text("Done UnPinned All messages.")
         log_message = (
             f"<b>{html.escape(chat.title)}:</b>\n"
@@ -932,8 +987,12 @@ __help__ = """
 ADMINLIST_HANDLER = DisableAbleCommandHandler("admins", adminlist, block=False)
 
 PIN_HANDLER = CommandHandler("pin", pin, filters=filters.ChatType.GROUPS, block=False)
-UNPIN_HANDLER = CommandHandler("unpin", unpin, filters=filters.ChatType.GROUPS, block=False)
-UNPINALL_HANDLER = CommandHandler("unpinall", unpinall, filters=filters.ChatType.GROUPS, block=False)
+UNPIN_HANDLER = CommandHandler(
+    "unpin", unpin, filters=filters.ChatType.GROUPS, block=False
+)
+UNPINALL_HANDLER = CommandHandler(
+    "unpinall", unpinall, filters=filters.ChatType.GROUPS, block=False
+)
 
 INVITE_HANDLER = DisableAbleCommandHandler("invitelink", invite, block=False)
 
@@ -944,7 +1003,9 @@ SET_TITLE_HANDLER = CommandHandler("title", set_title, block=False)
 ADMIN_REFRESH_HANDLER = CommandHandler(
     "admincache", refresh_admin, filters=filters.ChatType.GROUPS, block=False
 )
-ADMIN_CALLBACK_HANDLER = CallbackQueryHandler(admin_callback, block=False, pattern=r"admin_")
+ADMIN_CALLBACK_HANDLER = CallbackQueryHandler(
+    admin_callback, block=False, pattern=r"admin_"
+)
 
 application.add_handler(ADMINLIST_HANDLER)
 application.add_handler(PIN_HANDLER)

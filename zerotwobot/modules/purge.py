@@ -6,8 +6,9 @@ from zerotwobot import LOGGER, telethn
 from zerotwobot.modules.helper_funcs.telethn.chatstatus import (
     can_delete_messages,
     user_is_admin,
-    user_can_purge
+    user_can_purge,
 )
+
 
 async def purge_messages(event):
     start = time.perf_counter()
@@ -70,17 +71,17 @@ async def delete_messages(event):
     me = await telethn.get_me()
     BOT_ID = me.id
 
-    if not can_delete_messages(message=event)\
-        and message\
-            and not int(message.sender.id) == int(BOT_ID):
+    if (
+        not can_delete_messages(message=event)
+        and message
+        and not int(message.sender.id) == int(BOT_ID)
+    ):
         if event.chat.admin_rights is None:
             return await event.reply(
                 "I'm not an admin, do you mind promoting me first?"
-                )
+            )
         elif not event.chat.admin_rights.delete_messages:
-            return await event.reply(
-                "I don't have the permission to delete messages!"
-                )
+            return await event.reply("I don't have the permission to delete messages!")
 
     if not message:
         await event.reply("Whadya want to delete?")
@@ -92,9 +93,10 @@ async def delete_messages(event):
     try:
         await event.client.delete_messages(chat, event.message)
     except MessageDeleteForbiddenError:
-        LOGGER.error("error in deleting message {} in {}".format(event.message.id, event.chat.id))
+        LOGGER.error(
+            "error in deleting message {} in {}".format(event.message.id, event.chat.id)
+        )
         pass
-
 
 
 __help__ = """

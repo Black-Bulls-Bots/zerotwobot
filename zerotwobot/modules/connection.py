@@ -116,7 +116,10 @@ async def connect_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await send_message(update.effective_message, "Invalid Chat ID!")
                 return
 
-            isadmin = getstatusadmin.status in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]
+            isadmin = getstatusadmin.status in [
+                ChatMemberStatus.ADMINISTRATOR,
+                ChatMemberStatus.OWNER,
+            ]
             ismember = getstatusadmin.status == ChatMemberStatus.MEMBER
             isallow = sql.allow_connect_to_chat(connect_chat)
 
@@ -222,7 +225,10 @@ async def connect_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
             chat.id,
             update.effective_message.from_user.id,
         )
-        isadmin = getstatusadmin.status in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]
+        isadmin = getstatusadmin.status in [
+            ChatMemberStatus.ADMINISTRATOR,
+            ChatMemberStatus.OWNER,
+        ]
         ismember = getstatusadmin.status == ChatMemberStatus.MEMBER
         isallow = sql.allow_connect_to_chat(chat.id)
         if (isadmin) or (isallow and ismember) or (user.id in DRAGONS):
@@ -287,7 +293,10 @@ async def connected(bot: Bot, update: Update, chat, user_id, need_admin=True):
             conn_id,
             update.effective_message.from_user.id,
         )
-        isadmin = getstatusadmin.status in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]
+        isadmin = getstatusadmin.status in [
+            ChatMemberStatus.ADMINISTRATOR,
+            ChatMemberStatus.OWNER,
+        ]
         ismember = getstatusadmin.status == ChatMemberStatus.MEMBER
         isallow = sql.allow_connect_to_chat(conn_id)
 
@@ -299,7 +308,8 @@ async def connected(bot: Bot, update: Update, chat, user_id, need_admin=True):
         ):
             if need_admin is True:
                 if (
-                    getstatusadmin.status in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]
+                    getstatusadmin.status
+                    in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]
                     or user_id in DRAGONS
                     or user.id in DEV_USERS
                 ):
@@ -341,7 +351,9 @@ async def help_connect_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
     else:
-        await send_message(update.effective_message, CONN_HELP, parse_mode=ParseMode.MARKDOWN)
+        await send_message(
+            update.effective_message, CONN_HELP, parse_mode=ParseMode.MARKDOWN
+        )
 
 
 async def connect_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -360,7 +372,10 @@ async def connect_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         getstatusadmin = await context.bot.get_chat_member(
             target_chat, query.from_user.id
         )
-        isadmin = getstatusadmin.status in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]
+        isadmin = getstatusadmin.status in [
+            ChatMemberStatus.ADMINISTRATOR,
+            ChatMemberStatus.OWNER,
+        ]
         ismember = getstatusadmin.status == ChatMemberStatus.MEMBER
         isallow = sql.allow_connect_to_chat(target_chat)
 
@@ -427,9 +442,15 @@ This allows you to connect to a chat's database, and add things to it without th
 CONNECT_CHAT_HANDLER = CommandHandler("connect", connect_chat, block=False)
 CONNECTION_CHAT_HANDLER = CommandHandler("connection", connection_chat, block=False)
 DISCONNECT_CHAT_HANDLER = CommandHandler("disconnect", disconnect_chat, block=False)
-ALLOW_CONNECTIONS_HANDLER = CommandHandler("allowconnect", allow_connections, block=False)
-HELP_CONNECT_CHAT_HANDLER = CommandHandler("helpconnect", help_connect_chat, block=False)
-CONNECT_BTN_HANDLER = CallbackQueryHandler(connect_button, pattern=r"connect", block=False)
+ALLOW_CONNECTIONS_HANDLER = CommandHandler(
+    "allowconnect", allow_connections, block=False
+)
+HELP_CONNECT_CHAT_HANDLER = CommandHandler(
+    "helpconnect", help_connect_chat, block=False
+)
+CONNECT_BTN_HANDLER = CallbackQueryHandler(
+    connect_button, pattern=r"connect", block=False
+)
 
 application.add_handler(CONNECT_CHAT_HANDLER)
 application.add_handler(CONNECTION_CHAT_HANDLER)

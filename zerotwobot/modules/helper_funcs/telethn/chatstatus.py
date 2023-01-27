@@ -9,7 +9,8 @@ async def user_is_ban_protected(user_id: int, message):
         return True
 
     async for user in telethn.iter_participants(
-        message.chat_id, filter=ChannelParticipantsAdmins,
+        message.chat_id,
+        filter=ChannelParticipantsAdmins,
     ):
         if user_id == user.id:
             status = True
@@ -23,7 +24,8 @@ async def user_is_admin(user_id: int, message):
         return True
 
     async for user in telethn.iter_participants(
-        message.chat_id, filter=ChannelParticipantsAdmins,
+        message.chat_id,
+        filter=ChannelParticipantsAdmins,
     ):
         if user_id == user.id or user_id in DRAGONS:
             status = True
@@ -34,7 +36,8 @@ async def user_is_admin(user_id: int, message):
 async def is_user_admin(user_id: int, chat_id):
     status = False
     async for user in telethn.iter_participants(
-        chat_id, filter=ChannelParticipantsAdmins,
+        chat_id,
+        filter=ChannelParticipantsAdmins,
     ):
         if user_id == user.id or user_id in DRAGONS:
             status = True
@@ -46,7 +49,8 @@ async def zerotwo_is_admin(chat_id: int):
     status = False
     zerotwo = await telethn.get_me()
     async for user in telethn.iter_participants(
-        chat_id, filter=ChannelParticipantsAdmins,
+        chat_id,
+        filter=ChannelParticipantsAdmins,
     ):
         if zerotwo.id == user.id:
             status = True
@@ -108,6 +112,7 @@ async def can_delete_messages(message):
     else:
         return False
 
+
 async def user_can_purge(user_id: int, message):
     status = False
     if message.is_private:
@@ -115,4 +120,4 @@ async def user_can_purge(user_id: int, message):
 
     perms = await telethn.get_permissions(message.chat_id, user_id)
     status = perms.delete_messages
-    return status 
+    return status

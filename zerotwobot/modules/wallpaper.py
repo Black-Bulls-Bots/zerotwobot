@@ -8,7 +8,8 @@ from telegram.ext import ContextTypes
 
 # Wallpapers module by @TheRealPhoenix using wall.alphacoders.com
 
-#Need to fix this module ASAP
+# Need to fix this module ASAP
+
 
 async def wall(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
@@ -24,14 +25,16 @@ async def wall(update: Update, context: ContextTypes.DEFAULT_TYPE):
         caption = query
         term = query.replace(" ", "%20")
         async with AsyncClient() as client:
-            r = await client.get(f"https://wall.alphacoders.com/api2.0/get.php?auth={WALL_API}&method=search&term={term}")
+            r = await client.get(
+                f"https://wall.alphacoders.com/api2.0/get.php?auth={WALL_API}&method=search&term={term}"
+            )
         json_rep = r.json()
         if not json_rep.get("success"):
             await msg.reply_text(f"An error occurred! Report this @{SUPPORT_CHAT}")
         else:
             wallpapers = json_rep.get("wallpapers")
             if not wallpapers:
-                await  msg.reply_text("No results found! Refine your search.")
+                await msg.reply_text("No results found! Refine your search.")
                 return
             else:
                 index = randint(0, len(wallpapers) - 1)  # Choose random index

@@ -1,5 +1,5 @@
 import httpx
-from zerotwobot import  application
+from zerotwobot import application
 from telegram import Update
 from telegram.constants import ParseMode
 from telegram.ext import ContextTypes, CommandHandler
@@ -19,7 +19,7 @@ async def convert(update: Update, context: ContextTypes.DEFAULT_TYPE):
         orig_cur = args[2].lower()
         new_cur = args[3].lower()
 
-        request_url = (f"https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/{orig_cur}.json")
+        request_url = f"https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/{orig_cur}.json"
         async with httpx.AsyncClient() as client:
             r = await client.get(request_url)
         data = r.json()
@@ -41,6 +41,7 @@ async def convert(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"*Invalid Args!!:* Required 3 But Passed {len(args) -1}",
             parse_mode=ParseMode.MARKDOWN,
         )
+
 
 help = """
 Converts money from one exchange to another

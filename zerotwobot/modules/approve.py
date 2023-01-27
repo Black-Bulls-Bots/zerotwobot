@@ -101,7 +101,7 @@ async def approved(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat = update.effective_chat
     msg = "The following users are approved.\n"
     approved_users = sql.list_approved(message.chat_id)
-    
+
     if not approved_users:
         await message.reply_text(f"No users are approved in {chat_title}.")
         return ""
@@ -110,7 +110,7 @@ async def approved(update: Update, context: ContextTypes.DEFAULT_TYPE):
         for i in approved_users:
             member = await chat.get_member(int(i.user_id))
             msg += f"- `{i.user_id}`: {member.user['first_name']}\n"
-        
+
         await message.reply_text(msg, parse_mode=ParseMode.MARKDOWN)
 
 
@@ -121,7 +121,6 @@ async def approval(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = context.args
     user_id = await extract_user(message, context, args)
 
-    
     if not user_id:
         await message.reply_text(
             "I don't know who you're talking about, you're going to need to specify a user!",
@@ -138,7 +137,6 @@ async def approval(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
 
-
 async def unapproveall(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat = update.effective_chat
     user = update.effective_user
@@ -146,7 +144,9 @@ async def unapproveall(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     approved_users = sql.list_approved(chat.id)
     if not approved_users:
-        await update.effective_message.reply_text(f"No users are approved in {chat.title}.")
+        await update.effective_message.reply_text(
+            f"No users are approved in {chat.title}."
+        )
         return
 
     if member.status != ChatMemberStatus.OWNER and user.id not in DRAGONS:
@@ -158,12 +158,14 @@ async def unapproveall(update: Update, context: ContextTypes.DEFAULT_TYPE):
             [
                 [
                     InlineKeyboardButton(
-                        text="Unapprove all users", callback_data="unapproveall_user",
+                        text="Unapprove all users",
+                        callback_data="unapproveall_user",
                     ),
                 ],
                 [
                     InlineKeyboardButton(
-                        text="Cancel", callback_data="unapproveall_cancel",
+                        text="Cancel",
+                        callback_data="unapproveall_cancel",
                     ),
                 ],
             ],
@@ -173,7 +175,6 @@ async def unapproveall(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=buttons,
             parse_mode=ParseMode.MARKDOWN,
         )
-
 
 
 async def unapproveall_btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -186,7 +187,7 @@ async def unapproveall_btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
             approved_users = sql.list_approved(chat.id)
             users = [int(i.user_id) for i in approved_users]
             for user_id in users:
-                sql.disapprove(chat.id, user_id)      
+                sql.disapprove(chat.id, user_id)
             await message.edit_text("Successfully Unapproved all user in this Chat.")
             return
 
@@ -197,7 +198,9 @@ async def unapproveall_btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await query.answer("You need to be admin to do this.")
     elif query.data == "unapproveall_cancel":
         if member.status == "creator" or query.from_user.id in DRAGONS:
-            await message.edit_text("Removing of all approved users has been cancelled.")
+            await message.edit_text(
+                "Removing of all approved users has been cancelled."
+            )
             return ""
         if member.status == "administrator":
             await query.answer("Only owner of the chat can do this.")
@@ -224,7 +227,9 @@ DISAPPROVE = DisableAbleCommandHandler("unapprove", disapprove, block=False)
 APPROVED = DisableAbleCommandHandler("approved", approved, block=False)
 APPROVAL = DisableAbleCommandHandler("approval", approval, block=False)
 UNAPPROVEALL = DisableAbleCommandHandler("unapproveall", unapproveall, block=False)
-UNAPPROVEALL_BTN = CallbackQueryHandler(unapproveall_btn, pattern=r"unapproveall_.*", block=False)
+UNAPPROVEALL_BTN = CallbackQueryHandler(
+    unapproveall_btn, pattern=r"unapproveall_.*", block=False
+)
 
 application.add_handler(APPROVE)
 application.add_handler(DISAPPROVE)

@@ -51,8 +51,9 @@ def get_emoji_regexp():
     global _EMOJI_REGEXP
     if _EMOJI_REGEXP is None:
         emojis = sorted(unicode_codes.EMOJI_DATA, key=len, reverse=True)
-        pattern = u'(' + u'|'.join(re.escape(u) for u in emojis) + u')'
+        pattern = "(" + "|".join(re.escape(u) for u in emojis) + ")"
     return re.compile(pattern)
+
 
 # This is a fun one.
 def _calc_emoji_offset(to_calc) -> int:
@@ -66,7 +67,9 @@ def _calc_emoji_offset(to_calc) -> int:
 
 
 def markdown_parser(
-    txt: str, entities: Dict[MessageEntity, str] = None, offset: int = 0,
+    txt: str,
+    entities: Dict[MessageEntity, str] = None,
+    offset: int = 0,
 ) -> str:
     """
     Parse a string, escaping all invalid markdown entities.
@@ -124,11 +127,12 @@ def markdown_parser(
             # handle markdown/html links
             elif ent.type == "text_link":
                 res += _selective_escape(txt[prev:start]) + "[{}]({})".format(
-                    ent_text, ent.url,
+                    ent_text,
+                    ent.url,
                 )
             # handle spoiler
             elif ent.type == "spoiler":
-                res += _selective_escape(txt[prev:start]) + "||"+ent_text+"||"
+                res += _selective_escape(txt[prev:start]) + "||" + ent_text + "||"
 
             end += 1
 
@@ -143,7 +147,9 @@ def markdown_parser(
 
 
 def button_markdown_parser(
-    txt: str, entities: Dict[MessageEntity, str] = None, offset: int = 0,
+    txt: str,
+    entities: Dict[MessageEntity, str] = None,
+    offset: int = 0,
 ) -> (str, List):
     markdown_note = markdown_parser(txt, entities, offset)
     prev = 0
@@ -262,6 +268,7 @@ def escape_chars(text: str, to_escape: List[str]) -> str:
         new_text += x
     return new_text
 
+
 async def extract_time(message, time_val):
     if any(time_val.endswith(unit) for unit in ("m", "h", "d")):
         unit = time_val[-1]
@@ -289,8 +296,7 @@ async def extract_time(message, time_val):
         return ""
 
 
-
-def markdown_to_html(text:str):
+def markdown_to_html(text: str):
     text = text.replace("*", "**")
     text = text.replace("`", "```")
     text = text.replace("~", "~~")
@@ -298,8 +304,9 @@ def markdown_to_html(text:str):
     spoiler_pattern = re.compile(r"\|\|(?=\S)(.+?)(?<=\S)\|\|", re.S)
     text = spoiler_pattern.sub(r"<tg-spoiler>\1</tg-spoiler>", text)
 
-
     _html = markdown2.markdown(text, extras=["strike", "underline"])
     return bleach.clean(
-        _html, tags=["strong", "em", "a", "code", "pre", "strike", "u", "tg-spoiler"], strip=True,
+        _html,
+        tags=["strong", "em", "a", "code", "pre", "strike", "u", "tg-spoiler"],
+        strip=True,
     )[:-1]

@@ -18,6 +18,7 @@ from telegram.helpers import mention_html
 
 REPORT_GROUP = 12
 
+
 @check_admin(is_user=True)
 async def report_setting(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot, args = context.bot, context.args
@@ -61,6 +62,7 @@ async def report_setting(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 parse_mode=ParseMode.MARKDOWN,
             )
 
+
 @user_not_admin
 @loggable
 async def report(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
@@ -71,11 +73,11 @@ async def report(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     user = update.effective_user
 
     if (
-        chat 
-        and message.reply_to_message 
-        and not message.reply_to_message.forum_topic_created 
+        chat
+        and message.reply_to_message
+        and not message.reply_to_message.forum_topic_created
         and sql.chat_should_report(chat.id)
-        ):
+    ):
         reported_user = message.reply_to_message.from_user
         chat_name = chat.title or chat.first or chat.username
         admin_list = await chat.get_administrators()
@@ -151,7 +153,9 @@ async def report(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
                 try:
                     if not chat.type == Chat.SUPERGROUP:
                         await bot.send_message(
-                            admin.user.id, msg + link, parse_mode=ParseMode.HTML,
+                            admin.user.id,
+                            msg + link,
+                            parse_mode=ParseMode.HTML,
                         )
 
                         if should_forward:
@@ -163,7 +167,9 @@ async def report(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
                                 await message.forward(admin.user.id)
                     if not chat.username:
                         await bot.send_message(
-                            admin.user.id, msg + link, parse_mode=ParseMode.HTML,
+                            admin.user.id,
+                            msg + link,
+                            parse_mode=ParseMode.HTML,
                         )
 
                         if should_forward:
@@ -275,8 +281,12 @@ __help__ = """
 """
 
 SETTING_HANDLER = CommandHandler("reports", report_setting, block=False)
-REPORT_HANDLER = CommandHandler("report", report, filters=filters.ChatType.GROUPS, block=False)
-ADMIN_REPORT_HANDLER = MessageHandler(filters.Regex(r"(?i)@admin(s)?"), report, block=False)
+REPORT_HANDLER = CommandHandler(
+    "report", report, filters=filters.ChatType.GROUPS, block=False
+)
+ADMIN_REPORT_HANDLER = MessageHandler(
+    filters.Regex(r"(?i)@admin(s)?"), report, block=False
+)
 
 REPORT_BUTTON_USER_HANDLER = CallbackQueryHandler(buttons, pattern=r"report_")
 application.add_handler(REPORT_BUTTON_USER_HANDLER)
