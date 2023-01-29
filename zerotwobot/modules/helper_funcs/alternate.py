@@ -5,7 +5,16 @@ from telegram.ext import ContextTypes
 from telegram.constants import ChatAction
 
 
-async def send_message(message: Message, text, *args, **kwargs):
+async def send_message(message: Message, text: str, *args, **kwargs) -> Message:
+    """function to reply message, it handles error if original message is deleted
+
+    Args:
+        message (`telegram.Message`): Message object
+        text (`str`): text to use as reply
+
+    Returns:
+        `telegram.Message`: Message object
+    """
     try:
         return await message.reply_text(text, *args, **kwargs)
     except BadRequest as err:

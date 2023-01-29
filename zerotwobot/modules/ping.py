@@ -46,7 +46,7 @@ def get_readable_time(seconds: int) -> str:
     return ping_time
 
 
-async def ping_func(to_ping: List[str]) -> List[str]:
+async def ping_func(to_ping: List[str]) -> list[str]:
     ping_result = []
 
     for each_ping in to_ping:

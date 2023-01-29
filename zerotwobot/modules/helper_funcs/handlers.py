@@ -38,7 +38,7 @@ class AntiSpam:
             bucket_class=MemoryListBucket,
         )
 
-    def check_user(self, user):
+    def check_user(self, user: int) -> bool:
         """
         Return True if user is to be ignored else False
         """

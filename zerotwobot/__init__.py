@@ -47,7 +47,7 @@ if sys.version_info[0] < 3 or sys.version_info[1] < 9:
     quit(1)
 
 ENV = bool(os.environ.get("ENV", False))
-BOT_VERSION = "2.8"
+BOT_VERSION = "3.0-a.2"
 PTB_VERSION = ptb_version
 BOT_API_VERSION = __bot_api_version__
 PYTHON_VERSION = platform.python_version()

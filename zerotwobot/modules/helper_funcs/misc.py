@@ -11,17 +11,17 @@ from telegram.error import TelegramError
 
 
 class EqInlineKeyboardButton(InlineKeyboardButton):
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         return self.text == other.text
 
-    def __lt__(self, other):
+    def __lt__(self, other) -> bool:
         return self.text < other.text
 
-    def __gt__(self, other):
+    def __gt__(self, other) -> bool:
         return self.text > other.text
 
 
-def split_message(msg: str) -> List[str]:
+def split_message(msg: str) -> list[str]:
     if len(msg) < MessageLimit.MAX_TEXT_LENGTH:
         return [msg]
 
@@ -41,7 +41,9 @@ def split_message(msg: str) -> List[str]:
     return result
 
 
-def paginate_modules(page_n: int, module_dict: Dict, prefix, chat=None) -> List:
+def paginate_modules(
+    page_n: int, module_dict: Dict, prefix: str, chat=None
+) -> list[list[EqInlineKeyboardButton]]:
     if not chat:
         modules = sorted(
             [
@@ -122,7 +124,7 @@ def revert_buttons(buttons):
     return res
 
 
-def build_keyboard_parser(bot, chat_id, buttons):
+def build_keyboard_parser(bot: Bot, chat_id: int | str, buttons) -> list:
     keyb = []
     for btn in buttons:
         if btn.url == "{rules}":
@@ -135,7 +137,7 @@ def build_keyboard_parser(bot, chat_id, buttons):
     return keyb
 
 
-def is_module_loaded(name):
+def is_module_loaded(name: str) -> bool:
     return name not in NO_LOAD
 
 
@@ -152,7 +154,7 @@ def mention_username(username: str, name: str) -> str:
     return f'<a href="t.me/{username}">{escape(name)}</a>'
 
 
-def convert_gif(input):
+def convert_gif(input: str) -> str:
     """Function to convert mp4 to webm(vp9)"""
 
     vid = cv2.VideoCapture(input)

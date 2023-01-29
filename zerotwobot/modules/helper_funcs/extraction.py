@@ -7,7 +7,7 @@ from telegram.ext import ContextTypes
 from telegram.error import BadRequest
 
 
-async def id_from_reply(message: Message):
+async def id_from_reply(message: Message) -> tuple[int, str] | tuple[None, None]:
     prev_message = message.reply_to_message
     if not prev_message or prev_message.forum_topic_created:
         return None, None
@@ -33,7 +33,7 @@ async def extract_user_and_text(
     message: Message,
     context: ContextTypes.DEFAULT_TYPE,
     args: List[str],
-) -> Union[(Optional[int], Optional[str])]:
+) -> tuple[(int | str | None), (int | str | None)]:
     prev_message = message.reply_to_message
     split_text = message.text.split(None, 1)
 
@@ -97,7 +97,7 @@ async def extract_user_and_text(
     return user_id, text
 
 
-async def extract_text(message) -> str:
+async def extract_text(message: Message) -> str | None:
     return (
         message.text
         or message.caption
@@ -107,7 +107,7 @@ async def extract_text(message) -> str:
 
 async def extract_unt_fedban(
     message: Message, context: ContextTypes.DEFAULT_TYPE, args: List[str]
-) -> Union[(Optional[int], Optional[str])]:
+) -> tuple[(int | str | None), (int | str | None)]:
     prev_message = message.reply_to_message
     split_text = message.text.split(None, 1)
 
@@ -178,5 +178,5 @@ async def extract_unt_fedban(
 
 async def extract_user_fban(
     message: Message, context: ContextTypes.DEFAULT_TYPE, args: List[str]
-) -> Optional[int]:
+) -> tuple[(int | str | None), (int | str | None)]:
     return (await extract_unt_fedban(message, context, args))[0]

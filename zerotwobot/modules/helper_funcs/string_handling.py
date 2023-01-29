@@ -1,12 +1,12 @@
 import re
 import time
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 import bleach
 import markdown2
 from emoji import unicode_codes
 
-from telegram import MessageEntity
+from telegram import MessageEntity, Message
 from telegram.helpers import escape_markdown
 
 # NOTE: the url \ escape may cause double escapes
@@ -56,7 +56,7 @@ def get_emoji_regexp():
 
 
 # This is a fun one.
-def _calc_emoji_offset(to_calc) -> int:
+def _calc_emoji_offset(to_calc: str) -> int:
     # Get all emoji in text.
     emoticons = get_emoji_regexp().finditer(to_calc)
     # Check the utf16 length of the emoji to determine the offset it caused.
@@ -150,7 +150,7 @@ def button_markdown_parser(
     txt: str,
     entities: Dict[MessageEntity, str] = None,
     offset: int = 0,
-) -> (str, List):
+) -> tuple[str, list]:
     markdown_note = markdown_parser(txt, entities, offset)
     prev = 0
     note_data = ""
@@ -221,7 +221,7 @@ SMART_CLOSE = "”"
 START_CHAR = ("'", '"', SMART_OPEN)
 
 
-def split_quotes(text: str) -> List:
+def split_quotes(text: str) -> list:
     if not any(text.startswith(char) for char in START_CHAR):
         return text.split(None, 1)
     counter = 1  # ignore first char -> is some kind of quote
@@ -269,7 +269,7 @@ def escape_chars(text: str, to_escape: List[str]) -> str:
     return new_text
 
 
-async def extract_time(message, time_val):
+async def extract_time(message: Message, time_val: str) -> int | str:
     if any(time_val.endswith(unit) for unit in ("m", "h", "d")):
         unit = time_val[-1]
         time_num = time_val[:-1]  # type: str
@@ -296,7 +296,7 @@ async def extract_time(message, time_val):
         return ""
 
 
-def markdown_to_html(text: str):
+def markdown_to_html(text: str) -> str:
     text = text.replace("*", "**")
     text = text.replace("`", "```")
     text = text.replace("~", "~~")

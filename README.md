@@ -2,7 +2,7 @@
 
 <center>
   <h1> 
-    Zero Two - v3.0-a.1
+    Zero Two - v3.0-a.2
   </h1>
 </center>
 
