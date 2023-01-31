@@ -5,6 +5,14 @@ All notable changes in this project will be kept here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0-a.2.1]
+
+## Changed
+
+- bump  sqlalchemy to 2.0
+- upgrade to sqlalchemy async part 1 of [#70](https://github.com/Black-Bulls-Bots/zerotwobot/issues/70)
+- update querying methods in sql codes part 1 of [#70](https://github.com/Black-Bulls-Bots/zerotwobot/issues/70)
+
 ## [3.0-a.2]
 
 ## Changed
