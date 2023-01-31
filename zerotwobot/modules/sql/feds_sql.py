@@ -95,10 +95,6 @@ BansF.__table__.create(checkfirst=True)
 FedsUserSettings.__table__.create(checkfirst=True)
 FedSubs.__table__.create(checkfirst=True)
 
-FEDS_LOCK = threading.RLock()
-CHAT_FEDS_LOCK = threading.RLock()
-FEDS_SETTINGS_LOCK = threading.RLock()
-FEDS_SUBSCRIBER_LOCK = threading.RLock()
 
 FEDERATION_BYNAME = {}
 FEDERATION_BYOWNER = {}
@@ -200,7 +196,7 @@ def get_user_fbanlist(user_id):
 
 
 def new_fed(owner_id, fed_name, fed_id):
-    with FEDS_LOCK:
+    async with SESSION.begin():
         global FEDERATION_BYOWNER, FEDERATION_BYFEDID, FEDERATION_BYNAME
         fed = Federations(
             str(owner_id),
@@ -210,8 +206,8 @@ def new_fed(owner_id, fed_name, fed_id):
             None,
             str({"owner": str(owner_id), "members": "[]"}),
         )
-        SESSION.add(fed)
-        SESSION.commit()
+        await SESSION.add(fed)
+        await SESSION.commit()
         FEDERATION_BYOWNER[str(owner_id)] = {
             "fid": str(fed_id),
             "fname": fed_name,
@@ -237,7 +233,7 @@ def new_fed(owner_id, fed_name, fed_id):
 
 
 def del_fed(fed_id):
-    with FEDS_LOCK:
+    async with SESSION.begin():
         global FEDERATION_BYOWNER, FEDERATION_BYFEDID, FEDERATION_BYNAME, FEDERATION_CHATS, FEDERATION_CHATS_BYID, FEDERATION_BANNED_USERID, FEDERATION_BANNED_FULL
         getcache = FEDERATION_BYFEDID.get(fed_id)
         if getcache is None:
@@ -255,7 +251,7 @@ def del_fed(fed_id):
                 delchats = SESSION.query(ChatF).get(str(x))
                 if delchats:
                     SESSION.delete(delchats)
-                    SESSION.commit()
+                    await SESSION.commit()
                 FEDERATION_CHATS.pop(x)
             FEDERATION_CHATS_BYID.pop(fed_id)
         # Delete fedban users
@@ -265,7 +261,7 @@ def del_fed(fed_id):
                 banlist = SESSION.query(BansF).get((fed_id, str(x)))
                 if banlist:
                     SESSION.delete(banlist)
-                    SESSION.commit()
+                    await SESSION.commit()
         if FEDERATION_BANNED_USERID.get(fed_id):
             FEDERATION_BANNED_USERID.pop(fed_id)
         if FEDERATION_BANNED_FULL.get(fed_id):
@@ -277,7 +273,7 @@ def del_fed(fed_id):
                 getsubs = SESSION.query(FedSubs).get((fed_id, str(x)))
                 if getsubs:
                     SESSION.delete(getsubs)
-                    SESSION.commit()
+                    await SESSION.commit()
         if FEDS_SUBSCRIBER.get(fed_id):
             FEDS_SUBSCRIBER.pop(fed_id)
         if MYFEDS_SUBSCRIBER.get(fed_id):
@@ -286,18 +282,18 @@ def del_fed(fed_id):
         curr = SESSION.query(Federations).get(fed_id)
         if curr:
             SESSION.delete(curr)
-            SESSION.commit()
+            await SESSION.commit()
         return True
 
 
 def rename_fed(fed_id, owner_id, newname):
-    with FEDS_LOCK:
+    async with SESSION.begin():
         global FEDERATION_BYFEDID, FEDERATION_BYOWNER, FEDERATION_BYNAME
         fed = SESSION.query(Federations).get(fed_id)
         if not fed:
             return False
         fed.fed_name = newname
-        SESSION.commit()
+        await SESSION.commit()
 
         # Update the dicts
         oldname = FEDERATION_BYFEDID[str(fed_id)]["fname"]
@@ -311,16 +307,16 @@ def rename_fed(fed_id, owner_id, newname):
 
 
 def chat_join_fed(fed_id, chat_name, chat_id):
-    with FEDS_LOCK:
+    async with SESSION.begin():
         global FEDERATION_CHATS, FEDERATION_CHATS_BYID
         r = ChatF(chat_id, chat_name, fed_id)
-        SESSION.add(r)
+        await SESSION.add(r)
         FEDERATION_CHATS[str(chat_id)] = {"chat_name": chat_name, "fid": fed_id}
         checkid = FEDERATION_CHATS_BYID.get(fed_id)
         if checkid is None:
             FEDERATION_CHATS_BYID[fed_id] = []
         FEDERATION_CHATS_BYID[fed_id].append(str(chat_id))
-        SESSION.commit()
+        await SESSION.commit()
         return r
 
 
@@ -343,7 +339,7 @@ def search_user_in_fed(fed_id, user_id):
 
 
 def user_demote_fed(fed_id, user_id):
-    with FEDS_LOCK:
+    async with SESSION.begin():
         global FEDERATION_BYOWNER, FEDERATION_BYFEDID, FEDERATION_BYNAME
         # Variables
         getfed = FEDERATION_BYFEDID.get(str(fed_id))
@@ -377,7 +373,7 @@ def user_demote_fed(fed_id, user_id):
             str({"owner": str(owner_id), "members": str(members)}),
         )
         SESSION.merge(fed)
-        SESSION.commit()
+        await SESSION.commit()
         return True
 
         curr = SESSION.query(UserF).all()
@@ -386,15 +382,15 @@ def user_demote_fed(fed_id, user_id):
             if int(r.user_id) == int(user_id):
                 if r.fed_id == fed_id:
                     SESSION.delete(r)
-                    SESSION.commit()
+                    await SESSION.commit()
                     result = True
 
-        SESSION.close()
+        await SESSION.close()()
         return result
 
 
 def user_join_fed(fed_id, user_id):
-    with FEDS_LOCK:
+    async with SESSION.begin():
         global FEDERATION_BYOWNER, FEDERATION_BYFEDID, FEDERATION_BYNAME
         # Variables
         getfed = FEDERATION_BYFEDID.get(str(fed_id))
@@ -425,13 +421,13 @@ def user_join_fed(fed_id, user_id):
             str({"owner": str(owner_id), "members": str(members)}),
         )
         SESSION.merge(fed)
-        SESSION.commit()
+        await SESSION.commit()
         __load_all_feds_chats()
         return True
 
 
 def chat_leave_fed(chat_id):
-    with FEDS_LOCK:
+    async with SESSION.begin():
         global FEDERATION_CHATS, FEDERATION_CHATS_BYID
         # Set variables
         fed_info = FEDERATION_CHATS.get(str(chat_id))
@@ -446,12 +442,12 @@ def chat_leave_fed(chat_id):
         for U in curr:
             if int(U.chat_id) == int(chat_id):
                 SESSION.delete(U)
-                SESSION.commit()
+                await SESSION.commit()
         return True
 
 
 def all_fed_chats(fed_id):
-    with FEDS_LOCK:
+    async with SESSION.begin():
         getfed = FEDERATION_CHATS_BYID.get(fed_id)
         if getfed is None:
             return []
@@ -460,7 +456,7 @@ def all_fed_chats(fed_id):
 
 
 def all_fed_users(fed_id):
-    with FEDS_LOCK:
+    async with SESSION.begin():
         getfed = FEDERATION_BYFEDID.get(str(fed_id))
         if getfed is None:
             return False
@@ -471,14 +467,14 @@ def all_fed_users(fed_id):
 
 
 def all_fed_members(fed_id):
-    with FEDS_LOCK:
+    async with SESSION.begin():
         getfed = FEDERATION_BYFEDID.get(str(fed_id))
         fed_admins = ast.literal_eval(ast.literal_eval(getfed["fusers"])["members"])
         return fed_admins
 
 
 def set_frules(fed_id, rules):
-    with FEDS_LOCK:
+    async with SESSION.begin():
         global FEDERATION_BYOWNER, FEDERATION_BYFEDID, FEDERATION_BYNAME
         # Variables
         getfed = FEDERATION_BYFEDID.get(str(fed_id))
@@ -501,18 +497,18 @@ def set_frules(fed_id, rules):
             str(fed_members),
         )
         SESSION.merge(fed)
-        SESSION.commit()
+        await SESSION.commit()
         return True
 
 
 def get_frules(fed_id):
-    with FEDS_LOCK:
+    async with SESSION.begin():
         rules = FEDERATION_BYFEDID[str(fed_id)]["frules"]
         return rules
 
 
 def fban_user(fed_id, user_id, first_name, last_name, user_name, reason, time):
-    with FEDS_LOCK:
+    async with SESSION.begin():
         r = SESSION.query(BansF).all()
         for I in r:
             if I.fed_id == fed_id:
@@ -529,14 +525,14 @@ def fban_user(fed_id, user_id, first_name, last_name, user_name, reason, time):
             time,
         )
 
-        SESSION.add(r)
+        await SESSION.add(r)
         try:
-            SESSION.commit()
+            await SESSION.commit()
         except:
             SESSION.rollback()
             return False
         finally:
-            SESSION.commit()
+            await SESSION.commit()
         __load_all_feds_banned()
         return r
 
@@ -575,33 +571,33 @@ def multi_fban_user(
                 time,
             )
 
-            SESSION.add(r)
+            await SESSION.add(r)
             counter += 1
         try:
-            SESSION.commit()
+            await SESSION.commit()
         except:
             SESSION.rollback()
             return False
         finally:
-            SESSION.commit()
+            await SESSION.commit()
         __load_all_feds_banned()
         return counter
 
 
 def un_fban_user(fed_id, user_id):
-    with FEDS_LOCK:
+    async with SESSION.begin():
         r = SESSION.query(BansF).all()
         for I in r:
             if I.fed_id == fed_id:
                 if int(I.user_id) == int(user_id):
                     SESSION.delete(I)
         try:
-            SESSION.commit()
+            await SESSION.commit()
         except:
             SESSION.rollback()
             return False
         finally:
-            SESSION.commit()
+            await SESSION.commit()
         __load_all_feds_banned()
         return I
 
@@ -678,7 +674,7 @@ def user_feds_report(user_id: int) -> bool:
 
 
 def set_feds_setting(user_id: int, setting: bool):
-    with FEDS_SETTINGS_LOCK:
+    async with SESSION.begin():
         global FEDERATION_NOTIFICATION
         user_setting = SESSION.query(FedsUserSettings).get(user_id)
         if not user_setting:
@@ -686,8 +682,8 @@ def set_feds_setting(user_id: int, setting: bool):
 
         user_setting.should_report = setting
         FEDERATION_NOTIFICATION[str(user_id)] = setting
-        SESSION.add(user_setting)
-        SESSION.commit()
+        await SESSION.add(user_setting)
+        await SESSION.commit()
 
 
 async def get_fed_log(fed_id):
@@ -712,7 +708,7 @@ async def get_fed_log(fed_id):
 
 
 def set_fed_log(fed_id, chat_id):
-    with FEDS_LOCK:
+    async with SESSION.begin():
         global FEDERATION_BYOWNER, FEDERATION_BYFEDID, FEDERATION_BYNAME
         # Variables
         getfed = FEDERATION_BYFEDID.get(str(fed_id))
@@ -735,7 +731,7 @@ def set_fed_log(fed_id, chat_id):
             str(fed_members),
         )
         SESSION.merge(fed)
-        SESSION.commit()
+        await SESSION.commit()
         return True
 
 
@@ -743,11 +739,11 @@ def subs_fed(fed_id, my_fed):
     check = get_spec_subs(fed_id, my_fed)
     if check:
         return False
-    with FEDS_SUBSCRIBER_LOCK:
+    async with SESSION.begin():
         subsfed = FedSubs(fed_id, my_fed)
 
         SESSION.merge(subsfed)  # merge to avoid duplicate key issues
-        SESSION.commit()
+        await SESSION.commit()
         global FEDS_SUBSCRIBER, MYFEDS_SUBSCRIBER
         # Temporary Data For Subbed Feds
         if FEDS_SUBSCRIBER.get(fed_id, set()) == set():
@@ -763,7 +759,7 @@ def subs_fed(fed_id, my_fed):
 
 
 def unsubs_fed(fed_id, my_fed):
-    with FEDS_SUBSCRIBER_LOCK:
+    async with SESSION.begin():
         getsubs = SESSION.query(FedSubs).get((fed_id, my_fed))
         if getsubs:
             if my_fed in FEDS_SUBSCRIBER.get(fed_id, set()):  # sanity check
@@ -772,10 +768,10 @@ def unsubs_fed(fed_id, my_fed):
                 MYFEDS_SUBSCRIBER.get(my_fed, set()).remove(fed_id)
 
             SESSION.delete(getsubs)
-            SESSION.commit()
+            await SESSION.commit()
             return True
 
-        SESSION.close()
+        await SESSION.close()()
         return False
 
 
@@ -837,7 +833,7 @@ def __load_all_feds():
                 "fusers": str(x.fed_users),
             }
     finally:
-        SESSION.close()
+        await SESSION.close()()
 
 
 def __load_all_feds_chats():
@@ -858,7 +854,7 @@ def __load_all_feds_chats():
                 FEDERATION_CHATS_BYID[x.fed_id] = []
             FEDERATION_CHATS_BYID[x.fed_id].append(x.chat_id)
     finally:
-        SESSION.close()
+        await SESSION.close()()
 
 
 def __load_all_feds_banned():
@@ -884,7 +880,7 @@ def __load_all_feds_banned():
                 "time": x.time,
             }
     finally:
-        SESSION.close()
+        await SESSION.close()()
 
 
 def __load_all_feds_settings():
@@ -894,7 +890,7 @@ def __load_all_feds_settings():
         for x in getuser:
             FEDERATION_NOTIFICATION[str(x.user_id)] = x.should_report
     finally:
-        SESSION.close()
+        await SESSION.close()()
 
 
 def __load_feds_subscriber():
@@ -915,13 +911,13 @@ def __load_feds_subscriber():
                 getsubs = SESSION.query(FedSubs).get((x.fed_id, x.fed_subs))
                 if getsubs:
                     SESSION.delete(getsubs)
-                    SESSION.commit()
+                    await SESSION.commit()
 
         FEDS_SUBSCRIBER = {x: set(y) for x, y in FEDS_SUBSCRIBER.items()}
         MYFEDS_SUBSCRIBER = {x: set(y) for x, y in MYFEDS_SUBSCRIBER.items()}
 
     finally:
-        SESSION.close()
+        await SESSION.close()()
 
 
 __load_all_feds()

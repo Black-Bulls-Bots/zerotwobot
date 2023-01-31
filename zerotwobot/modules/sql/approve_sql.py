@@ -1,16 +1,16 @@
 import threading
 
-from sqlalchemy import Column, String, Integer, BigInteger
+from sqlalchemy import Column, String, BigInteger, select
 
 from zerotwobot.modules.sql import BASE, SESSION
 
 
 class Approvals(BASE):
     __tablename__ = "approval"
-    chat_id = Column(String(14), primary_key=True)
-    user_id = Column(BigInteger, primary_key=True)
+    chat_id: str = Column(String(14), primary_key=True)
+    user_id: int = Column(BigInteger, primary_key=True)
 
-    def __init__(self, chat_id, user_id):
+    def __init__(self, chat_id: int | str, user_id: int):
         self.chat_id = str(chat_id)  # ensure string
         self.user_id = user_id
 
@@ -20,42 +20,44 @@ class Approvals(BASE):
 
 Approvals.__table__.create(checkfirst=True)
 
-APPROVE_INSERTION_LOCK = threading.RLock()
 
 
-def approve(chat_id, user_id):
-    with APPROVE_INSERTION_LOCK:
+
+async def approve(chat_id: int | str, user_id: int) -> None:
+    async with SESSION.begin():
         approve_user = Approvals(str(chat_id), user_id)
-        SESSION.add(approve_user)
-        SESSION.commit()
+        await SESSION.add(approve_user)
+        await SESSION.commit()
 
 
-def is_approved(chat_id, user_id):
+async def is_approved(chat_id: int | str, user_id: int) -> Approvals | None:
     try:
-        return SESSION.query(Approvals).get((str(chat_id), user_id))
+        return SESSION.get(Approvals, (str(chat_id), user_id))
     finally:
-        SESSION.close()
+        await SESSION.close()()
 
 
-def disapprove(chat_id, user_id):
-    with APPROVE_INSERTION_LOCK:
-        disapprove_user = SESSION.query(Approvals).get((str(chat_id), user_id))
+async def disapprove(chat_id: int | str, user_id: int) -> bool:
+    async with SESSION.begin():
+        disapprove_user = SESSION.get(Approvals, (str(chat_id), user_id))
         if disapprove_user:
             SESSION.delete(disapprove_user)
-            SESSION.commit()
+            await SESSION.commit()
             return True
         else:
-            SESSION.close()
+            await SESSION.close()()
             return False
 
 
-def list_approved(chat_id):
+
+async def list_approved(chat_id: int | None) -> list[Approvals]:
     try:
         return (
-            SESSION.query(Approvals)
+            SESSION.scalars(
+            select(Approvals)
             .filter(Approvals.chat_id == str(chat_id))
             .order_by(Approvals.user_id.asc())
-            .all()
+        ).all()
         )
     finally:
-        SESSION.close()
+        await SESSION.close()()

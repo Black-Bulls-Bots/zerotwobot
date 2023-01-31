@@ -73,34 +73,33 @@ Users.__table__.create(checkfirst=True)
 Chats.__table__.create(checkfirst=True)
 ChatMembers.__table__.create(checkfirst=True)
 
-INSERTION_LOCK = threading.RLock()
 
 
 def ensure_bot_in_db():
-    with INSERTION_LOCK:
+    async with SESSION.begin():
         bot = Users(application.bot.id, application.bot.username)
         SESSION.merge(bot)
-        SESSION.commit()
+        await SESSION.commit()
 
 
 def update_user(user_id, username, chat_id=None, chat_name=None):
-    with INSERTION_LOCK:
+    async with SESSION.begin():
         user = SESSION.query(Users).get(user_id)
         if not user:
             user = Users(user_id, username)
-            SESSION.add(user)
+            await SESSION.add(user)
             SESSION.flush()
         else:
             user.username = username
 
         if not chat_id or not chat_name:
-            SESSION.commit()
+            await SESSION.commit()
             return
 
         chat = SESSION.query(Chats).get(str(chat_id))
         if not chat:
             chat = Chats(str(chat_id), chat_name)
-            SESSION.add(chat)
+            await SESSION.add(chat)
             SESSION.flush()
 
         else:
@@ -113,9 +112,9 @@ def update_user(user_id, username, chat_id=None, chat_name=None):
         )
         if not member:
             chat_member = ChatMembers(chat.chat_id, user.user_id)
-            SESSION.add(chat_member)
+            await SESSION.add(chat_member)
 
-        SESSION.commit()
+        await SESSION.commit()
 
 
 def get_userid_by_name(username):
@@ -126,35 +125,35 @@ def get_userid_by_name(username):
             .all()
         )
     finally:
-        SESSION.close()
+        await SESSION.close()()
 
 
 def get_name_by_userid(user_id):
     try:
         return SESSION.query(Users).get(Users.user_id == int(user_id)).first()
     finally:
-        SESSION.close()
+        await SESSION.close()()
 
 
 def get_chat_members(chat_id):
     try:
         return SESSION.query(ChatMembers).filter(ChatMembers.chat == str(chat_id)).all()
     finally:
-        SESSION.close()
+        await SESSION.close()()
 
 
 def get_all_chats():
     try:
         return SESSION.query(Chats).all()
     finally:
-        SESSION.close()
+        await SESSION.close()()
 
 
 def get_all_users():
     try:
         return SESSION.query(Users).all()
     finally:
-        SESSION.close()
+        await SESSION.close()()
 
 
 def get_user_num_chats(user_id):
@@ -163,7 +162,7 @@ def get_user_num_chats(user_id):
             SESSION.query(ChatMembers).filter(ChatMembers.user == int(user_id)).count()
         )
     finally:
-        SESSION.close()
+        await SESSION.close()()
 
 
 def get_user_com_chats(user_id):
@@ -173,29 +172,29 @@ def get_user_com_chats(user_id):
         )
         return [i.chat for i in chat_members]
     finally:
-        SESSION.close()
+        await SESSION.close()()
 
 
 def num_chats():
     try:
         return SESSION.query(Chats).count()
     finally:
-        SESSION.close()
+        await SESSION.close()()
 
 
 def num_users():
     try:
         return SESSION.query(Users).count()
     finally:
-        SESSION.close()
+        await SESSION.close()()
 
 
 def migrate_chat(old_chat_id, new_chat_id):
-    with INSERTION_LOCK:
+    async with SESSION.begin():
         chat = SESSION.query(Chats).get(str(old_chat_id))
         if chat:
             chat.chat_id = str(new_chat_id)
-        SESSION.commit()
+        await SESSION.commit()
 
         chat_members = (
             SESSION.query(ChatMembers)
@@ -204,31 +203,31 @@ def migrate_chat(old_chat_id, new_chat_id):
         )
         for member in chat_members:
             member.chat = str(new_chat_id)
-        SESSION.commit()
+        await SESSION.commit()
 
 
 ensure_bot_in_db()
 
 
 def del_user(user_id):
-    with INSERTION_LOCK:
+    async with SESSION.begin():
         curr = SESSION.query(Users).get(user_id)
         if curr:
             SESSION.delete(curr)
-            SESSION.commit()
+            await SESSION.commit()
             return True
 
         ChatMembers.query.filter(ChatMembers.user == user_id).delete()
-        SESSION.commit()
-        SESSION.close()
+        await SESSION.commit()
+        await SESSION.close()()
     return False
 
 
 def rem_chat(chat_id):
-    with INSERTION_LOCK:
+    async with SESSION.begin():
         chat = SESSION.query(Chats).get(str(chat_id))
         if chat:
             SESSION.delete(chat)
-            SESSION.commit()
+            await SESSION.commit()
         else:
-            SESSION.close()
+            await SESSION.close()()

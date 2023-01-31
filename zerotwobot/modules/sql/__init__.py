@@ -1,15 +1,16 @@
+import asyncio
 from zerotwobot import DB_URI
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.ext.asyncio import create_async_engine, async_scoped_session, async_sessionmaker
 
-
-def start() -> scoped_session:
-    engine = create_engine(DB_URI, client_encoding="utf8")
+async def start_db() -> async_scoped_session:
+    engine = create_async_engine(DB_URI, client_encoding="utf8", echo=True)
     BASE.metadata.bind = engine
     BASE.metadata.create_all(engine)
-    return scoped_session(sessionmaker(bind=engine, autoflush=False))
+    return async_scoped_session(async_sessionmaker(bind=engine, autoflush=False))
 
 
-BASE = declarative_base()
-SESSION = start()
+class BASE(DeclarativeBase):
+    pass
+
+SESSION = asyncio.get_event_loop().run_until_complete(start_db())

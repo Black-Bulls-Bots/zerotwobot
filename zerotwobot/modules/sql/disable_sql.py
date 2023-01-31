@@ -18,29 +18,29 @@ class Disable(BASE):
 
 
 Disable.__table__.create(checkfirst=True)
-DISABLE_INSERTION_LOCK = threading.RLock()
+
 
 DISABLED = {}
 
 
 def disable_command(chat_id, disable):
-    with DISABLE_INSERTION_LOCK:
+    async with SESSION.begin():
         disabled = SESSION.query(Disable).get((str(chat_id), disable))
 
         if not disabled:
             DISABLED.setdefault(str(chat_id), set()).add(disable)
 
             disabled = Disable(str(chat_id), disable)
-            SESSION.add(disabled)
-            SESSION.commit()
+            await SESSION.add(disabled)
+            await SESSION.commit()
             return True
 
-        SESSION.close()
+        await SESSION.close()()
         return False
 
 
 def enable_command(chat_id, enable):
-    with DISABLE_INSERTION_LOCK:
+    async with SESSION.begin():
         disabled = SESSION.query(Disable).get((str(chat_id), enable))
 
         if disabled:
@@ -48,10 +48,10 @@ def enable_command(chat_id, enable):
                 DISABLED.setdefault(str(chat_id), set()).remove(enable)
 
             SESSION.delete(disabled)
-            SESSION.commit()
+            await SESSION.commit()
             return True
 
-        SESSION.close()
+        await SESSION.close()()
         return False
 
 
@@ -67,27 +67,27 @@ def num_chats():
     try:
         return SESSION.query(func.count(distinct(Disable.chat_id))).scalar()
     finally:
-        SESSION.close()
+        await SESSION.close()()
 
 
 def num_disabled():
     try:
         return SESSION.query(Disable).count()
     finally:
-        SESSION.close()
+        await SESSION.close()()
 
 
 def migrate_chat(old_chat_id, new_chat_id):
-    with DISABLE_INSERTION_LOCK:
+    async with SESSION.begin():
         chats = SESSION.query(Disable).filter(Disable.chat_id == str(old_chat_id)).all()
         for chat in chats:
             chat.chat_id = str(new_chat_id)
-            SESSION.add(chat)
+            await SESSION.add(chat)
 
         if str(old_chat_id) in DISABLED:
             DISABLED[str(new_chat_id)] = DISABLED.get(str(old_chat_id), set())
 
-        SESSION.commit()
+        await SESSION.commit()
 
 
 def __load_disabled_commands():
@@ -98,7 +98,7 @@ def __load_disabled_commands():
             DISABLED.setdefault(chat.chat_id, set()).add(chat.command)
 
     finally:
-        SESSION.close()
+        await SESSION.close()()
 
 
 __load_disabled_commands()

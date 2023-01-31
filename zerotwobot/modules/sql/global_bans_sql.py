@@ -38,14 +38,13 @@ class GbanSettings(BASE):
 GloballyBannedUsers.__table__.create(checkfirst=True)
 GbanSettings.__table__.create(checkfirst=True)
 
-GBANNED_USERS_LOCK = threading.RLock()
-GBAN_SETTING_LOCK = threading.RLock()
+
 GBANNED_LIST = set()
 GBANSTAT_LIST = set()
 
 
 def gban_user(user_id, name, reason=None):
-    with GBANNED_USERS_LOCK:
+    async with SESSION.begin():
         user = SESSION.query(GloballyBannedUsers).get(user_id)
         if not user:
             user = GloballyBannedUsers(user_id, name, reason)
@@ -54,12 +53,12 @@ def gban_user(user_id, name, reason=None):
             user.reason = reason
 
         SESSION.merge(user)
-        SESSION.commit()
+        await SESSION.commit()
         __load_gbanned_userid_list()
 
 
 def update_gban_reason(user_id, name, reason=None):
-    with GBANNED_USERS_LOCK:
+    async with SESSION.begin():
         user = SESSION.query(GloballyBannedUsers).get(user_id)
         if not user:
             return None
@@ -68,17 +67,17 @@ def update_gban_reason(user_id, name, reason=None):
         user.reason = reason
 
         SESSION.merge(user)
-        SESSION.commit()
+        await SESSION.commit()
         return old_reason
 
 
 def ungban_user(user_id):
-    with GBANNED_USERS_LOCK:
+    async with SESSION.begin():
         user = SESSION.query(GloballyBannedUsers).get(user_id)
         if user:
             SESSION.delete(user)
 
-        SESSION.commit()
+        await SESSION.commit()
         __load_gbanned_userid_list()
 
 
@@ -90,38 +89,38 @@ def get_gbanned_user(user_id):
     try:
         return SESSION.query(GloballyBannedUsers).get(user_id)
     finally:
-        SESSION.close()
+        await SESSION.close()()
 
 
 def get_gban_list():
     try:
         return [x.to_dict() for x in SESSION.query(GloballyBannedUsers).all()]
     finally:
-        SESSION.close()
+        await SESSION.close()()
 
 
 def enable_gbans(chat_id):
-    with GBAN_SETTING_LOCK:
+    async with SESSION.begin():
         chat = SESSION.query(GbanSettings).get(str(chat_id))
         if not chat:
             chat = GbanSettings(chat_id, True)
 
         chat.setting = True
-        SESSION.add(chat)
-        SESSION.commit()
+        await SESSION.add(chat)
+        await SESSION.commit()
         if str(chat_id) in GBANSTAT_LIST:
             GBANSTAT_LIST.remove(str(chat_id))
 
 
 def disable_gbans(chat_id):
-    with GBAN_SETTING_LOCK:
+    async with SESSION.begin():
         chat = SESSION.query(GbanSettings).get(str(chat_id))
         if not chat:
             chat = GbanSettings(chat_id, False)
 
         chat.setting = False
-        SESSION.add(chat)
-        SESSION.commit()
+        await SESSION.add(chat)
+        await SESSION.commit()
         GBANSTAT_LIST.add(str(chat_id))
 
 
@@ -138,7 +137,7 @@ def __load_gbanned_userid_list():
     try:
         GBANNED_LIST = {x.user_id for x in SESSION.query(GloballyBannedUsers).all()}
     finally:
-        SESSION.close()
+        await SESSION.close()()
 
 
 def __load_gban_stat_list():
@@ -148,17 +147,17 @@ def __load_gban_stat_list():
             x.chat_id for x in SESSION.query(GbanSettings).all() if not x.setting
         }
     finally:
-        SESSION.close()
+        await SESSION.close()()
 
 
 def migrate_chat(old_chat_id, new_chat_id):
-    with GBAN_SETTING_LOCK:
+    async with SESSION.begin():
         chat = SESSION.query(GbanSettings).get(str(old_chat_id))
         if chat:
             chat.chat_id = new_chat_id
-            SESSION.add(chat)
+            await SESSION.add(chat)
 
-        SESSION.commit()
+        await SESSION.commit()
 
 
 # Create in memory userid to avoid disk access
