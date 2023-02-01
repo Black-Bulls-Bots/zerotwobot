@@ -105,7 +105,8 @@ Permissions.__table__.create(checkfirst=True)
 # Permissions.__table__.drop()
 Restrictions.__table__.create(checkfirst=True)
 
-
+PERM_LOCK = threading.RLock()
+RESTR_LOCK = threading.RLock()
 
 
 def init_permissions(chat_id, reset=False):
@@ -114,8 +115,8 @@ def init_permissions(chat_id, reset=False):
         SESSION.delete(curr_perm)
         SESSION.flush()
     perm = Permissions(str(chat_id))
-    await SESSION.add(perm)
-    await SESSION.commit()
+    SESSION.add(perm)
+    SESSION.commit()
     return perm
 
 
@@ -125,13 +126,13 @@ def init_restrictions(chat_id, reset=False):
         SESSION.delete(curr_restr)
         SESSION.flush()
     restr = Restrictions(str(chat_id))
-    await SESSION.add(restr)
-    await SESSION.commit()
+    SESSION.add(restr)
+    SESSION.commit()
     return restr
 
 
 def update_lock(chat_id, lock_type, locked):
-    async with SESSION.begin():
+    with PERM_LOCK:
         curr_perm = SESSION.query(Permissions).get(str(chat_id))
         if not curr_perm:
             curr_perm = init_permissions(chat_id)
@@ -191,12 +192,12 @@ def update_lock(chat_id, lock_type, locked):
         elif lock_type == "stickeranimated":
             curr_perm.stickeranimated = locked
 
-        await SESSION.add(curr_perm)
-        await SESSION.commit()
+        SESSION.add(curr_perm)
+        SESSION.commit()
 
 
 def update_restriction(chat_id, restr_type, locked):
-    async with SESSION.begin():
+    with RESTR_LOCK:
         curr_restr = SESSION.query(Restrictions).get(str(chat_id))
         if not curr_restr:
             curr_restr = init_restrictions(chat_id)
@@ -223,13 +224,13 @@ def update_restriction(chat_id, restr_type, locked):
             curr_restr.info = locked
             curr_restr.invite = locked
             curr_restr.topcis = locked
-        await SESSION.add(curr_restr)
-        await SESSION.commit()
+        SESSION.add(curr_restr)
+        SESSION.commit()
 
 
 def is_locked(chat_id, lock_type):
     curr_perm = SESSION.query(Permissions).get(str(chat_id))
-    await SESSION.close()()
+    SESSION.close()
 
     if not curr_perm:
         return False
@@ -292,7 +293,7 @@ def is_locked(chat_id, lock_type):
 
 def is_restr_locked(chat_id, lock_type):
     curr_restr = SESSION.query(Restrictions).get(str(chat_id))
-    await SESSION.close()()
+    SESSION.close()
 
     if not curr_restr:
         return False
@@ -327,25 +328,25 @@ def get_locks(chat_id):
     try:
         return SESSION.query(Permissions).get(str(chat_id))
     finally:
-        await SESSION.close()()
+        SESSION.close()
 
 
 def get_restr(chat_id):
     try:
         return SESSION.query(Restrictions).get(str(chat_id))
     finally:
-        await SESSION.close()()
+        SESSION.close()
 
 
 def migrate_chat(old_chat_id, new_chat_id):
-    async with SESSION.begin():
+    with PERM_LOCK:
         perms = SESSION.query(Permissions).get(str(old_chat_id))
         if perms:
             perms.chat_id = str(new_chat_id)
-        await SESSION.commit()
+        SESSION.commit()
 
-    async with SESSION.begin():
+    with RESTR_LOCK:
         rest = SESSION.query(Restrictions).get(str(old_chat_id))
         if rest:
             rest.chat_id = str(new_chat_id)
-        await SESSION.commit()
+        SESSION.commit()

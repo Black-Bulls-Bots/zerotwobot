@@ -325,6 +325,12 @@ WelcomeMute.__table__.create(checkfirst=True)
 WelcomeMuteUsers.__table__.create(checkfirst=True)
 CleanServiceSetting.__table__.create(checkfirst=True)
 
+INSERTION_LOCK = threading.RLock()
+WELC_BTN_LOCK = threading.RLock()
+LEAVE_BTN_LOCK = threading.RLock()
+WM_LOCK = threading.RLock()
+CS_LOCK = threading.RLock()
+
 
 def welcome_mutes(chat_id):
     try:
@@ -333,21 +339,21 @@ def welcome_mutes(chat_id):
             return welcomemutes.welcomemutes
         return False
     finally:
-        await SESSION.close()()
+        SESSION.close()
 
 
 def set_welcome_mutes(chat_id, welcomemutes):
-    async with SESSION.begin():
+    with WM_LOCK:
         prev = SESSION.query(WelcomeMute).get((str(chat_id)))
         if prev:
             SESSION.delete(prev)
         welcome_m = WelcomeMute(str(chat_id), welcomemutes)
-        await SESSION.add(welcome_m)
-        await SESSION.commit()
+        SESSION.add(welcome_m)
+        SESSION.commit()
 
 
 def set_human_checks(user_id, chat_id):
-    async with SESSION.begin():
+    with INSERTION_LOCK:
         human_check = SESSION.query(WelcomeMuteUsers).get((user_id, str(chat_id)))
         if not human_check:
             human_check = WelcomeMuteUsers(user_id, str(chat_id), True)
@@ -355,8 +361,8 @@ def set_human_checks(user_id, chat_id):
         else:
             human_check.human_check = True
 
-        await SESSION.add(human_check)
-        await SESSION.commit()
+        SESSION.add(human_check)
+        SESSION.commit()
 
         return human_check
 
@@ -369,12 +375,12 @@ def get_human_checks(user_id, chat_id):
         human_check = human_check.human_check
         return human_check
     finally:
-        await SESSION.close()()
+        SESSION.close()
 
 
 def get_welc_mutes_pref(chat_id):
     welcomemutes = SESSION.query(WelcomeMute).get(str(chat_id))
-    await SESSION.close()()
+    SESSION.close()
 
     if welcomemutes:
         return welcomemutes.welcomemutes
@@ -384,7 +390,7 @@ def get_welc_mutes_pref(chat_id):
 
 def get_welc_pref(chat_id):
     welc = SESSION.query(Welcome).get(str(chat_id))
-    await SESSION.close()()
+    SESSION.close()
     if welc:
         return (
             welc.should_welcome,
@@ -400,7 +406,7 @@ def get_welc_pref(chat_id):
 
 def get_gdbye_pref(chat_id):
     welc = SESSION.query(Welcome).get(str(chat_id))
-    await SESSION.close()()
+    SESSION.close()
     if welc:
         return welc.should_goodbye, welc.custom_leave, welc.leave_type
     else:
@@ -409,20 +415,20 @@ def get_gdbye_pref(chat_id):
 
 
 def set_clean_welcome(chat_id, clean_welcome):
-    async with SESSION.begin():
+    with INSERTION_LOCK:
         curr = SESSION.query(Welcome).get(str(chat_id))
         if not curr:
             curr = Welcome(str(chat_id))
 
         curr.clean_welcome = int(clean_welcome)
 
-        await SESSION.add(curr)
-        await SESSION.commit()
+        SESSION.add(curr)
+        SESSION.commit()
 
 
 def get_clean_pref(chat_id):
     welc = SESSION.query(Welcome).get(str(chat_id))
-    await SESSION.close()()
+    SESSION.close()
 
     if welc:
         return welc.clean_welcome
@@ -431,27 +437,27 @@ def get_clean_pref(chat_id):
 
 
 def set_welc_preference(chat_id, should_welcome):
-    async with SESSION.begin():
+    with INSERTION_LOCK:
         curr = SESSION.query(Welcome).get(str(chat_id))
         if not curr:
             curr = Welcome(str(chat_id), should_welcome=should_welcome)
         else:
             curr.should_welcome = should_welcome
 
-        await SESSION.add(curr)
-        await SESSION.commit()
+        SESSION.add(curr)
+        SESSION.commit()
 
 
 def set_gdbye_preference(chat_id, should_goodbye):
-    async with SESSION.begin():
+    with INSERTION_LOCK:
         curr = SESSION.query(Welcome).get(str(chat_id))
         if not curr:
             curr = Welcome(str(chat_id), should_goodbye=should_goodbye)
         else:
             curr.should_goodbye = should_goodbye
 
-        await SESSION.add(curr)
-        await SESSION.commit()
+        SESSION.add(curr)
+        SESSION.commit()
 
 
 def set_custom_welcome(
@@ -464,7 +470,7 @@ def set_custom_welcome(
     if buttons is None:
         buttons = []
 
-    async with SESSION.begin():
+    with INSERTION_LOCK:
         welcome_settings = SESSION.query(Welcome).get(str(chat_id))
         if not welcome_settings:
             welcome_settings = Welcome(str(chat_id), True)
@@ -478,7 +484,7 @@ def set_custom_welcome(
             welcome_settings.custom_welcome = DEFAULT_WELCOME
             welcome_settings.welcome_type = Types.TEXT.value
 
-        await SESSION.add(welcome_settings)
+        SESSION.add(welcome_settings)
 
         with WELC_BTN_LOCK:
             prev_buttons = (
@@ -491,9 +497,9 @@ def set_custom_welcome(
 
             for b_name, url, same_line in buttons:
                 button = WelcomeButtons(chat_id, b_name, url, same_line)
-                await SESSION.add(button)
+                SESSION.add(button)
 
-        await SESSION.commit()
+        SESSION.commit()
 
 
 def get_custom_welcome(chat_id):
@@ -502,7 +508,7 @@ def get_custom_welcome(chat_id):
     if welcome_settings and welcome_settings.custom_welcome:
         ret = welcome_settings.custom_welcome
 
-    await SESSION.close()()
+    SESSION.close()
     return ret
 
 
@@ -510,7 +516,7 @@ def set_custom_gdbye(chat_id, custom_goodbye, goodbye_type, buttons=None):
     if buttons is None:
         buttons = []
 
-    async with SESSION.begin():
+    with INSERTION_LOCK:
         welcome_settings = SESSION.query(Welcome).get(str(chat_id))
         if not welcome_settings:
             welcome_settings = Welcome(str(chat_id), True)
@@ -523,7 +529,7 @@ def set_custom_gdbye(chat_id, custom_goodbye, goodbye_type, buttons=None):
             welcome_settings.custom_leave = DEFAULT_GOODBYE
             welcome_settings.leave_type = Types.TEXT.value
 
-        await SESSION.add(welcome_settings)
+        SESSION.add(welcome_settings)
 
         with LEAVE_BTN_LOCK:
             prev_buttons = (
@@ -536,9 +542,9 @@ def set_custom_gdbye(chat_id, custom_goodbye, goodbye_type, buttons=None):
 
             for b_name, url, same_line in buttons:
                 button = GoodbyeButtons(chat_id, b_name, url, same_line)
-                await SESSION.add(button)
+                SESSION.add(button)
 
-        await SESSION.commit()
+        SESSION.commit()
 
 
 def get_custom_gdbye(chat_id):
@@ -547,7 +553,7 @@ def get_custom_gdbye(chat_id):
     if welcome_settings and welcome_settings.custom_leave:
         ret = welcome_settings.custom_leave
 
-    await SESSION.close()()
+    SESSION.close()
     return ret
 
 
@@ -560,7 +566,7 @@ def get_welc_buttons(chat_id):
             .all()
         )
     finally:
-        await SESSION.close()()
+        SESSION.close()
 
 
 def get_gdbye_buttons(chat_id):
@@ -572,7 +578,7 @@ def get_gdbye_buttons(chat_id):
             .all()
         )
     finally:
-        await SESSION.close()()
+        SESSION.close()
 
 
 def clean_service(chat_id: Union[str, int]) -> bool:
@@ -582,22 +588,22 @@ def clean_service(chat_id: Union[str, int]) -> bool:
             return chat_setting.clean_service
         return False
     finally:
-        await SESSION.close()()
+        SESSION.close()
 
 
 def set_clean_service(chat_id: Union[int, str], setting: bool):
-    async with SESSION.begin():
+    with CS_LOCK:
         chat_setting = SESSION.query(CleanServiceSetting).get(str(chat_id))
         if not chat_setting:
             chat_setting = CleanServiceSetting(chat_id)
 
         chat_setting.clean_service = setting
-        await SESSION.add(chat_setting)
-        await SESSION.commit()
+        SESSION.add(chat_setting)
+        SESSION.commit()
 
 
 def migrate_chat(old_chat_id, new_chat_id):
-    async with SESSION.begin():
+    with INSERTION_LOCK:
         chat = SESSION.query(Welcome).get(str(old_chat_id))
         if chat:
             chat.chat_id = str(new_chat_id)
@@ -620,4 +626,4 @@ def migrate_chat(old_chat_id, new_chat_id):
             for btn in chat_buttons:
                 btn.chat_id = str(new_chat_id)
 
-        await SESSION.commit()
+        SESSION.commit()

@@ -54,6 +54,9 @@ ChatAccessConnectionSettings.__table__.create(checkfirst=True)
 Connection.__table__.create(checkfirst=True)
 ConnectionHistory.__table__.create(checkfirst=True)
 
+CHAT_ACCESS_LOCK = threading.RLock()
+CONNECTION_INSERTION_LOCK = threading.RLock()
+CONNECTION_HISTORY_LOCK = threading.RLock()
 
 HISTORY_CONNECT = {}
 
@@ -65,28 +68,28 @@ def allow_connect_to_chat(chat_id: Union[str, int]) -> bool:
             return chat_setting.allow_connect_to_chat
         return False
     finally:
-        await SESSION.close()()
+        SESSION.close()
 
 
 def set_allow_connect_to_chat(chat_id: Union[int, str], setting: bool):
-    async with SESSION.begin():
+    with CHAT_ACCESS_LOCK:
         chat_setting = SESSION.query(ChatAccessConnectionSettings).get(str(chat_id))
         if not chat_setting:
             chat_setting = ChatAccessConnectionSettings(chat_id, setting)
 
         chat_setting.allow_connect_to_chat = setting
-        await SESSION.add(chat_setting)
-        await SESSION.commit()
+        SESSION.add(chat_setting)
+        SESSION.commit()
 
 
 def connect(user_id, chat_id):
-    async with SESSION.begin():
+    with CONNECTION_INSERTION_LOCK:
         prev = SESSION.query(Connection).get((int(user_id)))
         if prev:
             SESSION.delete(prev)
         connect_to_chat = Connection(int(user_id), chat_id)
-        await SESSION.add(connect_to_chat)
-        await SESSION.commit()
+        SESSION.add(connect_to_chat)
+        SESSION.commit()
         return True
 
 
@@ -94,31 +97,31 @@ def get_connected_chat(user_id):
     try:
         return SESSION.query(Connection).get((int(user_id)))
     finally:
-        await SESSION.close()()
+        SESSION.close()
 
 
 def curr_connection(chat_id):
     try:
         return SESSION.query(Connection).get((str(chat_id)))
     finally:
-        await SESSION.close()()
+        SESSION.close()
 
 
 def disconnect(user_id):
-    async with SESSION.begin():
+    with CONNECTION_INSERTION_LOCK:
         disconnect = SESSION.query(Connection).get((int(user_id)))
         if disconnect:
             SESSION.delete(disconnect)
-            await SESSION.commit()
+            SESSION.commit()
             return True
         else:
-            await SESSION.close()()
+            SESSION.close()
             return False
 
 
 def add_history_conn(user_id, chat_id, chat_name):
     global HISTORY_CONNECT
-    async with SESSION.begin():
+    with CONNECTION_HISTORY_LOCK:
         conn_time = int(time.time())
         if HISTORY_CONNECT.get(int(user_id)):
             counting = (
@@ -155,8 +158,8 @@ def add_history_conn(user_id, chat_id, chat_name):
         if delold:
             SESSION.delete(delold)
         history = ConnectionHistory(int(user_id), str(chat_id), chat_name, conn_time)
-        await SESSION.add(history)
-        await SESSION.commit()
+        SESSION.add(history)
+        SESSION.commit()
         HISTORY_CONNECT[int(user_id)][conn_time] = {
             "chat_name": chat_name,
             "chat_id": str(chat_id),
@@ -178,7 +181,7 @@ def clear_history_conn(user_id):
         if delold:
             SESSION.delete(delold)
             HISTORY_CONNECT[int(user_id)].pop(x)
-    await SESSION.commit()
+    SESSION.commit()
     return True
 
 
@@ -196,7 +199,7 @@ def __load_user_history():
                 "chat_id": x.chat_id,
             }
     finally:
-        await SESSION.close()()
+        SESSION.close()
 
 
 __load_user_history()

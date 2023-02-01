@@ -47,14 +47,15 @@ class Buttons(BASE):
 Notes.__table__.create(checkfirst=True)
 Buttons.__table__.create(checkfirst=True)
 
-
+NOTES_INSERTION_LOCK = threading.RLock()
+BUTTONS_INSERTION_LOCK = threading.RLock()
 
 
 def add_note_to_db(chat_id, note_name, note_data, msgtype, buttons=None, file=None):
     if not buttons:
         buttons = []
 
-    async with SESSION.begin():
+    with NOTES_INSERTION_LOCK:
         prev = SESSION.query(Notes).get((str(chat_id), note_name))
         if prev:
             with BUTTONS_INSERTION_LOCK:
@@ -76,8 +77,8 @@ def add_note_to_db(chat_id, note_name, note_data, msgtype, buttons=None, file=No
             msgtype=msgtype.value,
             file=file,
         )
-        await SESSION.add(note)
-        await SESSION.commit()
+        SESSION.add(note)
+        SESSION.commit()
 
     for b_name, url, same_line in buttons:
         add_note_button_to_db(chat_id, note_name, b_name, url, same_line)
@@ -91,11 +92,11 @@ def get_note(chat_id, note_name):
             .first()
         )
     finally:
-        await SESSION.close()()
+        SESSION.close()
 
 
 def rm_note(chat_id, note_name):
-    async with SESSION.begin():
+    with NOTES_INSERTION_LOCK:
         note = (
             SESSION.query(Notes)
             .filter(func.lower(Notes.name) == note_name, Notes.chat_id == str(chat_id))
@@ -115,11 +116,11 @@ def rm_note(chat_id, note_name):
                     SESSION.delete(btn)
 
             SESSION.delete(note)
-            await SESSION.commit()
+            SESSION.commit()
             return True
 
         else:
-            await SESSION.close()()
+            SESSION.close()
             return False
 
 
@@ -132,14 +133,14 @@ def get_all_chat_notes(chat_id):
             .all()
         )
     finally:
-        await SESSION.close()()
+        SESSION.close()
 
 
 def add_note_button_to_db(chat_id, note_name, b_name, url, same_line):
-    async with SESSION.begin():
+    with BUTTONS_INSERTION_LOCK:
         button = Buttons(chat_id, note_name, b_name, url, same_line)
-        await SESSION.add(button)
-        await SESSION.commit()
+        SESSION.add(button)
+        SESSION.commit()
 
 
 def get_buttons(chat_id, note_name):
@@ -151,25 +152,25 @@ def get_buttons(chat_id, note_name):
             .all()
         )
     finally:
-        await SESSION.close()()
+        SESSION.close()
 
 
 def num_notes():
     try:
         return SESSION.query(Notes).count()
     finally:
-        await SESSION.close()()
+        SESSION.close()
 
 
 def num_chats():
     try:
         return SESSION.query(func.count(distinct(Notes.chat_id))).scalar()
     finally:
-        await SESSION.close()()
+        SESSION.close()
 
 
 def migrate_chat(old_chat_id, new_chat_id):
-    async with SESSION.begin():
+    with NOTES_INSERTION_LOCK:
         chat_notes = (
             SESSION.query(Notes).filter(Notes.chat_id == str(old_chat_id)).all()
         )
@@ -183,4 +184,4 @@ def migrate_chat(old_chat_id, new_chat_id):
             for btn in chat_buttons:
                 btn.chat_id = str(new_chat_id)
 
-        await SESSION.commit()
+        SESSION.commit()

@@ -1,16 +1,18 @@
+import threading
+
 from datetime import datetime
 
 from zerotwobot.modules.sql import BASE, SESSION
-from sqlalchemy import Boolean, Column, UnicodeText, DateTime, BigInteger, select
+from sqlalchemy import Boolean, Column, Integer, UnicodeText, DateTime, BigInteger
 
 
 class AFK(BASE):
     __tablename__ = "afk_users"
 
-    user_id: int = Column(BigInteger, primary_key=True)
-    is_afk: bool = Column(Boolean)
-    reason: str = Column(UnicodeText)
-    time: datetime = Column(DateTime)
+    user_id = Column(BigInteger, primary_key=True)
+    is_afk = Column(Boolean)
+    reason = Column(UnicodeText)
+    time = Column(DateTime)
 
     def __init__(self, user_id: int, reason: str = "", is_afk: bool = True):
         self.user_id = user_id
@@ -23,24 +25,25 @@ class AFK(BASE):
 
 
 AFK.__table__.create(checkfirst=True)
+INSERTION_LOCK = threading.RLock()
 
 AFK_USERS = {}
 
 
-def is_afk(user_id: int):
+def is_afk(user_id):
     return user_id in AFK_USERS
 
 
-async def check_afk_status(user_id: int) -> AFK | None:
+def check_afk_status(user_id):
     try:
-        return await SESSION.get(AFK, user_id)
+        return SESSION.query(AFK).get(user_id)
     finally:
-        await SESSION.close()()()
+        SESSION.close()
 
 
-async def set_afk(user_id: int, reason: str = "") -> None:
-    async with SESSION.begin():
-        curr = await SESSION.get(AFK, user_id)
+def set_afk(user_id, reason=""):
+    with INSERTION_LOCK:
+        curr = SESSION.query(AFK).get(user_id)
         if not curr:
             curr = AFK(user_id, reason, True)
         else:
@@ -48,49 +51,49 @@ async def set_afk(user_id: int, reason: str = "") -> None:
 
         AFK_USERS[user_id] = {"reason": reason, "time": curr.time}
 
-        await SESSION.add(curr)
-        await SESSION.commit()
+        SESSION.add(curr)
+        SESSION.commit()
 
 
-async def rm_afk(user_id: int) -> bool:
-    async with SESSION.begin():
-        curr = await SESSION.get(AFK, user_id)
+def rm_afk(user_id):
+    with INSERTION_LOCK:
+        curr = SESSION.query(AFK).get(user_id)
         if curr:
             if user_id in AFK_USERS:  # sanity check
                 del AFK_USERS[user_id]
 
             SESSION.delete(curr)
-            await SESSION.commit()
+            SESSION.commit()
             return True
 
-        await SESSION.close()()
+        SESSION.close()
         return False
 
 
-async def toggle_afk(user_id: int, reason: str ="") -> None:
-    async with SESSION.begin():
-        curr = await SESSION.get(AFK, user_id)
+def toggle_afk(user_id, reason=""):
+    with INSERTION_LOCK:
+        curr = SESSION.query(AFK).get(user_id)
         if not curr:
             curr = AFK(user_id, reason, True)
         elif curr.is_afk:
             curr.is_afk = False
         elif not curr.is_afk:
             curr.is_afk = True
-        await SESSION.add(curr)
-        await SESSION.commit()
+        SESSION.add(curr)
+        SESSION.commit()
 
 
-async def __load_afk_users():
+def __load_afk_users():
     global AFK_USERS
     try:
-        all_afk = (await SESSION.scalars(select(AFK))).all()
+        all_afk = SESSION.query(AFK).all()
         AFK_USERS = {
             user.user_id: {"reason": user.reason, "time": user.time}
             for user in all_afk
             if user.is_afk
         }
     finally:
-        await SESSION.close()()()
+        SESSION.close()
 
 
 __load_afk_users()

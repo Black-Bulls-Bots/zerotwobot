@@ -32,7 +32,8 @@ class ReportingChatSettings(BASE):
 ReportingUserSettings.__table__.create(checkfirst=True)
 ReportingChatSettings.__table__.create(checkfirst=True)
 
-
+CHAT_LOCK = threading.RLock()
+USER_LOCK = threading.RLock()
 
 
 def chat_should_report(chat_id: Union[str, int]) -> bool:
@@ -42,7 +43,7 @@ def chat_should_report(chat_id: Union[str, int]) -> bool:
             return chat_setting.should_report
         return False
     finally:
-        await SESSION.close()()
+        SESSION.close()
 
 
 def user_should_report(user_id: int) -> bool:
@@ -52,33 +53,33 @@ def user_should_report(user_id: int) -> bool:
             return user_setting.should_report
         return True
     finally:
-        await SESSION.close()()
+        SESSION.close()
 
 
 def set_chat_setting(chat_id: Union[int, str], setting: bool):
-    async with SESSION.begin():
+    with CHAT_LOCK:
         chat_setting = SESSION.query(ReportingChatSettings).get(str(chat_id))
         if not chat_setting:
             chat_setting = ReportingChatSettings(chat_id)
 
         chat_setting.should_report = setting
-        await SESSION.add(chat_setting)
-        await SESSION.commit()
+        SESSION.add(chat_setting)
+        SESSION.commit()
 
 
 def set_user_setting(user_id: int, setting: bool):
-    async with SESSION.begin():
+    with USER_LOCK:
         user_setting = SESSION.query(ReportingUserSettings).get(user_id)
         if not user_setting:
             user_setting = ReportingUserSettings(user_id)
 
         user_setting.should_report = setting
-        await SESSION.add(user_setting)
-        await SESSION.commit()
+        SESSION.add(user_setting)
+        SESSION.commit()
 
 
 def migrate_chat(old_chat_id, new_chat_id):
-    async with SESSION.begin():
+    with CHAT_LOCK:
         chat_notes = (
             SESSION.query(ReportingChatSettings)
             .filter(ReportingChatSettings.chat_id == str(old_chat_id))
@@ -86,4 +87,4 @@ def migrate_chat(old_chat_id, new_chat_id):
         )
         for note in chat_notes:
             note.chat_id = str(new_chat_id)
-        await SESSION.commit()
+        SESSION.commit()

@@ -45,17 +45,19 @@ class StickerSettings(BASE):
 StickersFilters.__table__.create(checkfirst=True)
 StickerSettings.__table__.create(checkfirst=True)
 
+STICKERS_FILTER_INSERTION_LOCK = threading.RLock()
+STICKSET_FILTER_INSERTION_LOCK = threading.RLock()
 
 CHAT_STICKERS = {}
 CHAT_BLSTICK_BLACKLISTS = {}
 
 
-async def add_to_stickers(chat_id, trigger):
-    async with SESSION.begin():
+def add_to_stickers(chat_id, trigger):
+    with STICKERS_FILTER_INSERTION_LOCK:
         stickers_filt = StickersFilters(str(chat_id), trigger)
 
         SESSION.merge(stickers_filt)  # merge to avoid duplicate key issues
-        await SESSION.commit()
+        SESSION.commit()
         global CHAT_STICKERS
         if CHAT_STICKERS.get(str(chat_id), set()) == set():
             CHAT_STICKERS[str(chat_id)] = {trigger}
@@ -63,18 +65,18 @@ async def add_to_stickers(chat_id, trigger):
             CHAT_STICKERS.get(str(chat_id), set()).add(trigger)
 
 
-async def rm_from_stickers(chat_id, trigger):
-    async with SESSION.begin():
+def rm_from_stickers(chat_id, trigger):
+    with STICKERS_FILTER_INSERTION_LOCK:
         stickers_filt = SESSION.query(StickersFilters).get((str(chat_id), trigger))
         if stickers_filt:
             if trigger in CHAT_STICKERS.get(str(chat_id), set()):  # sanity check
                 CHAT_STICKERS.get(str(chat_id), set()).remove(trigger)
 
             SESSION.delete(stickers_filt)
-            await SESSION.commit()
+            SESSION.commit()
             return True
 
-        await SESSION.close()()
+        SESSION.close()
         return False
 
 
@@ -82,14 +84,14 @@ def get_chat_stickers(chat_id):
     return CHAT_STICKERS.get(str(chat_id), set())
 
 
-async def num_stickers_filters():
+def num_stickers_filters():
     try:
         return SESSION.query(StickersFilters).count()
     finally:
-        await SESSION.close()()
+        SESSION.close()
 
 
-async def num_stickers_chat_filters(chat_id):
+def num_stickers_chat_filters(chat_id):
     try:
         return (
             SESSION.query(StickersFilters.chat_id)
@@ -97,17 +99,17 @@ async def num_stickers_chat_filters(chat_id):
             .count()
         )
     finally:
-        await SESSION.close()()
+        SESSION.close()
 
 
-async def num_stickers_filter_chats():
+def num_stickers_filter_chats():
     try:
         return SESSION.query(func.count(distinct(StickersFilters.chat_id))).scalar()
     finally:
-        await SESSION.close()()
+        SESSION.close()
 
 
-async def set_blacklist_strength(chat_id, blacklist_type, value):
+def set_blacklist_strength(chat_id, blacklist_type, value):
     # for blacklist_type
     # 0 = nothing
     # 1 = delete
@@ -117,7 +119,7 @@ async def set_blacklist_strength(chat_id, blacklist_type, value):
     # 5 = ban
     # 6 = tban
     # 7 = tmute
-    async with SESSION.begin():
+    with STICKSET_FILTER_INSERTION_LOCK:
         global CHAT_BLSTICK_BLACKLISTS
         curr_setting = SESSION.query(StickerSettings).get(str(chat_id))
         if not curr_setting:
@@ -134,11 +136,11 @@ async def set_blacklist_strength(chat_id, blacklist_type, value):
             "value": value,
         }
 
-        await SESSION.add(curr_setting)
-        await SESSION.commit()
+        SESSION.add(curr_setting)
+        SESSION.commit()
 
 
-async def get_blacklist_setting(chat_id):
+def get_blacklist_setting(chat_id):
     try:
         setting = CHAT_BLSTICK_BLACKLISTS.get(str(chat_id))
         if setting:
@@ -147,10 +149,10 @@ async def get_blacklist_setting(chat_id):
             return 1, "0"
 
     finally:
-        await SESSION.close()()
+        SESSION.close()
 
 
-async def __load_CHAT_STICKERS():
+def __load_CHAT_STICKERS():
     global CHAT_STICKERS
     try:
         chats = SESSION.query(StickersFilters.chat_id).distinct().all()
@@ -164,10 +166,10 @@ async def __load_CHAT_STICKERS():
         CHAT_STICKERS = {x: set(y) for x, y in CHAT_STICKERS.items()}
 
     finally:
-        await SESSION.close()()
+        SESSION.close()
 
 
-async def __load_chat_stickerset_blacklists():
+def __load_chat_stickerset_blacklists():
     global CHAT_BLSTICK_BLACKLISTS
     try:
         chats_settings = SESSION.query(StickerSettings).all()
@@ -178,11 +180,11 @@ async def __load_chat_stickerset_blacklists():
             }
 
     finally:
-        await SESSION.close()()
+        SESSION.close()
 
 
-async def migrate_chat(old_chat_id, new_chat_id):
-    async with SESSION.begin():
+def migrate_chat(old_chat_id, new_chat_id):
+    with STICKERS_FILTER_INSERTION_LOCK:
         chat_filters = (
             SESSION.query(StickersFilters)
             .filter(StickersFilters.chat_id == str(old_chat_id))
@@ -190,7 +192,7 @@ async def migrate_chat(old_chat_id, new_chat_id):
         )
         for filt in chat_filters:
             filt.chat_id = str(new_chat_id)
-        await SESSION.commit()
+        SESSION.commit()
 
 
 __load_CHAT_STICKERS()

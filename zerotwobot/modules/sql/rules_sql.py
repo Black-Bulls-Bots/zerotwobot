@@ -18,18 +18,18 @@ class Rules(BASE):
 
 Rules.__table__.create(checkfirst=True)
 
-
+INSERTION_LOCK = threading.RLock()
 
 
 def set_rules(chat_id, rules_text):
-    async with SESSION.begin():
+    with INSERTION_LOCK:
         rules = SESSION.query(Rules).get(str(chat_id))
         if not rules:
             rules = Rules(str(chat_id))
         rules.rules = rules_text
 
-        await SESSION.add(rules)
-        await SESSION.commit()
+        SESSION.add(rules)
+        SESSION.commit()
 
 
 def get_rules(chat_id):
@@ -38,7 +38,7 @@ def get_rules(chat_id):
     if rules:
         ret = rules.rules
 
-    await SESSION.close()()
+    SESSION.close()
     return ret
 
 
@@ -46,12 +46,12 @@ def num_chats():
     try:
         return SESSION.query(func.count(distinct(Rules.chat_id))).scalar()
     finally:
-        await SESSION.close()()
+        SESSION.close()
 
 
 def migrate_chat(old_chat_id, new_chat_id):
-    async with SESSION.begin():
+    with INSERTION_LOCK:
         chat = SESSION.query(Rules).get(str(old_chat_id))
         if chat:
             chat.chat_id = str(new_chat_id)
-        await SESSION.commit()
+        SESSION.commit()

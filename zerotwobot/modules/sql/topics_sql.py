@@ -18,7 +18,7 @@
 
 # TopicsAction.__table__.create(checkfirst=True)
 
-
+# INSERTION_LOCK = threading.RLock()
 
 
 # def set_action_topic(chat_id: int, action_chat: int) -> int:
@@ -28,8 +28,8 @@
 #             action_topic = TopicsAction(str(chat_id))
 #         action_topic.action_topic = action_chat
 
-#         await SESSION.add(action_topic)
-#         await SESSION.commit()
+#         SESSION.add(action_topic)
+#         SESSION.commit()
 
 
 # def get_action_topic(chat_id: int) -> int | None:
@@ -38,7 +38,7 @@
 #     if action_topic:
 #         ret = action_topic.action_topic
 
-#     await SESSION.close()()
+#     SESSION.close()
 #     return ret
 
 
@@ -47,8 +47,8 @@
 #         action_topic = SESSION.query(TopicsAction).get(str(chat_id))
 #         if action_topic:
 #             SESSION.delete(action_topic)
-#             await SESSION.commit()
+#             SESSION.commit()
 #             return True
 #         else:
-#             await SESSION.close()()
+#             SESSION.close()
 #             return False

@@ -1,14 +1,14 @@
 import threading
 
-from sqlalchemy import func, distinct, Column, String, UnicodeText, Integer, select
+from sqlalchemy import func, distinct, Column, String, UnicodeText, Integer
 
 from zerotwobot.modules.sql import SESSION, BASE
 
 
 class BlackListFilters(BASE):
     __tablename__ = "blacklist"
-    chat_id: str = Column(String(14), primary_key=True)
-    trigger: str = Column(UnicodeText, primary_key=True, nullable=False)
+    chat_id = Column(String(14), primary_key=True)
+    trigger = Column(UnicodeText, primary_key=True, nullable=False)
 
     def __init__(self, chat_id, trigger):
         self.chat_id = str(chat_id)  # ensure string
@@ -27,9 +27,9 @@ class BlackListFilters(BASE):
 
 class BlacklistSettings(BASE):
     __tablename__ = "blacklist_settings"
-    chat_id: str = Column(String(14), primary_key=True)
-    blacklist_type: int = Column(Integer, default=1)
-    value: str = Column(UnicodeText, default="0")
+    chat_id = Column(String(14), primary_key=True)
+    blacklist_type = Column(Integer, default=1)
+    value = Column(UnicodeText, default="0")
 
     def __init__(self, chat_id, blacklist_type=1, value="0"):
         self.chat_id = str(chat_id)
@@ -46,17 +46,19 @@ class BlacklistSettings(BASE):
 BlackListFilters.__table__.create(checkfirst=True)
 BlacklistSettings.__table__.create(checkfirst=True)
 
+BLACKLIST_FILTER_INSERTION_LOCK = threading.RLock()
+BLACKLIST_SETTINGS_INSERTION_LOCK = threading.RLock()
 
 CHAT_BLACKLISTS = {}
 CHAT_SETTINGS_BLACKLISTS = {}
 
 
-async def add_to_blacklist(chat_id: int | str, trigger: str):
-    async with SESSION.begin():
+def add_to_blacklist(chat_id, trigger):
+    with BLACKLIST_FILTER_INSERTION_LOCK:
         blacklist_filt = BlackListFilters(str(chat_id), trigger)
 
         SESSION.merge(blacklist_filt)  # merge to avoid duplicate key issues
-        await SESSION.commit()
+        SESSION.commit()
         global CHAT_BLACKLISTS
         if CHAT_BLACKLISTS.get(str(chat_id), set()) == set():
             CHAT_BLACKLISTS[str(chat_id)] = {trigger}
@@ -64,18 +66,18 @@ async def add_to_blacklist(chat_id: int | str, trigger: str):
             CHAT_BLACKLISTS.get(str(chat_id), set()).add(trigger)
 
 
-async def rm_from_blacklist(chat_id, trigger):
-    async with SESSION.begin():
+def rm_from_blacklist(chat_id, trigger):
+    with BLACKLIST_FILTER_INSERTION_LOCK:
         blacklist_filt = SESSION.query(BlackListFilters).get((str(chat_id), trigger))
         if blacklist_filt:
             if trigger in CHAT_BLACKLISTS.get(str(chat_id), set()):  # sanity check
                 CHAT_BLACKLISTS.get(str(chat_id), set()).remove(trigger)
 
             SESSION.delete(blacklist_filt)
-            await SESSION.commit()
+            SESSION.commit()
             return True
 
-        await SESSION.close()()
+        SESSION.close()
         return False
 
 
@@ -83,14 +85,14 @@ def get_chat_blacklist(chat_id):
     return CHAT_BLACKLISTS.get(str(chat_id), set())
 
 
-async def num_blacklist_filters():
+def num_blacklist_filters():
     try:
         return SESSION.query(BlackListFilters).count()
     finally:
-        await SESSION.close()()
+        SESSION.close()
 
 
-async def num_blacklist_chat_filters(chat_id):
+def num_blacklist_chat_filters(chat_id):
     try:
         return (
             SESSION.query(BlackListFilters.chat_id)
@@ -98,17 +100,17 @@ async def num_blacklist_chat_filters(chat_id):
             .count()
         )
     finally:
-        await SESSION.close()()
+        SESSION.close()
 
 
-async def num_blacklist_filter_chats():
+def num_blacklist_filter_chats():
     try:
         return SESSION.query(func.count(distinct(BlackListFilters.chat_id))).scalar()
     finally:
-        await SESSION.close()()
+        SESSION.close()
 
 
-async def set_blacklist_strength(chat_id, blacklist_type, value):
+def set_blacklist_strength(chat_id, blacklist_type, value):
     # for blacklist_type
     # 0 = nothing
     # 1 = delete
@@ -118,7 +120,7 @@ async def set_blacklist_strength(chat_id, blacklist_type, value):
     # 5 = ban
     # 6 = tban
     # 7 = tmute
-    async with SESSION.begin():
+    with BLACKLIST_SETTINGS_INSERTION_LOCK:
         global CHAT_SETTINGS_BLACKLISTS
         curr_setting = SESSION.query(BlacklistSettings).get(str(chat_id))
         if not curr_setting:
@@ -135,11 +137,11 @@ async def set_blacklist_strength(chat_id, blacklist_type, value):
             "value": value,
         }
 
-        await SESSION.add(curr_setting)
-        await SESSION.commit()
+        SESSION.add(curr_setting)
+        SESSION.commit()
 
 
-async def get_blacklist_setting(chat_id):
+def get_blacklist_setting(chat_id):
     try:
         setting = CHAT_SETTINGS_BLACKLISTS.get(str(chat_id))
         if setting:
@@ -148,10 +150,10 @@ async def get_blacklist_setting(chat_id):
             return 1, "0"
 
     finally:
-        await SESSION.close()()
+        SESSION.close()
 
 
-async def __load_chat_blacklists():
+def __load_chat_blacklists():
     global CHAT_BLACKLISTS
     try:
         chats = SESSION.query(BlackListFilters.chat_id).distinct().all()
@@ -165,10 +167,10 @@ async def __load_chat_blacklists():
         CHAT_BLACKLISTS = {x: set(y) for x, y in CHAT_BLACKLISTS.items()}
 
     finally:
-        await SESSION.close()()
+        SESSION.close()
 
 
-async def __load_chat_settings_blacklists():
+def __load_chat_settings_blacklists():
     global CHAT_SETTINGS_BLACKLISTS
     try:
         chats_settings = SESSION.query(BlacklistSettings).all()
@@ -179,11 +181,11 @@ async def __load_chat_settings_blacklists():
             }
 
     finally:
-        await SESSION.close()()
+        SESSION.close()
 
 
-async def migrate_chat(old_chat_id, new_chat_id):
-    async with SESSION.begin():
+def migrate_chat(old_chat_id, new_chat_id):
+    with BLACKLIST_FILTER_INSERTION_LOCK:
         chat_filters = (
             SESSION.query(BlackListFilters)
             .filter(BlackListFilters.chat_id == str(old_chat_id))
@@ -191,7 +193,7 @@ async def migrate_chat(old_chat_id, new_chat_id):
         )
         for filt in chat_filters:
             filt.chat_id = str(new_chat_id)
-        await SESSION.commit()
+        SESSION.commit()
 
 
 __load_chat_blacklists()

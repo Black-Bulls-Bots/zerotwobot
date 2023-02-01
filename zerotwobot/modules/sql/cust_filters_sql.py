@@ -69,6 +69,8 @@ class Buttons(BASE):
 CustomFilters.__table__.create(checkfirst=True)
 Buttons.__table__.create(checkfirst=True)
 
+CUST_FILT_LOCK = threading.RLock()
+BUTTON_LOCK = threading.RLock()
 CHAT_FILTERS = {}
 
 
@@ -76,7 +78,7 @@ def get_all_filters():
     try:
         return SESSION.query(CustomFilters).all()
     finally:
-        await SESSION.close()()
+        SESSION.close()
 
 
 def new_add_filter(
@@ -87,7 +89,7 @@ def new_add_filter(
     if buttons is None:
         buttons = []
 
-    async with SESSION.begin():
+    with CUST_FILT_LOCK:
         prev = SESSION.query(CustomFilters).get((str(chat_id), keyword))
         if prev:
             with BUTTON_LOCK:
@@ -117,8 +119,8 @@ def new_add_filter(
                 key=lambda x: (-len(x), x),
             )
 
-        await SESSION.add(filt)
-        await SESSION.commit()
+        SESSION.add(filt)
+        SESSION.commit()
 
     for b_name, url, same_line in buttons:
         add_note_button_to_db(chat_id, keyword, b_name, url, same_line)
@@ -126,7 +128,7 @@ def new_add_filter(
 
 def remove_filter(chat_id, keyword):
     global CHAT_FILTERS
-    async with SESSION.begin():
+    with CUST_FILT_LOCK:
         filt = SESSION.query(CustomFilters).get((str(chat_id), keyword))
         if filt:
             if keyword in CHAT_FILTERS.get(str(chat_id), []):  # Sanity check
@@ -142,10 +144,10 @@ def remove_filter(chat_id, keyword):
                     SESSION.delete(btn)
 
             SESSION.delete(filt)
-            await SESSION.commit()
+            SESSION.commit()
             return True
 
-        await SESSION.close()()
+        SESSION.close()
         return False
 
 
@@ -163,21 +165,21 @@ def get_chat_filters(chat_id):
             .all()
         )
     finally:
-        await SESSION.close()()
+        SESSION.close()
 
 
 def get_filter(chat_id, keyword) -> CustomFilters:
     try:
         return SESSION.query(CustomFilters).get((str(chat_id), keyword))
     finally:
-        await SESSION.close()()
+        SESSION.close()
 
 
 def add_note_button_to_db(chat_id, keyword, b_name, url, same_line):
-    async with SESSION.begin():
+    with BUTTON_LOCK:
         button = Buttons(chat_id, keyword, b_name, url, same_line)
-        await SESSION.add(button)
-        await SESSION.commit()
+        SESSION.add(button)
+        SESSION.commit()
 
 
 def get_buttons(chat_id, keyword):
@@ -189,21 +191,21 @@ def get_buttons(chat_id, keyword):
             .all()
         )
     finally:
-        await SESSION.close()()
+        SESSION.close()
 
 
 def num_filters():
     try:
         return SESSION.query(CustomFilters).count()
     finally:
-        await SESSION.close()()
+        SESSION.close()
 
 
 def num_chats():
     try:
         return SESSION.query(func.count(distinct(CustomFilters.chat_id))).scalar()
     finally:
-        await SESSION.close()()
+        SESSION.close()
 
 
 def __load_chat_filters():
@@ -223,7 +225,7 @@ def __load_chat_filters():
         }
 
     finally:
-        await SESSION.close()()
+        SESSION.close()
 
 
 # ONLY USE FOR MIGRATE OLD FILTERS TO NEW FILTERS
@@ -263,15 +265,15 @@ def __migrate_filters():
                     x.reply,
                 )
 
-            await SESSION.add(filt)
-            await SESSION.commit()
+            SESSION.add(filt)
+            SESSION.commit()
 
     finally:
-        await SESSION.close()()
+        SESSION.close()
 
 
 def migrate_chat(old_chat_id, new_chat_id):
-    async with SESSION.begin():
+    with CUST_FILT_LOCK:
         chat_filters = (
             SESSION.query(CustomFilters)
             .filter(CustomFilters.chat_id == str(old_chat_id))
@@ -279,7 +281,7 @@ def migrate_chat(old_chat_id, new_chat_id):
         )
         for filt in chat_filters:
             filt.chat_id = str(new_chat_id)
-        await SESSION.commit()
+        SESSION.commit()
         old_filt = CHAT_FILTERS.get(str(old_chat_id))
         if old_filt:
             CHAT_FILTERS[str(new_chat_id)] = old_filt
@@ -291,7 +293,7 @@ def migrate_chat(old_chat_id, new_chat_id):
             )
             for btn in chat_buttons:
                 btn.chat_id = str(new_chat_id)
-            await SESSION.commit()
+            SESSION.commit()
 
 
 __load_chat_filters()
