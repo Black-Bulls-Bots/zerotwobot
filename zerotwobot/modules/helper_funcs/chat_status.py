@@ -45,8 +45,7 @@ def check_admin(
             user = update.effective_user
             message = update.effective_message
 
-            if message.from_user.id == 1087968824:
-                return await func(update, context, *args, **kwargs)
+
 
             if chat.type == ChatType.PRIVATE and not (only_dev or only_sudo or only_owner):
                 return await func(update, context, *args, **kwargs)
@@ -74,6 +73,9 @@ def check_admin(
                 else:
                     return await update.effective_message.reply_text("Who the hell are you to say me what to do?",)
             
+            if message.from_user.id == 1087968824:
+                return await func(update, context, *args, **kwargs)
+              
             if permission:
                 no_permission = permission.replace("_", " ").replace("can", "")
                 if is_bot:
