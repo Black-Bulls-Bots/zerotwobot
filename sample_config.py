@@ -1,6 +1,8 @@
+
 # Create a new config.py or rename this to config.py file in same dir and import, then extend this class.
 import json
 import os
+import logging
 
 
 def get_user_list(config, key):
@@ -59,6 +61,7 @@ class Config(object):
     BL_CHATS = []  # List of groups that you want blacklisted.
     SPAMMERS = None
     ALLOW_CHATS = True
+    LOGGER_LEVEL = logging.INFO
 
     TEMP_DOWNLOAD_LOC = "./Downloads"
 
