@@ -61,7 +61,7 @@ async def telegraph(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     await msg.edit_text(f"ERROR: {exc}")
                 else:
                     await msg.edit_text(
-                        f"Succesfully uploaded to [telegra.ph](https://telegra.ph{media_url[0]})",
+                        f"Succesfully uploaded to [te.legra.ph](https://te.legra.ph{media_url[0]})",
                         parse_mode="markdown",
                     )
             elif args[0] == "t":
@@ -78,7 +78,7 @@ async def telegraph(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 )
 
                 await msg.edit_text(
-                    f"Successfully uploaded the Text to [telegra.ph](https://telegra.ph/{response['path']})",
+                    f"Successfully uploaded the Text to [te.legra.ph](https://te.legra.ph/{response['path']})",
                     parse_mode="markdown"
                 )
                 
