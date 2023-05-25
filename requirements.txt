@@ -84,7 +84,7 @@ SQLAlchemy==1.4.32
 telegraph==2.1.0
 Telethon==1.26.0
 TgCrypto==1.2.2
-tornado==6.2
+tornado==6.3.2
 tqdm==4.62.3
 typing-extensions==3.10.0.2
 tzdata==2021.5
