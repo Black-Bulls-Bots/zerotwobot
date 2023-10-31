@@ -43,7 +43,7 @@ async def blacklist(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     filter_list = "Current blacklisted words in <b>{}</b>:\n".format(chat_name)
 
-    all_blacklisted = sql.get_chat_blacklist(chat_id)
+    all_blacklisted = await sql.get_chat_blacklist(chat_id)
 
     if len(args) > 0 and args[0].lower() == "copy":
         for trigger in all_blacklisted:

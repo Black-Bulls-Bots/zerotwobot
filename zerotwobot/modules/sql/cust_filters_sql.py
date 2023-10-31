@@ -66,11 +66,14 @@ class Buttons(BASE):
         self.same_line = same_line
 
 
+<<<<<<< HEAD
 CustomFilters.__table__.create(checkfirst=True)
 Buttons.__table__.create(checkfirst=True)
 
 CUST_FILT_LOCK = threading.RLock()
 BUTTON_LOCK = threading.RLock()
+=======
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 CHAT_FILTERS = {}
 
 
@@ -78,7 +81,11 @@ def get_all_filters():
     try:
         return SESSION.query(CustomFilters).all()
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def new_add_filter(
@@ -147,7 +154,11 @@ def remove_filter(chat_id, keyword):
             SESSION.commit()
             return True
 
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
         return False
 
 
@@ -165,14 +176,22 @@ def get_chat_filters(chat_id):
             .all()
         )
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def get_filter(chat_id, keyword) -> CustomFilters:
     try:
         return SESSION.query(CustomFilters).get((str(chat_id), keyword))
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def add_note_button_to_db(chat_id, keyword, b_name, url, same_line):
@@ -191,21 +210,33 @@ def get_buttons(chat_id, keyword):
             .all()
         )
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def num_filters():
     try:
         return SESSION.query(CustomFilters).count()
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def num_chats():
     try:
         return SESSION.query(func.count(distinct(CustomFilters.chat_id))).scalar()
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def __load_chat_filters():
@@ -225,7 +256,11 @@ def __load_chat_filters():
         }
 
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 # ONLY USE FOR MIGRATE OLD FILTERS TO NEW FILTERS
@@ -269,7 +304,11 @@ def __migrate_filters():
             SESSION.commit()
 
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def migrate_chat(old_chat_id, new_chat_id):

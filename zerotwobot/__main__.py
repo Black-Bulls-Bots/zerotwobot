@@ -698,7 +698,7 @@ async def migrate_chats(update: Update, _: ContextTypes.DEFAULT_TYPE):
         with contextlib.suppress(KeyError, AttributeError):
             mod.__migrate__(old_chat, new_chat)
 
-    LOGGER.info("Successfully migrated!")
+    LOGGER.info(f"Successfully migrated!: {old_chat} - {new_chat}")
     raise ApplicationHandlerStop
 
 

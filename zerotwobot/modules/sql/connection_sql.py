@@ -9,8 +9,8 @@ from zerotwobot.modules.sql import SESSION, BASE
 
 class ChatAccessConnectionSettings(BASE):
     __tablename__ = "access_connection"
-    chat_id = Column(String(14), primary_key=True)
-    allow_connect_to_chat = Column(Boolean, default=True)
+    chat_id: str = Column(String(14), primary_key=True)
+    allow_connect_to_chat: bool = Column(Boolean, default=True)
 
     def __init__(self, chat_id, allow_connect_to_chat):
         self.chat_id = str(chat_id)
@@ -25,8 +25,8 @@ class ChatAccessConnectionSettings(BASE):
 
 class Connection(BASE):
     __tablename__ = "connection"
-    user_id = Column(BigInteger, primary_key=True)
-    chat_id = Column(String(14))
+    user_id: int = Column(BigInteger, primary_key=True)
+    chat_id: str = Column(String(14))
 
     def __init__(self, user_id, chat_id):
         self.user_id = user_id
@@ -35,10 +35,10 @@ class Connection(BASE):
 
 class ConnectionHistory(BASE):
     __tablename__ = "connection_history"
-    user_id = Column(BigInteger, primary_key=True)
-    chat_id = Column(String(14), primary_key=True)
-    chat_name = Column(UnicodeText)
-    conn_time = Column(Integer)
+    user_id: int = Column(BigInteger, primary_key=True)
+    chat_id: str = Column(String(14), primary_key=True)
+    chat_name: str = Column(UnicodeText)
+    conn_time: int = Column(Integer)
 
     def __init__(self, user_id, chat_id, chat_name, conn_time):
         self.user_id = user_id
@@ -50,6 +50,7 @@ class ConnectionHistory(BASE):
         return "<connection user {} history {}>".format(self.user_id, self.chat_id)
 
 
+<<<<<<< HEAD
 ChatAccessConnectionSettings.__table__.create(checkfirst=True)
 Connection.__table__.create(checkfirst=True)
 ConnectionHistory.__table__.create(checkfirst=True)
@@ -58,21 +59,31 @@ CHAT_ACCESS_LOCK = threading.RLock()
 CONNECTION_INSERTION_LOCK = threading.RLock()
 CONNECTION_HISTORY_LOCK = threading.RLock()
 
+=======
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 HISTORY_CONNECT = {}
 
 
-def allow_connect_to_chat(chat_id: Union[str, int]) -> bool:
+async def allow_connect_to_chat(chat_id: Union[str, int]) -> bool:
     try:
         chat_setting = SESSION.query(ChatAccessConnectionSettings).get(str(chat_id))
         if chat_setting:
             return chat_setting.allow_connect_to_chat
         return False
     finally:
+<<<<<<< HEAD
         SESSION.close()
 
 
 def set_allow_connect_to_chat(chat_id: Union[int, str], setting: bool):
     with CHAT_ACCESS_LOCK:
+=======
+        await SESSION.close()
+
+
+async def set_allow_connect_to_chat(chat_id: Union[int, str], setting: bool):
+    async with SESSION.begin():
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
         chat_setting = SESSION.query(ChatAccessConnectionSettings).get(str(chat_id))
         if not chat_setting:
             chat_setting = ChatAccessConnectionSettings(chat_id, setting)
@@ -82,8 +93,13 @@ def set_allow_connect_to_chat(chat_id: Union[int, str], setting: bool):
         SESSION.commit()
 
 
+<<<<<<< HEAD
 def connect(user_id, chat_id):
     with CONNECTION_INSERTION_LOCK:
+=======
+async def connect(user_id, chat_id):
+    async with SESSION.begin():
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
         prev = SESSION.query(Connection).get((int(user_id)))
         if prev:
             SESSION.delete(prev)
@@ -93,33 +109,49 @@ def connect(user_id, chat_id):
         return True
 
 
-def get_connected_chat(user_id):
+async def get_connected_chat(user_id):
     try:
         return SESSION.query(Connection).get((int(user_id)))
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
-def curr_connection(chat_id):
+async def curr_connection(chat_id):
     try:
         return SESSION.query(Connection).get((str(chat_id)))
     finally:
+<<<<<<< HEAD
         SESSION.close()
 
 
 def disconnect(user_id):
     with CONNECTION_INSERTION_LOCK:
+=======
+        await SESSION.close()
+
+
+async def disconnect(user_id):
+    async with SESSION.begin():
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
         disconnect = SESSION.query(Connection).get((int(user_id)))
         if disconnect:
             SESSION.delete(disconnect)
             SESSION.commit()
             return True
         else:
+<<<<<<< HEAD
             SESSION.close()
+=======
+            await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
             return False
 
 
-def add_history_conn(user_id, chat_id, chat_name):
+async def add_history_conn(user_id, chat_id, chat_name):
     global HISTORY_CONNECT
     with CONNECTION_HISTORY_LOCK:
         conn_time = int(time.time())
@@ -172,7 +204,7 @@ def get_history_conn(user_id):
     return HISTORY_CONNECT[int(user_id)]
 
 
-def clear_history_conn(user_id):
+async def clear_history_conn(user_id):
     global HISTORY_CONNECT
     todel = list(HISTORY_CONNECT[int(user_id)])
     for x in todel:
@@ -185,7 +217,7 @@ def clear_history_conn(user_id):
     return True
 
 
-def __load_user_history():
+async def __load_user_history():
     global HISTORY_CONNECT
     try:
         qall = SESSION.query(ConnectionHistory).all()
@@ -199,7 +231,11 @@ def __load_user_history():
                 "chat_id": x.chat_id,
             }
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 __load_user_history()

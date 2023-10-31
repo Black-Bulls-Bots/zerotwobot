@@ -29,6 +29,7 @@ class ReportingChatSettings(BASE):
         return "<Chat report settings ({})>".format(self.chat_id)
 
 
+<<<<<<< HEAD
 ReportingUserSettings.__table__.create(checkfirst=True)
 ReportingChatSettings.__table__.create(checkfirst=True)
 
@@ -36,6 +37,8 @@ CHAT_LOCK = threading.RLock()
 USER_LOCK = threading.RLock()
 
 
+=======
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 def chat_should_report(chat_id: Union[str, int]) -> bool:
     try:
         chat_setting = SESSION.query(ReportingChatSettings).get(str(chat_id))
@@ -43,7 +46,11 @@ def chat_should_report(chat_id: Union[str, int]) -> bool:
             return chat_setting.should_report
         return False
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def user_should_report(user_id: int) -> bool:
@@ -53,7 +60,11 @@ def user_should_report(user_id: int) -> bool:
             return user_setting.should_report
         return True
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def set_chat_setting(chat_id: Union[int, str], setting: bool):

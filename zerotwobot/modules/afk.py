@@ -37,7 +37,7 @@ async def afk(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         reason = ""
 
-    sql.set_afk(update.effective_user.id, reason)
+    await sql.set_afk(update.effective_user.id, reason)
     fname = update.effective_user.first_name
     try:
         if reason:
@@ -61,11 +61,11 @@ async def no_longer_afk(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     if sql.is_afk(user.id):
-        afk_user = sql.check_afk_status(user.id)
+        afk_user = await sql.check_afk_status(user.id)
 
         time = humanize.naturaldelta(datetime.now() - afk_user.time)
 
-    res = sql.rm_afk(user.id)
+    res = await sql.rm_afk(user.id)
     if res:
         if message.new_chat_members:  # dont say msg
             return
@@ -152,7 +152,7 @@ async def check_afk(
     userc_id: int,
 ):
     if sql.is_afk(user_id):
-        user = sql.check_afk_status(user_id)
+        user = await sql.check_afk_status(user_id)
 
         if int(userc_id) == int(user_id):
             return

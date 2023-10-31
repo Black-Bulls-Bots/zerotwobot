@@ -43,6 +43,7 @@ class BlacklistSettings(BASE):
         )
 
 
+<<<<<<< HEAD
 BlackListFilters.__table__.create(checkfirst=True)
 BlacklistSettings.__table__.create(checkfirst=True)
 
@@ -69,47 +70,90 @@ def add_to_blacklist(chat_id, trigger):
 def rm_from_blacklist(chat_id, trigger):
     with BLACKLIST_FILTER_INSERTION_LOCK:
         blacklist_filt = SESSION.query(BlackListFilters).get((str(chat_id), trigger))
-        if blacklist_filt:
-            if trigger in CHAT_BLACKLISTS.get(str(chat_id), set()):  # sanity check
-                CHAT_BLACKLISTS.get(str(chat_id), set()).remove(trigger)
+=======
+async def add_to_blacklist(chat_id: int | str, trigger: str) -> None:
+    "add the given trigger to chat blacklist"
+    async with SESSION.begin():
+        blacklist_filt = BlackListFilters(str(chat_id), trigger)
 
+        await SESSION.merge(blacklist_filt)  # merge to avoid duplicate key issues
+        await SESSION.commit()
+
+
+async def rm_from_blacklist(chat_id: int | str, trigger: str) -> bool:
+    "remove the given trigger from chat blacklist"
+    async with SESSION.begin():
+        blacklist_filt = await SESSION.get(BlackListFilters, (str(chat_id), trigger))
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
+        if blacklist_filt:
             SESSION.delete(blacklist_filt)
             SESSION.commit()
             return True
 
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
         return False
 
 
-def get_chat_blacklist(chat_id):
-    return CHAT_BLACKLISTS.get(str(chat_id), set())
+async def get_chat_blacklist(chat_id: int | str) -> list[str]:
+    "return all blacklist triggers for the given chat"
+    return (await SESSION.scalars(
+        select(BlackListFilters)
+        .where(BlackListFilters.chat_id == str(chat_id))
+    )).all()
 
 
+<<<<<<< HEAD
 def num_blacklist_filters():
+=======
+async def num_blacklist_filters() -> int:
+    "get the number of blacklist filters overall"
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
     try:
-        return SESSION.query(BlackListFilters).count()
+        return await SESSION.scalars(select(func.count(BlackListFilters)))
     finally:
+<<<<<<< HEAD
         SESSION.close()
 
 
 def num_blacklist_chat_filters(chat_id):
+=======
+        await SESSION.close()
+
+
+async def num_blacklist_chat_filters(chat_id: int | str):
+    "return given chat's total number of blacklist triggers"
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
     try:
-        return (
-            SESSION.query(BlackListFilters.chat_id)
-            .filter(BlackListFilters.chat_id == str(chat_id))
-            .count()
-        )
+        return (await SESSION.scalars(
+            select(BlackListFilters)
+            .where(BlackListFilters.chat_id == str(chat_id))
+        )).all()
     finally:
+<<<<<<< HEAD
         SESSION.close()
 
 
 def num_blacklist_filter_chats():
+=======
+        await SESSION.close()
+
+
+async def num_blacklist_filter_chats() -> int:
+    "get number of chats using blacklist feature"
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
     try:
-        return SESSION.query(func.count(distinct(BlackListFilters.chat_id))).scalar()
+        return (await SESSION.scalars(
+            select(func.count(BlackListFilters.chat_id.distinct()))
+        )).one()
     finally:
         SESSION.close()
 
 
+<<<<<<< HEAD
 def set_blacklist_strength(chat_id, blacklist_type, value):
     # for blacklist_type
     # 0 = nothing
@@ -123,33 +167,52 @@ def set_blacklist_strength(chat_id, blacklist_type, value):
     with BLACKLIST_SETTINGS_INSERTION_LOCK:
         global CHAT_SETTINGS_BLACKLISTS
         curr_setting = SESSION.query(BlacklistSettings).get(str(chat_id))
+=======
+async def set_blacklist_strength(chat_id: int | str, blacklist_type: int, value: str) -> None:
+    """
+    set blacklist strength for the given chat, refer below for available types
+    ```py
+    0 = nothing
+    1 = delete
+    2 = warn
+    3 = mute
+    4 = kick
+    5 = ban
+    6 = tban
+    7 = tmute
+    """
+    async with SESSION.begin():
+        curr_setting = await SESSION.get(BlacklistSettings, str(chat_id))
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
         if not curr_setting:
             curr_setting = BlacklistSettings(
                 chat_id,
-                blacklist_type=int(blacklist_type),
+                blacklist_type=blacklist_type,
                 value=value,
             )
 
-        curr_setting.blacklist_type = int(blacklist_type)
+        curr_setting.blacklist_type = blacklist_type
         curr_setting.value = str(value)
-        CHAT_SETTINGS_BLACKLISTS[str(chat_id)] = {
-            "blacklist_type": int(blacklist_type),
-            "value": value,
-        }
 
         SESSION.add(curr_setting)
         SESSION.commit()
 
 
+<<<<<<< HEAD
 def get_blacklist_setting(chat_id):
+=======
+async def get_blacklist_setting(chat_id: int | str) -> tuple[int, str]:
+    "get blacklist settings for the given chat"
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
     try:
-        setting = CHAT_SETTINGS_BLACKLISTS.get(str(chat_id))
+        setting = await SESSION.get(BlacklistSettings, str(chat_id))
         if setting:
-            return setting["blacklist_type"], setting["value"]
+            return setting.blacklist_type, setting.value
         else:
             return 1, "0"
 
     finally:
+<<<<<<< HEAD
         SESSION.close()
 
 
@@ -183,6 +246,11 @@ def __load_chat_settings_blacklists():
     finally:
         SESSION.close()
 
+=======
+        await SESSION.close()
+
+
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 def migrate_chat(old_chat_id, new_chat_id):
     with BLACKLIST_FILTER_INSERTION_LOCK:
@@ -193,8 +261,12 @@ def migrate_chat(old_chat_id, new_chat_id):
         )
         for filt in chat_filters:
             filt.chat_id = str(new_chat_id)
+<<<<<<< HEAD
         SESSION.commit()
 
 
 __load_chat_blacklists()
 __load_chat_settings_blacklists()
+=======
+        await SESSION.commit()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)

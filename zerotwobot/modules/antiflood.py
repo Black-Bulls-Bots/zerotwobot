@@ -163,7 +163,7 @@ async def set_flood(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     if len(args) >= 1:
         val = args[0].lower()
         if val in ["off", "no", "0"]:
-            sql.set_flood(chat_id, 0)
+            await sql.set_flood(chat_id, 0)
             if conn:
                 text = await message.reply_text(
                     "Antiflood has been disabled in {}.".format(chat_name),
@@ -174,7 +174,7 @@ async def set_flood(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
         elif val.isdigit():
             amount = int(val)
             if amount <= 0:
-                sql.set_flood(chat_id, 0)
+                await sql.set_flood(chat_id, 0)
                 if conn:
                     text = await message.reply_text(
                         "Antiflood has been disabled in {}.".format(chat_name),
@@ -199,7 +199,7 @@ async def set_flood(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
                 return ""
 
             else:
-                sql.set_flood(chat_id, amount)
+                await sql.set_flood(chat_id, amount)
                 if conn:
                     text = await message.reply_text(
                         "Anti-flood has been set to {} in chat: {}".format(
@@ -307,13 +307,13 @@ async def set_flood_mode(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if args:
         if args[0].lower() == "ban":
             settypeflood = "ban"
-            sql.set_flood_strength(chat_id, 1, "0")
+            await sql.set_flood_strength(chat_id, 1, "0")
         elif args[0].lower() == "kick":
             settypeflood = "kick"
-            sql.set_flood_strength(chat_id, 2, "0")
+            await sql.set_flood_strength(chat_id, 2, "0")
         elif args[0].lower() == "mute":
             settypeflood = "mute"
-            sql.set_flood_strength(chat_id, 3, "0")
+            await sql.set_flood_strength(chat_id, 3, "0")
         elif args[0].lower() == "tban":
             if len(args) == 1:
                 teks = """It looks like you tried to set time value for antiflood but you didn't specified time; Try, `/setfloodmode tban <timevalue>`.
@@ -323,7 +323,7 @@ Examples of time value: 4m = 4 minutes, 3h = 3 hours, 6d = 6 days, 5w = 5 weeks.
                 )
                 return
             settypeflood = "tban for {}".format(args[1])
-            sql.set_flood_strength(chat_id, 4, str(args[1]))
+            await sql.set_flood_strength(chat_id, 4, str(args[1]))
         elif args[0].lower() == "tmute":
             if len(args) == 1:
                 teks = (
@@ -336,7 +336,7 @@ Examples of time value: 4m = 4 minutes, 3h = 3 hours, 6d = 6 days, 5w = 5 weeks.
                 )
                 return
             settypeflood = "tmute for {}".format(args[1])
-            sql.set_flood_strength(chat_id, 5, str(args[1]))
+            await sql.set_flood_strength(chat_id, 5, str(args[1]))
         else:
             await send_message(
                 update.effective_message,
@@ -366,7 +366,7 @@ Examples of time value: 4m = 4 minutes, 3h = 3 hours, 6d = 6 days, 5w = 5 weeks.
             )
         )
     else:
-        getmode, getvalue = sql.get_flood_setting(chat.id)
+        getmode, getvalue = await sql.get_flood_setting(chat.id)
         if getmode == 1:
             settypeflood = "ban"
         elif getmode == 2:
@@ -393,8 +393,8 @@ Examples of time value: 4m = 4 minutes, 3h = 3 hours, 6d = 6 days, 5w = 5 weeks.
     return ""
 
 
-def __migrate__(old_chat_id, new_chat_id):
-    sql.migrate_chat(old_chat_id, new_chat_id)
+async def __migrate__(old_chat_id, new_chat_id):
+    await sql.migrate_chat(old_chat_id, new_chat_id)
 
 
 def __chat_settings__(chat_id, user_id):

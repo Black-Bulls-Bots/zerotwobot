@@ -17,9 +17,12 @@ class Disable(BASE):
         return "Disabled cmd {} in {}".format(self.command, self.chat_id)
 
 
+<<<<<<< HEAD
 Disable.__table__.create(checkfirst=True)
 DISABLE_INSERTION_LOCK = threading.RLock()
 
+=======
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 DISABLED = {}
 
 
@@ -35,7 +38,11 @@ def disable_command(chat_id, disable):
             SESSION.commit()
             return True
 
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
         return False
 
 
@@ -51,7 +58,11 @@ def enable_command(chat_id, enable):
             SESSION.commit()
             return True
 
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
         return False
 
 
@@ -67,14 +78,22 @@ def num_chats():
     try:
         return SESSION.query(func.count(distinct(Disable.chat_id))).scalar()
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def num_disabled():
     try:
         return SESSION.query(Disable).count()
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def migrate_chat(old_chat_id, new_chat_id):
@@ -98,7 +117,11 @@ def __load_disabled_commands():
             DISABLED.setdefault(chat.chat_id, set()).add(chat.command)
 
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 __load_disabled_commands()

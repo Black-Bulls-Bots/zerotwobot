@@ -14,10 +14,13 @@ class GroupLogs(BASE):
         self.log_channel = str(log_channel)
 
 
+<<<<<<< HEAD
 GroupLogs.__table__.create(checkfirst=True)
 
 LOGS_INSERTION_LOCK = threading.RLock()
 
+=======
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 CHANNELS = {}
 
 
@@ -55,7 +58,11 @@ def num_logchannels():
     try:
         return SESSION.query(func.count(distinct(GroupLogs.chat_id))).scalar()
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def migrate_chat(old_chat_id, new_chat_id):
@@ -76,7 +83,11 @@ def __load_log_channels():
         all_chats = SESSION.query(GroupLogs).all()
         CHANNELS = {chat.chat_id: chat.log_channel for chat in all_chats}
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 __load_log_channels()

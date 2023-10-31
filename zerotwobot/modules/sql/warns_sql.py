@@ -74,6 +74,7 @@ class WarnSettings(BASE):
         return "<{} has {} possible warns.>".format(self.chat_id, self.warn_limit)
 
 
+<<<<<<< HEAD
 Warns.__table__.create(checkfirst=True)
 WarnFilters.__table__.create(checkfirst=True)
 WarnSettings.__table__.create(checkfirst=True)
@@ -82,6 +83,8 @@ WARN_INSERTION_LOCK = threading.RLock()
 WARN_FILTER_INSERTION_LOCK = threading.RLock()
 WARN_SETTINGS_LOCK = threading.RLock()
 
+=======
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 WARN_FILTERS = {}
 
 
@@ -118,7 +121,11 @@ def remove_warn(user_id, chat_id):
             SESSION.commit()
             removed = True
 
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
         return removed
 
 
@@ -129,9 +136,15 @@ def reset_warns(user_id, chat_id):
             warned_user.num_warns = 0
             warned_user.reasons = []
 
+<<<<<<< HEAD
             SESSION.add(warned_user)
             SESSION.commit()
         SESSION.close()
+=======
+            await SESSION.add(warned_user)
+            await SESSION.commit()
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def get_warns(user_id, chat_id):
@@ -143,7 +156,11 @@ def get_warns(user_id, chat_id):
         num = user.num_warns
         return num, reasons
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def add_warn_filter(chat_id, keyword, reply):
@@ -170,7 +187,11 @@ def remove_warn_filter(chat_id, keyword):
             SESSION.delete(warn_filt)
             SESSION.commit()
             return True
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
         return False
 
 
@@ -184,14 +205,22 @@ def get_chat_warn_filters(chat_id):
             SESSION.query(WarnFilters).filter(WarnFilters.chat_id == str(chat_id)).all()
         )
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def get_warn_filter(chat_id, keyword):
     try:
         return SESSION.query(WarnFilters).get((str(chat_id), keyword))
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def set_warn_limit(chat_id, warn_limit):
@@ -227,28 +256,44 @@ def get_warn_setting(chat_id):
             return 3, False
 
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def num_warns():
     try:
         return SESSION.query(func.sum(Warns.num_warns)).scalar() or 0
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def num_warn_chats():
     try:
         return SESSION.query(func.count(distinct(Warns.chat_id))).scalar()
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def num_warn_filters():
     try:
         return SESSION.query(WarnFilters).count()
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def num_warn_chat_filters(chat_id):
@@ -259,14 +304,22 @@ def num_warn_chat_filters(chat_id):
             .count()
         )
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def num_warn_filter_chats():
     try:
         return SESSION.query(func.count(distinct(WarnFilters.chat_id))).scalar()
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def __load_chat_warn_filters():
@@ -286,7 +339,11 @@ def __load_chat_warn_filters():
         }
 
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def migrate_chat(old_chat_id, new_chat_id):

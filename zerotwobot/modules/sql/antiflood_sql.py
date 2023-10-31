@@ -11,10 +11,17 @@ DEF_OBJ = (None, DEF_COUNT, DEF_LIMIT)
 
 class FloodControl(BASE):
     __tablename__ = "antiflood"
+<<<<<<< HEAD
     chat_id = Column(String(14), primary_key=True)
     user_id = Column(BigInteger)
     count = Column(Integer, default=DEF_COUNT)
     limit = Column(Integer, default=DEF_LIMIT)
+=======
+    chat_id: str = Column(String(14), primary_key=True)
+    user_id: int = Column(BigInteger)
+    count: int = Column(Integer, default=DEF_COUNT)
+    limit: int = Column(Integer, default=DEF_LIMIT)
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
     def __init__(self, chat_id):
         self.chat_id = str(chat_id)  # ensure string
@@ -37,6 +44,7 @@ class FloodSettings(BASE):
     def __repr__(self):
         return "<{} will executing {} for flood.>".format(self.chat_id, self.flood_type)
 
+<<<<<<< HEAD
 
 FloodControl.__table__.create(checkfirst=True)
 FloodSettings.__table__.create(checkfirst=True)
@@ -50,12 +58,21 @@ CHAT_FLOOD = {}
 def set_flood(chat_id, amount):
     with INSERTION_FLOOD_LOCK:
         flood = SESSION.query(FloodControl).get(str(chat_id))
+=======
+CHAT_FLOOD = {}
+
+async def set_flood(chat_id: int | str, amount: int) -> None:
+    "set flood limit for the given chat"
+    async with SESSION.begin():
+        flood = await SESSION.get(FloodControl, str(chat_id))
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
         if not flood:
             flood = FloodControl(str(chat_id))
 
         flood.user_id = None
         flood.limit = amount
 
+<<<<<<< HEAD
         CHAT_FLOOD[str(chat_id)] = (None, DEF_COUNT, amount)
 
         SESSION.add(flood)
@@ -63,6 +80,14 @@ def set_flood(chat_id, amount):
 
 
 def update_flood(chat_id: str, user_id) -> bool:
+=======
+        await SESSION.add(flood)
+        await SESSION.commit()
+
+
+async def update_flood(chat_id: str, user_id: int) -> bool:
+    "update flood limit for the given user in the given chat."
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
     if str(chat_id) in CHAT_FLOOD:
         curr_user_id, count, limit = CHAT_FLOOD.get(str(chat_id), DEF_OBJ)
 
@@ -83,6 +108,7 @@ def update_flood(chat_id: str, user_id) -> bool:
         return False
 
 
+<<<<<<< HEAD
 def get_flood_limit(chat_id):
     return CHAT_FLOOD.get(str(chat_id), DEF_OBJ)[2]
 
@@ -96,6 +122,28 @@ def set_flood_strength(chat_id, flood_type, value):
     # 5 = tmute
     with INSERTION_FLOOD_SETTINGS_LOCK:
         curr_setting = SESSION.query(FloodSettings).get(str(chat_id))
+=======
+async def get_flood_limit(chat_id: int | str) -> int:
+    "get given chat's flood limit"
+    flood = await SESSION.get(FloodControl, str(chat_id))
+    if flood:
+        return flood.limit
+    else:
+        return 0
+
+async def set_flood_strength(chat_id: int | str, flood_type: int, value: str) -> None:
+    """
+    set flood strength for the given chat, check below for flood_types \n
+    ```py
+    1 = ban
+    2 = kick
+    3 = mute
+    4 = tban
+    5 = tmute
+    """
+    async with SESSION.begin():
+        curr_setting = await SESSION.get(FloodSettings, str(chat_id))
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
         if not curr_setting:
             curr_setting = FloodSettings(
                 chat_id,
@@ -110,7 +158,12 @@ def set_flood_strength(chat_id, flood_type, value):
         SESSION.commit()
 
 
+<<<<<<< HEAD
 def get_flood_setting(chat_id):
+=======
+async def get_flood_setting(chat_id: str) -> tuple[int, str]:
+    "get given chat's flood settings, returns tuple of flood_type and value"
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
     try:
         setting = SESSION.query(FloodSettings).get(str(chat_id))
         if setting:
@@ -119,15 +172,19 @@ def get_flood_setting(chat_id):
             return 1, "0"
 
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def migrate_chat(old_chat_id, new_chat_id):
     with INSERTION_FLOOD_LOCK:
         flood = SESSION.query(FloodControl).get(str(old_chat_id))
         if flood:
-            CHAT_FLOOD[str(new_chat_id)] = CHAT_FLOOD.get(str(old_chat_id), DEF_OBJ)
             flood.chat_id = str(new_chat_id)
+<<<<<<< HEAD
             SESSION.commit()
 
         SESSION.close()
@@ -143,3 +200,9 @@ def __load_flood_settings():
 
 
 __load_flood_settings()
+=======
+            await SESSION.add(flood)
+            await SESSION.commit()
+
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)

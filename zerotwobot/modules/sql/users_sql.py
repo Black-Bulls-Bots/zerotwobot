@@ -69,6 +69,7 @@ class ChatMembers(BASE):
         )
 
 
+<<<<<<< HEAD
 Users.__table__.create(checkfirst=True)
 Chats.__table__.create(checkfirst=True)
 ChatMembers.__table__.create(checkfirst=True)
@@ -76,6 +77,8 @@ ChatMembers.__table__.create(checkfirst=True)
 INSERTION_LOCK = threading.RLock()
 
 
+=======
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 def ensure_bot_in_db():
     with INSERTION_LOCK:
         bot = Users(application.bot.id, application.bot.username)
@@ -126,35 +129,55 @@ def get_userid_by_name(username):
             .all()
         )
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def get_name_by_userid(user_id):
     try:
         return SESSION.query(Users).get(Users.user_id == int(user_id)).first()
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def get_chat_members(chat_id):
     try:
         return SESSION.query(ChatMembers).filter(ChatMembers.chat == str(chat_id)).all()
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def get_all_chats():
     try:
         return SESSION.query(Chats).all()
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def get_all_users():
     try:
         return SESSION.query(Users).all()
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def get_user_num_chats(user_id):
@@ -163,7 +186,11 @@ def get_user_num_chats(user_id):
             SESSION.query(ChatMembers).filter(ChatMembers.user == int(user_id)).count()
         )
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def get_user_com_chats(user_id):
@@ -173,21 +200,33 @@ def get_user_com_chats(user_id):
         )
         return [i.chat for i in chat_members]
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def num_chats():
     try:
         return SESSION.query(Chats).count()
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def num_users():
     try:
         return SESSION.query(Users).count()
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def migrate_chat(old_chat_id, new_chat_id):
@@ -219,8 +258,13 @@ def del_user(user_id):
             return True
 
         ChatMembers.query.filter(ChatMembers.user == user_id).delete()
+<<<<<<< HEAD
         SESSION.commit()
         SESSION.close()
+=======
+        await SESSION.commit()
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
     return False
 
 
@@ -231,4 +275,8 @@ def rem_chat(chat_id):
             SESSION.delete(chat)
             SESSION.commit()
         else:
+<<<<<<< HEAD
             SESSION.close()
+=======
+            await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)

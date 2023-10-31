@@ -44,6 +44,7 @@ class Buttons(BASE):
         self.same_line = same_line
 
 
+<<<<<<< HEAD
 Notes.__table__.create(checkfirst=True)
 Buttons.__table__.create(checkfirst=True)
 
@@ -51,6 +52,8 @@ NOTES_INSERTION_LOCK = threading.RLock()
 BUTTONS_INSERTION_LOCK = threading.RLock()
 
 
+=======
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 def add_note_to_db(chat_id, note_name, note_data, msgtype, buttons=None, file=None):
     if not buttons:
         buttons = []
@@ -92,7 +95,11 @@ def get_note(chat_id, note_name):
             .first()
         )
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def rm_note(chat_id, note_name):
@@ -120,7 +127,11 @@ def rm_note(chat_id, note_name):
             return True
 
         else:
+<<<<<<< HEAD
             SESSION.close()
+=======
+            await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
             return False
 
 
@@ -133,7 +144,11 @@ def get_all_chat_notes(chat_id):
             .all()
         )
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def add_note_button_to_db(chat_id, note_name, b_name, url, same_line):
@@ -152,21 +167,33 @@ def get_buttons(chat_id, note_name):
             .all()
         )
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def num_notes():
     try:
         return SESSION.query(Notes).count()
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def num_chats():
     try:
         return SESSION.query(func.count(distinct(Notes.chat_id))).scalar()
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def migrate_chat(old_chat_id, new_chat_id):

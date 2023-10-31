@@ -318,6 +318,7 @@ class CleanServiceSetting(BASE):
         return "<Chat used clean service ({})>".format(self.chat_id)
 
 
+<<<<<<< HEAD
 Welcome.__table__.create(checkfirst=True)
 WelcomeButtons.__table__.create(checkfirst=True)
 GoodbyeButtons.__table__.create(checkfirst=True)
@@ -332,6 +333,8 @@ WM_LOCK = threading.RLock()
 CS_LOCK = threading.RLock()
 
 
+=======
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 def welcome_mutes(chat_id):
     try:
         welcomemutes = SESSION.query(WelcomeMute).get(str(chat_id))
@@ -339,7 +342,11 @@ def welcome_mutes(chat_id):
             return welcomemutes.welcomemutes
         return False
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def set_welcome_mutes(chat_id, welcomemutes):
@@ -375,12 +382,20 @@ def get_human_checks(user_id, chat_id):
         human_check = human_check.human_check
         return human_check
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def get_welc_mutes_pref(chat_id):
     welcomemutes = SESSION.query(WelcomeMute).get(str(chat_id))
+<<<<<<< HEAD
     SESSION.close()
+=======
+    await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
     if welcomemutes:
         return welcomemutes.welcomemutes
@@ -390,7 +405,11 @@ def get_welc_mutes_pref(chat_id):
 
 def get_welc_pref(chat_id):
     welc = SESSION.query(Welcome).get(str(chat_id))
+<<<<<<< HEAD
     SESSION.close()
+=======
+    await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
     if welc:
         return (
             welc.should_welcome,
@@ -406,7 +425,11 @@ def get_welc_pref(chat_id):
 
 def get_gdbye_pref(chat_id):
     welc = SESSION.query(Welcome).get(str(chat_id))
+<<<<<<< HEAD
     SESSION.close()
+=======
+    await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
     if welc:
         return welc.should_goodbye, welc.custom_leave, welc.leave_type
     else:
@@ -428,7 +451,11 @@ def set_clean_welcome(chat_id, clean_welcome):
 
 def get_clean_pref(chat_id):
     welc = SESSION.query(Welcome).get(str(chat_id))
+<<<<<<< HEAD
     SESSION.close()
+=======
+    await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
     if welc:
         return welc.clean_welcome
@@ -508,7 +535,11 @@ def get_custom_welcome(chat_id):
     if welcome_settings and welcome_settings.custom_welcome:
         ret = welcome_settings.custom_welcome
 
+<<<<<<< HEAD
     SESSION.close()
+=======
+    await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
     return ret
 
 
@@ -553,7 +584,11 @@ def get_custom_gdbye(chat_id):
     if welcome_settings and welcome_settings.custom_leave:
         ret = welcome_settings.custom_leave
 
+<<<<<<< HEAD
     SESSION.close()
+=======
+    await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
     return ret
 
 
@@ -566,7 +601,11 @@ def get_welc_buttons(chat_id):
             .all()
         )
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def get_gdbye_buttons(chat_id):
@@ -578,7 +617,11 @@ def get_gdbye_buttons(chat_id):
             .all()
         )
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def clean_service(chat_id: Union[str, int]) -> bool:
@@ -588,7 +631,11 @@ def clean_service(chat_id: Union[str, int]) -> bool:
             return chat_setting.clean_service
         return False
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def set_clean_service(chat_id: Union[int, str], setting: bool):

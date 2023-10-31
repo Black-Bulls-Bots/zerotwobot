@@ -16,11 +16,14 @@
 #         return "<Chat {} action_topic: {}>".format(self.chat_id, self.action_topic)
 
 
+<<<<<<< HEAD
 # TopicsAction.__table__.create(checkfirst=True)
 
 # INSERTION_LOCK = threading.RLock()
 
 
+=======
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 # def set_action_topic(chat_id: int, action_chat: int) -> int:
 #     with INSERTION_LOCK:
 #         action_topic = SESSION.query(TopicsAction).get(str(chat_id))
@@ -38,7 +41,11 @@
 #     if action_topic:
 #         ret = action_topic.action_topic
 
+<<<<<<< HEAD
 #     SESSION.close()
+=======
+#     await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 #     return ret
 
 
@@ -50,5 +57,9 @@
 #             SESSION.commit()
 #             return True
 #         else:
+<<<<<<< HEAD
 #             SESSION.close()
+=======
+#             await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 #             return False

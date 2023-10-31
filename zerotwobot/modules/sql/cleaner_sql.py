@@ -6,8 +6,8 @@ from sqlalchemy import Boolean, Column, UnicodeText
 
 class CleanerBlueTextChatSettings(BASE):
     __tablename__ = "cleaner_bluetext_chat_setting"
-    chat_id = Column(UnicodeText, primary_key=True)
-    is_enable = Column(Boolean, default=False)
+    chat_id: str = Column(UnicodeText, primary_key=True)
+    is_enable: bool = Column(Boolean, default=False)
 
     def __init__(self, chat_id, is_enable):
         self.chat_id = chat_id
@@ -19,8 +19,8 @@ class CleanerBlueTextChatSettings(BASE):
 
 class CleanerBlueTextChat(BASE):
     __tablename__ = "cleaner_bluetext_chat_ignore_commands"
-    chat_id = Column(UnicodeText, primary_key=True)
-    command = Column(UnicodeText, primary_key=True)
+    chat_id: str = Column(UnicodeText, primary_key=True)
+    command: str = Column(UnicodeText, primary_key=True)
 
     def __init__(self, chat_id, command):
         self.chat_id = chat_id
@@ -29,12 +29,13 @@ class CleanerBlueTextChat(BASE):
 
 class CleanerBlueTextGlobal(BASE):
     __tablename__ = "cleaner_bluetext_global_ignore_commands"
-    command = Column(UnicodeText, primary_key=True)
+    command : str = Column(UnicodeText, primary_key=True)
 
     def __init__(self, command):
         self.command = command
 
 
+<<<<<<< HEAD
 CleanerBlueTextChatSettings.__table__.create(checkfirst=True)
 CleanerBlueTextChat.__table__.create(checkfirst=True)
 CleanerBlueTextGlobal.__table__.create(checkfirst=True)
@@ -43,6 +44,8 @@ CLEANER_CHAT_SETTINGS = threading.RLock()
 CLEANER_CHAT_LOCK = threading.RLock()
 CLEANER_GLOBAL_LOCK = threading.RLock()
 
+=======
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 CLEANER_CHATS = {}
 GLOBAL_IGNORE_COMMANDS = set()
 
@@ -78,7 +81,11 @@ def chat_ignore_command(chat_id, ignore):
             SESSION.add(ignored)
             SESSION.commit()
             return True
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
         return False
 
 
@@ -101,7 +108,11 @@ def chat_unignore_command(chat_id, unignore):
             SESSION.commit()
             return True
 
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
         return False
 
 
@@ -118,7 +129,11 @@ def global_ignore_command(command):
             SESSION.commit()
             return True
 
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
         return False
 
 
@@ -135,7 +150,11 @@ def global_unignore_command(command):
             SESSION.commit()
             return True
 
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
         return False
 
 
@@ -157,7 +176,11 @@ def is_enabled(chat_id):
             return resultcurr.is_enable
         return False  # default
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def get_all_ignored(chat_id):
@@ -178,21 +201,33 @@ def __load_cleaner_list():
             int(x.command) for x in SESSION.query(CleanerBlueTextGlobal).all()
         }
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
     try:
         for x in SESSION.query(CleanerBlueTextChatSettings).all():
             CLEANER_CHATS.setdefault(x.chat_id, {"setting": False, "commands": set()})
             CLEANER_CHATS[x.chat_id]["setting"] = x.is_enable
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
     try:
         for x in SESSION.query(CleanerBlueTextChat).all():
             CLEANER_CHATS.setdefault(x.chat_id, {"setting": False, "commands": set()})
             CLEANER_CHATS[x.chat_id]["commands"].add(x.command)
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 __load_cleaner_list()

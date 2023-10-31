@@ -101,12 +101,15 @@ class Restrictions(BASE):
 # For those who faced database error, Just uncomment the
 # line below and run bot for 1 time & remove that line!
 
-Permissions.__table__.create(checkfirst=True)
+
 # Permissions.__table__.drop()
+<<<<<<< HEAD
 Restrictions.__table__.create(checkfirst=True)
 
 PERM_LOCK = threading.RLock()
 RESTR_LOCK = threading.RLock()
+=======
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def init_permissions(chat_id, reset=False):
@@ -230,7 +233,11 @@ def update_restriction(chat_id, restr_type, locked):
 
 def is_locked(chat_id, lock_type):
     curr_perm = SESSION.query(Permissions).get(str(chat_id))
+<<<<<<< HEAD
     SESSION.close()
+=======
+    await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
     if not curr_perm:
         return False
@@ -293,7 +300,11 @@ def is_locked(chat_id, lock_type):
 
 def is_restr_locked(chat_id, lock_type):
     curr_restr = SESSION.query(Restrictions).get(str(chat_id))
+<<<<<<< HEAD
     SESSION.close()
+=======
+    await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
     if not curr_restr:
         return False
@@ -328,14 +339,22 @@ def get_locks(chat_id):
     try:
         return SESSION.query(Permissions).get(str(chat_id))
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def get_restr(chat_id):
     try:
         return SESSION.query(Restrictions).get(str(chat_id))
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def migrate_chat(old_chat_id, new_chat_id):

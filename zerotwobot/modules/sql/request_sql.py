@@ -29,6 +29,7 @@ class RequestChatSettings(BASE):
         return "<Chat request settings ({})>".format(self.chat_id)
 
 
+<<<<<<< HEAD
 RequestUserSettings.__table__.create(checkfirst=True)
 RequestChatSettings.__table__.create(checkfirst=True)
 
@@ -36,6 +37,8 @@ CHAT_LOCK = threading.RLock()
 USER_LOCK = threading.RLock()
 
 
+=======
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 def chat_should_request(chat_id: Union[str, int]) -> bool:
     try:
         chat_setting = SESSION.query(RequestChatSettings).get(str(chat_id))
@@ -43,7 +46,11 @@ def chat_should_request(chat_id: Union[str, int]) -> bool:
             return chat_setting.should_request
         return False
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def user_should_request(user_id: int) -> bool:
@@ -53,7 +60,11 @@ def user_should_request(user_id: int) -> bool:
             return user_setting.should_request
         return True
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def set_chat_setting(chat_id: Union[int, str], setting: bool):

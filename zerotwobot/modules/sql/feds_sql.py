@@ -89,6 +89,7 @@ class FedSubs(BASE):
 # BansF.__table__.drop()
 # FedSubs.__table__.drop()
 
+<<<<<<< HEAD
 Federations.__table__.create(checkfirst=True)
 ChatF.__table__.create(checkfirst=True)
 BansF.__table__.create(checkfirst=True)
@@ -99,6 +100,8 @@ FEDS_LOCK = threading.RLock()
 CHAT_FEDS_LOCK = threading.RLock()
 FEDS_SETTINGS_LOCK = threading.RLock()
 FEDS_SUBSCRIBER_LOCK = threading.RLock()
+=======
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 FEDERATION_BYNAME = {}
 FEDERATION_BYOWNER = {}
@@ -389,7 +392,11 @@ def user_demote_fed(fed_id, user_id):
                     SESSION.commit()
                     result = True
 
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
         return result
 
 
@@ -775,7 +782,11 @@ def unsubs_fed(fed_id, my_fed):
             SESSION.commit()
             return True
 
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
         return False
 
 
@@ -837,7 +848,11 @@ def __load_all_feds():
                 "fusers": str(x.fed_users),
             }
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def __load_all_feds_chats():
@@ -858,7 +873,11 @@ def __load_all_feds_chats():
                 FEDERATION_CHATS_BYID[x.fed_id] = []
             FEDERATION_CHATS_BYID[x.fed_id].append(x.chat_id)
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def __load_all_feds_banned():
@@ -884,7 +903,11 @@ def __load_all_feds_banned():
                 "time": x.time,
             }
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def __load_all_feds_settings():
@@ -894,7 +917,11 @@ def __load_all_feds_settings():
         for x in getuser:
             FEDERATION_NOTIFICATION[str(x.user_id)] = x.should_report
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def __load_feds_subscriber():
@@ -921,7 +948,11 @@ def __load_feds_subscriber():
         MYFEDS_SUBSCRIBER = {x: set(y) for x, y in MYFEDS_SUBSCRIBER.items()}
 
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 __load_all_feds()

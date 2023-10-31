@@ -6,8 +6,8 @@ from sqlalchemy import Column, Integer, String, UnicodeText, distinct, func
 
 class StickersFilters(BASE):
     __tablename__ = "blacklist_stickers"
-    chat_id = Column(String(14), primary_key=True)
-    trigger = Column(UnicodeText, primary_key=True, nullable=False)
+    chat_id: str = Column(String(14), primary_key=True)
+    trigger: str = Column(UnicodeText, primary_key=True, nullable=False)
 
     def __init__(self, chat_id, trigger):
         self.chat_id = str(chat_id)  # ensure string
@@ -26,9 +26,9 @@ class StickersFilters(BASE):
 
 class StickerSettings(BASE):
     __tablename__ = "blsticker_settings"
-    chat_id = Column(String(14), primary_key=True)
-    blacklist_type = Column(Integer, default=1)
-    value = Column(UnicodeText, default="0")
+    chat_id: str = Column(String(14), primary_key=True)
+    blacklist_type: int = Column(Integer, default=1)
+    value: str = Column(UnicodeText, default="0")
 
     def __init__(self, chat_id, blacklist_type=1, value="0"):
         self.chat_id = str(chat_id)
@@ -42,18 +42,27 @@ class StickerSettings(BASE):
         )
 
 
+<<<<<<< HEAD
 StickersFilters.__table__.create(checkfirst=True)
 StickerSettings.__table__.create(checkfirst=True)
 
 STICKERS_FILTER_INSERTION_LOCK = threading.RLock()
 STICKSET_FILTER_INSERTION_LOCK = threading.RLock()
 
+=======
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 CHAT_STICKERS = {}
 CHAT_BLSTICK_BLACKLISTS = {}
 
 
+<<<<<<< HEAD
 def add_to_stickers(chat_id, trigger):
     with STICKERS_FILTER_INSERTION_LOCK:
+=======
+async def add_to_stickers(chat_id: int | str, trigger):
+    """add given sticker to chat's blacklist"""
+    async with SESSION.begin():
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
         stickers_filt = StickersFilters(str(chat_id), trigger)
 
         SESSION.merge(stickers_filt)  # merge to avoid duplicate key issues
@@ -76,7 +85,11 @@ def rm_from_stickers(chat_id, trigger):
             SESSION.commit()
             return True
 
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
         return False
 
 
@@ -88,7 +101,11 @@ def num_stickers_filters():
     try:
         return SESSION.query(StickersFilters).count()
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def num_stickers_chat_filters(chat_id):
@@ -99,14 +116,22 @@ def num_stickers_chat_filters(chat_id):
             .count()
         )
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def num_stickers_filter_chats():
     try:
         return SESSION.query(func.count(distinct(StickersFilters.chat_id))).scalar()
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def set_blacklist_strength(chat_id, blacklist_type, value):
@@ -149,7 +174,11 @@ def get_blacklist_setting(chat_id):
             return 1, "0"
 
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def __load_CHAT_STICKERS():
@@ -166,7 +195,11 @@ def __load_CHAT_STICKERS():
         CHAT_STICKERS = {x: set(y) for x, y in CHAT_STICKERS.items()}
 
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def __load_chat_stickerset_blacklists():
@@ -180,7 +213,11 @@ def __load_chat_stickerset_blacklists():
             }
 
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def migrate_chat(old_chat_id, new_chat_id):

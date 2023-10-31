@@ -16,11 +16,14 @@ class Rules(BASE):
         return "<Chat {} rules: {}>".format(self.chat_id, self.rules)
 
 
+<<<<<<< HEAD
 Rules.__table__.create(checkfirst=True)
 
 INSERTION_LOCK = threading.RLock()
 
 
+=======
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 def set_rules(chat_id, rules_text):
     with INSERTION_LOCK:
         rules = SESSION.query(Rules).get(str(chat_id))
@@ -38,7 +41,11 @@ def get_rules(chat_id):
     if rules:
         ret = rules.rules
 
+<<<<<<< HEAD
     SESSION.close()
+=======
+    await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
     return ret
 
 
@@ -46,7 +53,11 @@ def num_chats():
     try:
         return SESSION.query(func.count(distinct(Rules.chat_id))).scalar()
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def migrate_chat(old_chat_id, new_chat_id):

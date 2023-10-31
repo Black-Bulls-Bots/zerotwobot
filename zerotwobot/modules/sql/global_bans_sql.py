@@ -35,11 +35,14 @@ class GbanSettings(BASE):
         return "<Gban setting {} ({})>".format(self.chat_id, self.setting)
 
 
+<<<<<<< HEAD
 GloballyBannedUsers.__table__.create(checkfirst=True)
 GbanSettings.__table__.create(checkfirst=True)
 
 GBANNED_USERS_LOCK = threading.RLock()
 GBAN_SETTING_LOCK = threading.RLock()
+=======
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 GBANNED_LIST = set()
 GBANSTAT_LIST = set()
 
@@ -90,14 +93,22 @@ def get_gbanned_user(user_id):
     try:
         return SESSION.query(GloballyBannedUsers).get(user_id)
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def get_gban_list():
     try:
         return [x.to_dict() for x in SESSION.query(GloballyBannedUsers).all()]
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def enable_gbans(chat_id):
@@ -138,7 +149,11 @@ def __load_gbanned_userid_list():
     try:
         GBANNED_LIST = {x.user_id for x in SESSION.query(GloballyBannedUsers).all()}
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def __load_gban_stat_list():
@@ -148,7 +163,11 @@ def __load_gban_stat_list():
             x.chat_id for x in SESSION.query(GbanSettings).all() if not x.setting
         }
     finally:
+<<<<<<< HEAD
         SESSION.close()
+=======
+        await SESSION.close()
+>>>>>>> 603ab91 (new updates, dropping this repo too.)
 
 
 def migrate_chat(old_chat_id, new_chat_id):
