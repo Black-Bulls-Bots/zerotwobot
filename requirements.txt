@@ -68,7 +68,7 @@ python-whatanime==0.1.2
 pytz==2021.3
 pytz-deprecation-shim==0.1.0.post0
 regex==2021.11.10
-requests==2.28.1
+requests==2.31.0
 rfc==0.1.0
 rfc3986==1.5.0
 rsa==4.7.2
